@@ -196,6 +196,25 @@ def build_parser() -> argparse.ArgumentParser:
     scan.add_argument("--bluetooth-max-method-hops", type=int, default=3)
     scan.add_argument("--bluetooth-max-field-hops", type=int, default=2)
     scan.add_argument("--bluetooth-max-object-nodes", type=int, default=500)
+    scan.add_argument(
+        "--communication",
+        action="store_true",
+        help="Enable v1.0 communication evidence (bytes/buffer/parser/message) above transport",
+    )
+
+    post = sub.add_parser(
+        "postprocess-communication",
+        help="Offline v1.0 communication analysis on a persisted transport report (prefer over full re-scan).",
+    )
+    post.add_argument("--from-report", type=Path, required=True, help="Existing report.json with bluetooth_path")
+    post.add_argument("--apk", type=Path, required=True, help="APK providing method bodies")
+    post.add_argument("--output", type=Path, required=True, help="Output directory for enhanced report")
+    post.add_argument(
+        "--plan",
+        type=Path,
+        default=None,
+        help="Optional SearchPlan (uses communication: section; default: plans/communication_evidence.yaml)",
+    )
 
     storage_cmd = sub.add_parser("storage", help="Show managed workspace storage usage.")
     storage_cmd.add_argument(
@@ -534,6 +553,7 @@ def _cmd_scan(args: argparse.Namespace) -> int:
         bluetooth_max_method_hops=int(getattr(args, "bluetooth_max_method_hops", 3)),
         bluetooth_max_field_hops=int(getattr(args, "bluetooth_max_field_hops", 2)),
         bluetooth_max_object_nodes=int(getattr(args, "bluetooth_max_object_nodes", 500)),
+        communication=bool(getattr(args, "communication", False)),
         keep_work=bool(args.keep_work),
         use_cache=bool(args.use_cache),
         copy_input=bool(args.copy_input),
@@ -551,12 +571,18 @@ def _cmd_scan(args: argparse.Namespace) -> int:
             config.dex_context = True
         if args.bluetooth_path:
             config.bluetooth_path = True
+        if getattr(args, "communication", False):
+            config.communication = True
+            config.bluetooth_path = True
         if args.formats:
             config.formats = formats
         if args.include_raw:
             config.include_raw = True
         if args.query:
             config.dex_query = args.query
+    elif getattr(args, "communication", False):
+        config.communication = True
+        config.bluetooth_path = True
 
     profile_arg = resolve_profile_from_plan(search_plan, args.profile) if search_plan else args.profile
 
@@ -816,6 +842,15 @@ def _cmd_scan(args: argparse.Namespace) -> int:
                 f"runtime={eg_sum.get('runtime_execution')} "
                 f"protocol={eg_sum.get('protocol_semantics')}"
             )
+        ce = report.communication_evidence or {}
+        if ce.get("enabled"):
+            cs = ce.get("summary") or {}
+            print(f"Communication paths: {cs.get('communication_paths', 0)}")
+            print(f"Comm strongest: {cs.get('strongest_path_id')} ({cs.get('strongest_classification')})")
+            print(
+                f"Comm protocol={cs.get('protocol_semantics')} "
+                f"runtime={cs.get('runtime_execution')}"
+            )
     print(f"Warnings: {warning_count}")
     if "json" in outputs:
         print(f"JSON: {outputs['json']}")
@@ -830,6 +865,85 @@ def _cmd_scan(args: argparse.Namespace) -> int:
         return ExitCode.FATAL
     if report.analysis.status == "partial" or warning_count > 0:
         return ExitCode.PARTIAL_OR_WARNINGS
+    return ExitCode.SUCCESS
+
+
+def _cmd_postprocess_communication(args: argparse.Namespace) -> int:
+    import json
+    from apk_forensics.communication_evidence import postprocess_communication_from_report
+    from apk_forensics.report_writer import _render_communication_evidence_markdown
+    from apk_forensics.search_plan import load_search_plan
+
+    report_path = Path(args.from_report).resolve()
+    apk_path = Path(args.apk).resolve()
+    out_dir = Path(args.output).resolve()
+    out_dir.mkdir(parents=True, exist_ok=True)
+    raw = json.loads(report_path.read_text(encoding="utf-8"))
+
+    plan_path = args.plan
+    if plan_path is None:
+        plan_path = Path(__file__).resolve().parents[2] / "plans" / "communication_evidence.yaml"
+        if not plan_path.is_file():
+            plan_path = Path("plans/communication_evidence.yaml")
+    plan = load_search_plan(Path(plan_path))
+    cfg = {
+        "enabled": True,
+        "interprocedural": plan.communication_interprocedural,
+        "max_method_hops": plan.communication_max_method_hops,
+        "max_field_hops": plan.communication_max_field_hops,
+        "max_object_nodes": plan.communication_max_object_nodes,
+        "max_dataflow_paths": plan.communication_max_dataflow_paths,
+        "max_buffer_hops": plan.communication_max_buffer_hops,
+        "max_parser_hops": plan.communication_max_parser_hops,
+        "max_message_hops": plan.communication_max_message_hops,
+    }
+    comm = postprocess_communication_from_report(
+        raw,
+        apk_path,
+        config=cfg,
+        postprocessing_version=__version__,
+    )
+    # Preserve transport evidence classifications; only attach communication layer.
+    raw["communication_evidence"] = comm
+    raw["schema_version"] = "1.0"
+    if isinstance(raw.get("tool"), dict):
+        raw["tool"]["version"] = __version__
+    if isinstance(raw.get("analysis"), dict):
+        warnings = list(raw["analysis"].get("warnings") or [])
+        warnings.extend(comm.get("warnings") or [])
+        raw["analysis"]["warnings"] = warnings
+        raw["analysis"]["engine_version"] = __version__
+
+    json_path = out_dir / "report.json"
+    md_path = out_dir / "report.md"
+    json_path.write_text(json.dumps(raw, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+
+    # Prefer appending communication section to existing markdown when present.
+    source_md = report_path.with_suffix(".md")
+    if source_md.is_file():
+        base_md = source_md.read_text(encoding="utf-8")
+    else:
+        base_md = (
+            f"# APK Forensics postprocess-communication\n\n"
+            f"Source report: `{report_path}`\n\n"
+            f"Transport sections preserved in JSON; communication layer below.\n\n"
+        )
+    if "## Communication Evidence" not in base_md:
+        extra = "\n".join(_render_communication_evidence_markdown(comm))
+        md_path.write_text(base_md.rstrip() + "\n\n" + extra + "\n", encoding="utf-8")
+    else:
+        md_path.write_text(base_md, encoding="utf-8")
+
+    cs = comm.get("summary") or {}
+    print(f"APK Forensics {__version__} postprocess-communication")
+    print(f"Source report: {report_path}")
+    print(f"APK: {apk_path}")
+    print(f"Plan: {plan.plan_name} sha256={plan.plan_sha256}")
+    print(f"Communication paths: {cs.get('communication_paths', 0)}")
+    print(f"Strongest: {cs.get('strongest_path_id')} ({cs.get('strongest_classification')})")
+    print(f"Protocol semantics: {cs.get('protocol_semantics')}")
+    print(f"JSON: {json_path}")
+    print(f"Markdown: {md_path}")
     return ExitCode.SUCCESS
 
 
@@ -849,6 +963,8 @@ def main(argv: list[str] | None = None) -> int:
         return _cmd_plan(args)
     if args.command == "estimate":
         return _cmd_estimate(args)
+    if args.command == "postprocess-communication":
+        return _cmd_postprocess_communication(args)
     if args.command == "scan":
         return _cmd_scan(args)
 

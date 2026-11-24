@@ -72,6 +72,16 @@ class AnalysisConfig:
     evidence_graph_extract_paths: bool = True
     evidence_graph_include_boundaries: bool = True
     evidence_graph_max_paths: int = 50
+    # v1.0 communication evidence (default off)
+    communication: bool = False
+    communication_interprocedural: bool = True
+    communication_max_method_hops: int = 3
+    communication_max_field_hops: int = 2
+    communication_max_object_nodes: int = 500
+    communication_max_dataflow_paths: int = 100
+    communication_max_buffer_hops: int = 5
+    communication_max_parser_hops: int = 3
+    communication_max_message_hops: int = 3
     # v0.4 storage / cache
     keep_work: bool = False
     use_cache: bool = False

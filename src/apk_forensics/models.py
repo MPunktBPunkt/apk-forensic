@@ -287,6 +287,7 @@ class Report:
     dex_context: dict[str, Any] | None = None
     bluetooth_path: dict[str, Any] | None = None
     bluetooth_dataflow: dict[str, Any] | None = None
+    communication_evidence: dict[str, Any] | None = None
     artifact_bundle: dict[str, Any] | None = None
     search_plan: dict[str, Any] | None = None
     analysis_job: dict[str, Any] | None = None
@@ -316,6 +317,8 @@ class Report:
             payload["bluetooth_path"] = self.bluetooth_path
         if self.bluetooth_dataflow is not None:
             payload["bluetooth_dataflow"] = self.bluetooth_dataflow
+        if self.communication_evidence is not None:
+            payload["communication_evidence"] = self.communication_evidence
         if self.artifact_bundle is not None:
             payload["artifact_bundle"] = self.artifact_bundle
         if self.search_plan is not None:

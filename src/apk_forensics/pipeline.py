@@ -313,6 +313,7 @@ def run_pipeline(
                         )
 
             bluetooth_section = None
+            communication_section = None
             if cfg.bluetooth_path:
                 _job_checkpoint(analysis_job)
                 bluetooth_section = run_bluetooth_path_analysis(
@@ -333,6 +334,39 @@ def run_pipeline(
                             bluetooth_section.get("status") == "skipped"
                             and "androguard" in " ".join(bluetooth_section.get("warnings") or []).lower()
                         ),
+                    )
+                )
+
+            if getattr(cfg, "communication", False) and bluetooth_section is not None:
+                _job_checkpoint(analysis_job)
+                from apk_forensics.communication_evidence import run_communication_analysis
+
+                communication_section = run_communication_analysis(
+                    apk_path,
+                    bluetooth_section,
+                    config={
+                        "enabled": True,
+                        "interprocedural": cfg.communication_interprocedural,
+                        "max_method_hops": cfg.communication_max_method_hops,
+                        "max_field_hops": cfg.communication_max_field_hops,
+                        "max_object_nodes": cfg.communication_max_object_nodes,
+                        "max_dataflow_paths": cfg.communication_max_dataflow_paths,
+                        "max_buffer_hops": cfg.communication_max_buffer_hops,
+                        "max_parser_hops": cfg.communication_max_parser_hops,
+                        "max_message_hops": cfg.communication_max_message_hops,
+                    },
+                    artifact_sha256=sha256,
+                    engine_version=__version__,
+                    plan_sha256=getattr(cfg, "search_plan_sha256", None),
+                )
+                warnings.extend(communication_section.get("warnings") or [])
+                scanners.append(
+                    ScannerResult(
+                        name="communication_evidence",
+                        status=communication_section.get("status") or AnalysisStatus.PARTIAL.value,
+                        duration_ms=int(communication_section.get("duration_ms") or 0),
+                        warnings=list(communication_section.get("warnings") or []),
+                        errors=[],
                     )
                 )
 
@@ -359,7 +393,11 @@ def run_pipeline(
             if errors and cfg.fail_on_error:
                 analysis_status = AnalysisStatus.FAILED.value
 
-            if cfg.bluetooth_path:
+            if getattr(cfg, "communication", False):
+                from apk_forensics import __schema_version_communication__ as _sv_comm
+
+                schema_version = _sv_comm
+            elif cfg.bluetooth_path:
                 schema_version = __schema_version_bluetooth_path__
             elif cfg.dex_context:
                 schema_version = __schema_version_dex_context__
@@ -434,6 +472,7 @@ def run_pipeline(
                     if bluetooth_section is not None
                     else None
                 ),
+                communication_evidence=communication_section,
                 search_plan=plan_section,
                 analysis_job=analysis_job.to_dict() if analysis_job is not None else None,
                 resource=(

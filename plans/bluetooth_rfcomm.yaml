@@ -78,6 +78,11 @@ evidence_graph:
   include_boundaries: true
   max_evidence_paths: 50
 
+# Optional v1.0 communication layer (disabled here to keep bluetooth_rfcomm transport-focused).
+# Use plans/communication_evidence.yaml to enable.
+communication:
+  enabled: false
+
 evidence:
   classifications:
     - FACT

@@ -1,5 +1,18 @@
 # Changelog
 
+## 1.0.0
+
+- **Communication Evidence Graph**: bounded static dataflow above Bluetooth transport
+  (`InputStream`/`OutputStream` → `byte[]`/`ByteBuffer` → decoder/encoder → message/object)
+- New SearchPlan section `communication:` + official plan `plans/communication_evidence.yaml`
+- CLI: `--communication`, `postprocess-communication` (offline on persisted transport reports)
+- Evidence separation: `method_name_candidate=FACT`, `dataflow_role=INFERENCE`, `protocol_semantics=UNKNOWN`
+- Compact `PATH-COMM-*` paths with direction `INBOUND`/`OUTBOUND`, provenance, boundaries
+- Resource Guard estimates communication buffer/parser work — no silent plan rewrite
+- Transport Evidence Graph classifications are never rewritten by the communication layer
+- Synthetic fixtures A–G + negative protocol-name tests
+- Architecture note: expensive transport analysis → persist → cheap communication postprocess
+
 ## 0.9.0
 
 - **Evidence Graph**: Raw object/dataflow → canonical objects/nodes/edges → compact `PATH-*` evidence paths

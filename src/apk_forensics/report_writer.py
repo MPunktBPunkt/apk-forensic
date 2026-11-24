@@ -278,6 +278,10 @@ def render_markdown(report: Report) -> str:
     if bt is not None:
         lines.extend(_render_bluetooth_path_markdown(bt))
 
+    comm = d.get("communication_evidence")
+    if comm is not None:
+        lines.extend(_render_communication_evidence_markdown(comm))
+
     lines.append("## Reproducibility")
     lines.append("")
     lines.append(f"- Tool version: `{_md_escape(d['tool']['version'])}`")
@@ -549,6 +553,104 @@ def _render_bluetooth_path_markdown(bt: dict) -> list[str]:
         lines.append("")
 
     lines.extend(_render_bluetooth_dataflow_markdown(bt))
+    return lines
+
+
+def _render_communication_evidence_markdown(comm: dict) -> list[str]:
+    lines: list[str] = []
+    if not comm.get("enabled"):
+        return lines
+    summary = comm.get("summary") or {}
+    counts = comm.get("counts") or {}
+    lines.append("## Communication Evidence (v1.0)")
+    lines.append("")
+    lines.append(
+        "> Transport Evidence Graph and Communication Evidence Graph are separate layers.  \n"
+        "> Method names never establish protocol identity (BCL/Etch/RHMI/SCN6 remain UNKNOWN)."
+    )
+    lines.append("")
+    lines.append("### Summary")
+    lines.append("")
+    lines.append("| Metric | Value |")
+    lines.append("|---|---:|")
+    lines.append(f"| Read sites | {counts.get('read_sites', summary.get('read_sites', 0))} |")
+    lines.append(f"| Write sites | {counts.get('write_sites', summary.get('write_sites', 0))} |")
+    lines.append(f"| Buffer operations | {counts.get('buffer_operations', 0)} |")
+    lines.append(f"| Decoder candidates | {counts.get('decoder_candidates', summary.get('decoder_candidates', 0))} |")
+    lines.append(
+        f"| Serializer candidates | {counts.get('serializer_candidates', summary.get('serializer_candidates', 0))} |"
+    )
+    lines.append(
+        f"| Message constructions | {counts.get('message_constructions', summary.get('message_constructions', 0))} |"
+    )
+    lines.append(f"| Communication paths | {summary.get('communication_paths', 0)} |")
+    lines.append(f"| Inbound | {summary.get('inbound_paths', 0)} |")
+    lines.append(f"| Outbound | {summary.get('outbound_paths', 0)} |")
+    lines.append(f"| Boundaries | {summary.get('boundaries', 0)} |")
+    lines.append("")
+    lines.append(
+        f"**Strongest:** `{_md_escape(summary.get('strongest_path_id'))}` — "
+        f"`{_md_escape(summary.get('strongest_classification'))}` · "
+        f"protocol=`{_md_escape(summary.get('protocol_semantics'))}` · "
+        f"runtime=`{_md_escape(summary.get('runtime_execution'))}`"
+    )
+    lines.append("")
+    prov = comm.get("provenance") or {}
+    if prov:
+        lines.append("### Provenance")
+        lines.append("")
+        for k in (
+            "mode",
+            "source_dataset",
+            "source_engine_version",
+            "source_plan_sha256",
+            "source_artifact_sha256",
+            "postprocessing_version",
+        ):
+            if prov.get(k) is not None:
+                lines.append(f"- {k}: `{_md_escape(prov.get(k))}`")
+        lines.append("")
+    lines.append("### Communication Paths")
+    lines.append("")
+    for path in list(comm.get("paths") or [])[:20]:
+        lines.append(f"#### {_md_escape(path.get('display_id') or path.get('path_id'))}")
+        lines.append("")
+        lines.append(f"- Direction: `{_md_escape(path.get('direction'))}`")
+        lines.append(
+            f"- End-to-end: `{_md_escape(path.get('classification'))}` / "
+            f"`{_md_escape(path.get('confidence'))}`"
+        )
+        lines.append(f"- Protocol semantics: `{_md_escape(path.get('protocol_semantics'))}`")
+        lines.append("")
+        lines.append("```text")
+        for step in path.get("steps") or []:
+            lines.append(
+                f"{step.get('label')}  [{step.get('classification')}/{step.get('confidence')}]"
+            )
+        lines.append("```")
+        lines.append("")
+        if path.get("boundaries"):
+            b = path["boundaries"][0]
+            lines.append(
+                f"- Boundary: `{_md_escape(b.get('reason'))}` "
+                f"last=`{_md_escape(b.get('last_proven'))}` "
+                f"[{_md_escape(b.get('classification'))}]"
+            )
+            lines.append("")
+    lines.append("### Boundaries")
+    lines.append("")
+    boundaries = list(comm.get("boundaries") or [])
+    if not boundaries:
+        lines.append("_None recorded._")
+        lines.append("")
+    else:
+        for b in boundaries[:40]:
+            lines.append(
+                f"- `{_md_escape(b.get('reason'))}` "
+                f"method=`{_md_escape(b.get('method'))}` "
+                f"detail=`{_md_escape(b.get('detail') or b.get('last_proven'))}`"
+            )
+        lines.append("")
     return lines
 
 

@@ -191,6 +191,15 @@ class SearchPlan:
     evidence_graph_extract_paths: bool = True
     evidence_graph_include_boundaries: bool = True
     evidence_graph_max_paths: int = 50
+    communication_enabled: bool = False
+    communication_interprocedural: bool = True
+    communication_max_method_hops: int = 3
+    communication_max_field_hops: int = 2
+    communication_max_object_nodes: int = 500
+    communication_max_dataflow_paths: int = 100
+    communication_max_buffer_hops: int = 5
+    communication_max_parser_hops: int = 3
+    communication_max_message_hops: int = 3
     evidence_classifications: list[str] = field(
         default_factory=lambda: ["FACT", "CORRELATION", "INFERENCE", "UNKNOWN"]
     )
@@ -254,6 +263,17 @@ class SearchPlan:
                 "extract_paths": self.evidence_graph_extract_paths,
                 "include_boundaries": self.evidence_graph_include_boundaries,
                 "max_evidence_paths": self.evidence_graph_max_paths,
+            },
+            "communication": {
+                "enabled": self.communication_enabled,
+                "interprocedural": self.communication_interprocedural,
+                "max_method_hops": self.communication_max_method_hops,
+                "max_field_hops": self.communication_max_field_hops,
+                "max_object_nodes": self.communication_max_object_nodes,
+                "max_dataflow_paths": self.communication_max_dataflow_paths,
+                "max_buffer_hops": self.communication_max_buffer_hops,
+                "max_parser_hops": self.communication_max_parser_hops,
+                "max_message_hops": self.communication_max_message_hops,
             },
             "evidence": {
                 "classifications": list(self.evidence_classifications),
@@ -392,6 +412,7 @@ def validate_and_normalize(raw: dict[str, Any]) -> SearchPlan:
         "dex_context",
         "bluetooth",
         "evidence_graph",
+        "communication",
         "evidence",
         "limits",
         "output",
@@ -700,6 +721,46 @@ def validate_and_normalize(raw: dict[str, Any]) -> SearchPlan:
         50,
     )
 
+    comm_sec = _require_mapping(raw.get("communication"), "communication", errors)
+    for key in comm_sec:
+        if key not in {
+            "enabled",
+            "interprocedural",
+            "max_method_hops",
+            "max_field_hops",
+            "max_object_nodes",
+            "max_dataflow_paths",
+            "max_buffer_hops",
+            "max_parser_hops",
+            "max_message_hops",
+        }:
+            errors.append(f"unknown field: communication.{key}")
+    comm_enabled = _as_bool(comm_sec.get("enabled"), "communication.enabled", errors, default=False)
+    comm_interprocedural = _as_bool(
+        comm_sec.get("interprocedural"), "communication.interprocedural", errors, default=True
+    )
+    comm_max_method_hops = _as_int_in_bounds(
+        comm_sec.get("max_method_hops"), "communication.max_method_hops", (0, 5), errors, 3
+    )
+    comm_max_field_hops = _as_int_in_bounds(
+        comm_sec.get("max_field_hops"), "communication.max_field_hops", (0, 4), errors, 2
+    )
+    comm_max_object_nodes = _as_int_in_bounds(
+        comm_sec.get("max_object_nodes"), "communication.max_object_nodes", (0, 500), errors, 500
+    )
+    comm_max_dataflow_paths = _as_int_in_bounds(
+        comm_sec.get("max_dataflow_paths"), "communication.max_dataflow_paths", (0, 200), errors, 100
+    )
+    comm_max_buffer_hops = _as_int_in_bounds(
+        comm_sec.get("max_buffer_hops"), "communication.max_buffer_hops", (0, 10), errors, 5
+    )
+    comm_max_parser_hops = _as_int_in_bounds(
+        comm_sec.get("max_parser_hops"), "communication.max_parser_hops", (0, 5), errors, 3
+    )
+    comm_max_message_hops = _as_int_in_bounds(
+        comm_sec.get("max_message_hops"), "communication.max_message_hops", (0, 5), errors, 3
+    )
+
     evidence_sec = _require_mapping(raw.get("evidence"), "evidence", errors)
     for key in evidence_sec:
         if key not in {"classifications"}:
@@ -830,6 +891,15 @@ def validate_and_normalize(raw: dict[str, Any]) -> SearchPlan:
         evidence_graph_extract_paths=eg_extract_paths,
         evidence_graph_include_boundaries=eg_include_boundaries,
         evidence_graph_max_paths=eg_max_paths,
+        communication_enabled=comm_enabled,
+        communication_interprocedural=comm_interprocedural,
+        communication_max_method_hops=comm_max_method_hops,
+        communication_max_field_hops=comm_max_field_hops,
+        communication_max_object_nodes=comm_max_object_nodes,
+        communication_max_dataflow_paths=comm_max_dataflow_paths,
+        communication_max_buffer_hops=comm_max_buffer_hops,
+        communication_max_parser_hops=comm_max_parser_hops,
+        communication_max_message_hops=comm_max_message_hops,
         evidence_classifications=class_norm,
         max_results=max_results,
         max_contexts=max_contexts,
@@ -903,6 +973,15 @@ def apply_search_plan_to_config(plan: SearchPlan, config: AnalysisConfig) -> Ana
     config.evidence_graph_extract_paths = plan.evidence_graph_extract_paths
     config.evidence_graph_include_boundaries = plan.evidence_graph_include_boundaries
     config.evidence_graph_max_paths = plan.evidence_graph_max_paths
+    config.communication = plan.communication_enabled
+    config.communication_interprocedural = plan.communication_interprocedural
+    config.communication_max_method_hops = plan.communication_max_method_hops
+    config.communication_max_field_hops = plan.communication_max_field_hops
+    config.communication_max_object_nodes = plan.communication_max_object_nodes
+    config.communication_max_dataflow_paths = plan.communication_max_dataflow_paths
+    config.communication_max_buffer_hops = plan.communication_max_buffer_hops
+    config.communication_max_parser_hops = plan.communication_max_parser_hops
+    config.communication_max_message_hops = plan.communication_max_message_hops
     config.max_findings_per_scanner = plan.max_findings
     config.max_xrefs = plan.max_xrefs
     config.max_chains = plan.max_chains

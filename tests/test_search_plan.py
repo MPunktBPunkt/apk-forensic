@@ -42,7 +42,12 @@ def _minimal_plan(**overrides) -> dict:
 
 
 def test_valid_example_plans() -> None:
-    for name in ("bluetooth_rfcomm.yaml", "native_static.yaml", "communication_stack.yaml"):
+    for name in (
+        "bluetooth_rfcomm.yaml",
+        "native_static.yaml",
+        "communication_stack.yaml",
+        "communication_evidence.yaml",
+    ):
         plan = load_search_plan(PLANS / name)
         assert plan.schema_version == "1.0"
         assert plan.plan_sha256

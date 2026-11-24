@@ -56,6 +56,9 @@ class PlanFactors:
     bt_max_object_nodes: int = 0
     evidence_graph: bool = False
     evidence_graph_max_paths: int = 0
+    communication: bool = False
+    communication_max_paths: int = 0
+    communication_max_buffer_hops: int = 0
 
     def to_dict(self) -> dict[str, Any]:
         return asdict(self)
@@ -167,6 +170,9 @@ def plan_factors_from_search_plan(plan: SearchPlan | None, *, cli_dex: bool = Fa
         bt_max_object_nodes=int(plan.bluetooth_max_object_nodes) if plan.bluetooth_enabled else 0,
         evidence_graph=bool(plan.evidence_graph_enabled),
         evidence_graph_max_paths=int(plan.evidence_graph_max_paths) if plan.evidence_graph_enabled else 0,
+        communication=bool(plan.communication_enabled),
+        communication_max_paths=int(plan.communication_max_dataflow_paths) if plan.communication_enabled else 0,
+        communication_max_buffer_hops=int(plan.communication_max_buffer_hops) if plan.communication_enabled else 0,
     )
 
 
@@ -217,6 +223,10 @@ def estimate_resources(
     PER_BT_OBJECT_NODES_RT = 1  # * (object_nodes // 100) * dex
     PER_EVIDENCE_GRAPH_BASE_RT = 5
     PER_EVIDENCE_PATH_RT = 0
+    PER_COMM_BASE_MB = 6
+    PER_COMM_BUFFER_HOP_MB = 1
+    PER_COMM_BASE_RT = 8
+    PER_COMM_BUFFER_HOP_RT = 1
     PER_NATIVE_RUNTIME = 1
     PER_TERM_RUNTIME = 1  # per 10 terms
 
@@ -280,6 +290,12 @@ def estimate_resources(
         reasons.append("evidence_graph canonicalize/paths")
         if factors.evidence_graph_max_paths:
             reasons.append(f"evidence_graph_max_paths={factors.evidence_graph_max_paths}")
+    if factors.communication:
+        memory += PER_COMM_BASE_MB
+        memory += max(factors.communication_max_buffer_hops, 0) * PER_COMM_BUFFER_HOP_MB
+        reasons.append("communication bytes/parser/message analysis")
+        if factors.communication_max_paths:
+            reasons.append(f"communication_max_paths={factors.communication_max_paths}")
 
     if total_size_mb >= 100:
         reasons.append(f"large input artifact(s) ~{total_size_mb} MiB")
@@ -318,6 +334,9 @@ def estimate_resources(
     if factors.evidence_graph:
         runtime += PER_EVIDENCE_GRAPH_BASE_RT
         runtime += (max(factors.evidence_graph_max_paths, 0) // 10) * PER_EVIDENCE_PATH_RT
+    if factors.communication:
+        runtime += PER_COMM_BASE_RT
+        runtime += max(factors.communication_max_buffer_hops, 0) * PER_COMM_BUFFER_HOP_RT
 
     findings = BASE_FINDINGS
     findings += dex_count * PER_DEX_FINDINGS

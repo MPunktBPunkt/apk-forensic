@@ -1,8 +1,8 @@
 # apk-forensics
 
-Local, static APK forensics toolkit (v0.9.0).
+Local, static APK forensics toolkit (v1.0.0).
 
-It turns Android APKs into reproducible static fingerprints: hashes, ZIP inventory, manifest metadata (when available), DEX/native inventories, readable strings, UUID/port/API candidates, optional profile correlations, optional DEX context / Bluetooth RFCOMM path analysis with **bounded caller reconstruction**, **cross-method socket/stream object-flow**, and a **canonical Evidence Graph** (raw → canonical → evidence paths + exact boundaries + provenance), **ArtifactBundles**, controlled **workspace storage lifecycle**, a declarative **SearchPlan** layer, and an **AnalysisJob + Resource Guard** for deterministic preflight budgeting.
+It turns Android APKs into reproducible static fingerprints: hashes, ZIP inventory, manifest metadata (when available), DEX/native inventories, readable strings, UUID/port/API candidates, optional profile correlations, optional DEX context / Bluetooth RFCOMM path analysis with **bounded caller reconstruction**, **cross-method socket/stream object-flow**, a **canonical Transport Evidence Graph**, and a **Communication Evidence Graph** (bytes/buffers → decoder/encoder → message/object — without protocol guessing), **ArtifactBundles**, controlled **workspace storage lifecycle**, a declarative **SearchPlan** layer, and an **AnalysisJob + Resource Guard** for deterministic preflight budgeting.
 
 ## Purpose
 
@@ -132,7 +132,7 @@ Supported modules: `manifest`, `zip_inventory`, `dex`, `strings`, `uuid`, `candi
 
 Search supports literal `terms`, explicit `regex`, normalized `uuids`, and generic `api_patterns`. Terms are never auto-promoted to regex.
 
-Example plans: `plans/bluetooth_rfcomm.yaml`, `plans/native_static.yaml`, `plans/communication_stack.yaml`.
+Example plans: `plans/bluetooth_rfcomm.yaml`, `plans/communication_evidence.yaml`, `plans/native_static.yaml`, `plans/communication_stack.yaml`.
 
 Reproducibility identity: input SHA-256 + engine version + `plan_sha256` + profile + relevant options.
 
@@ -236,6 +236,62 @@ Evidence rules:
 - Profile tokens (SCN6, BCL, Etch, …) remain **CORRELATION** only — never APK FACT
 - Ranking reorders review priority only; it never changes classification
 - Raw node/edge totals are **not** communication-operation counts
+
+### Communication Evidence Graph (v1.0)
+
+Builds **above** transport I/O — does not reclassify transport evidence:
+
+```text
+Transport Evidence Graph
+        │
+        ▼
+Communication Dataflow (bounded)
+  read/write → byte[] / ByteBuffer → copy/wrap
+        │
+   ┌────┴────┐
+   ▼         ▼
+Decoder   Encoder
+   │         │
+   ▼         ▼
+Message   byte[] → write
+        │
+        ▼
+PATH-COMM-* (INBOUND / OUTBOUND)
+```
+
+```bash
+# Live (with transport + communication plan)
+apk-forensics scan ./app.apk \
+  --plan plans/communication_evidence.yaml \
+  --allow-resource-warning \
+  --output ./output/app-comm
+
+# Or force-enable on any plan
+apk-forensics scan ./app.apk --plan plans/bluetooth_rfcomm.yaml --communication ...
+
+# Prefer offline postprocess on a persisted v0.8/v0.9 transport report
+apk-forensics postprocess-communication \
+  --from-report ./output/app-bt/report.json \
+  --apk ./app.apk \
+  --plan plans/communication_evidence.yaml \
+  --output ./output/app-comm
+```
+
+SearchPlan `communication:` knobs (hard-capped; no silent downgrade):
+
+- `enabled`, `interprocedural`
+- `max_method_hops` ≤ 5, `max_field_hops` ≤ 4, `max_object_nodes` ≤ 500
+- `max_dataflow_paths` ≤ 200
+- `max_buffer_hops` ≤ 10, `max_parser_hops` ≤ 5, `max_message_hops` ≤ 5
+
+Evidence rules (v1.0):
+
+- Stream/buffer ops and constructors observed in DEX → **FACT**
+- Name tokens (`parse`/`decode`/`serialize`) → `method_name_candidate=FACT` only
+- Role as decoder/serializer requires dataflow → **INFERENCE** (`dataflow_role`)
+- End-to-end `PATH-COMM-*` → **INFERENCE**; protocol identity stays **UNKNOWN**
+- Native / reflection / unresolved helpers → explicit **boundaries** (no invented e2e)
+- Names such as `doBclHandshake` / `BclMessage` / `EtchClient` / `RhmiMessage` never become BCL/Etch/RHMI/SCN6
 
 ### 2. Artifact Bundle (base + splits)
 
