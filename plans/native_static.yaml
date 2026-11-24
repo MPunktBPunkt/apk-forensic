@@ -1,0 +1,53 @@
+# SearchPlan — Native / static library investigation
+# Static patterns only. No password recovery, decryption, or private-key extraction.
+schema_version: "1.0"
+
+plan:
+  name: native_static
+  description: >
+    Inventory native libraries and scan for generic static string/API candidates
+    relevant to IPC and crypto *presence*. Does not reconstruct secrets or decrypt data.
+  modules:
+    - manifest
+    - zip_inventory
+    - dex
+    - strings
+    - uuid
+    - candidate
+    - native
+
+input:
+  description: APK path provided by CLI / workspace (not by this plan).
+
+search:
+  terms:
+    - JNI_OnLoad
+    - System.loadLibrary
+    - dlopen
+    - dlsym
+    - AES
+    - RSA
+    - EVP_
+    - HMAC
+  api_patterns:
+    - android
+    - network
+    - usb
+
+evidence:
+  classifications:
+    - FACT
+    - CORRELATION
+    - INFERENCE
+    - UNKNOWN
+
+limits:
+  max_results: 100
+  max_contexts: 50
+  max_findings: 10000
+
+output:
+  format:
+    - json
+    - markdown
+  include_raw: false

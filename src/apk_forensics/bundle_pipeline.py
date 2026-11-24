@@ -108,6 +108,7 @@ def run_bundle_pipeline(
     config: AnalysisConfig | None = None,
     profile_path: str | None = None,
     work_session: WorkSession | None = None,
+    search_plan: Any | None = None,
 ) -> tuple[dict[str, Any], dict[str, Path], list[str]]:
     """Analyze each APK separately, then emit a unified bundle view."""
     cfg = config or AnalysisConfig()
@@ -140,6 +141,7 @@ def run_bundle_pipeline(
             config=cfg,
             profile_path=profile_path,
             artifact_meta=artifact,
+            search_plan=search_plan,
         )
         stamp_finding_provenance(
             report,
@@ -170,6 +172,11 @@ def run_bundle_pipeline(
             unified_findings.append(fd)
 
     started = utc_now_iso()
+    plan_section = None
+    if search_plan is not None and hasattr(search_plan, "to_report_section"):
+        plan_section = search_plan.to_report_section()
+    elif isinstance(search_plan, dict):
+        plan_section = search_plan
     bundle_report: dict[str, Any] = {
         "schema_version": __schema_version_bundle__,
         "report_id": str(uuid.uuid5(uuid.NAMESPACE_URL, bundle.bundle_id + "|" + started)),
@@ -187,14 +194,19 @@ def run_bundle_pipeline(
             ),
             "warnings": warnings,
             "member_count": len(members_out),
+            "engine_version": __version__,
+            "plan_sha256": getattr(cfg, "search_plan_sha256", None),
         },
         "limitations": [
             "Bundle view aggregates separate per-APK analyses; files are not merged.",
             "Correlation without matching package+versionCode remains UNKNOWN.",
             "Filename hints alone never establish FACT membership.",
             "Static analysis only; no runtime execution.",
+            "A SearchPlan describes an investigation request; it is not evidence.",
         ],
     }
+    if plan_section is not None:
+        bundle_report["search_plan"] = plan_section
 
     outputs_all: dict[str, Path] = {}
     formats = set(cfg.formats)

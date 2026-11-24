@@ -1,0 +1,167 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://apk-forensics.local/schemas/search_plan.schema.json",
+  "title": "APK-Forensics SearchPlan",
+  "description": "Declarative analysis request. Describes what to investigate — never findings, classifications, or executable code. Frontends (CLI, YAML, GUI, future AI) all produce this shape.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "plan"],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "const": "1.0"
+    },
+    "plan": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "modules"],
+      "properties": {
+        "name": { "type": "string", "minLength": 1 },
+        "description": { "type": "string" },
+        "modules": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string",
+            "enum": [
+              "manifest",
+              "zip_inventory",
+              "dex",
+              "strings",
+              "uuid",
+              "candidate",
+              "bluetooth",
+              "dex_context",
+              "xref",
+              "native"
+            ]
+          }
+        }
+      }
+    },
+    "input": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Descriptive only. APK paths are owned by CLI/workspace — not by the plan.",
+      "properties": {
+        "description": { "type": "string" },
+        "note": { "type": "string" },
+        "notes": { "type": "string" },
+        "label": { "type": "string" }
+      }
+    },
+    "search": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "terms": {
+          "type": "array",
+          "maxItems": 500,
+          "items": { "type": "string", "minLength": 1 },
+          "description": "Literal search terms (never auto-interpreted as regex)."
+        },
+        "regex": {
+          "type": "array",
+          "maxItems": 100,
+          "items": { "type": "string", "minLength": 1, "maxLength": 256 },
+          "description": "Explicit regex patterns only."
+        },
+        "uuids": {
+          "type": "array",
+          "maxItems": 200,
+          "items": { "type": "string", "minLength": 1 },
+          "description": "UUIDs normalized case-insensitively; no protocol semantics inferred."
+        },
+        "api_patterns": {
+          "type": "array",
+          "maxItems": 50,
+          "items": {
+            "type": "string",
+            "enum": ["bluetooth", "rfcomm", "usb", "network", "socket", "gatt", "android"]
+          }
+        }
+      }
+    },
+    "dex_context": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "enabled": { "type": "boolean" },
+        "instruction_window": { "type": "integer", "minimum": 0, "maximum": 100 },
+        "xref_depth": { "type": "integer", "minimum": 0, "maximum": 2 },
+        "max_callers": { "type": "integer", "minimum": 0, "maximum": 500 },
+        "max_callees": { "type": "integer", "minimum": 0, "maximum": 500 }
+      }
+    },
+    "bluetooth": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "enabled": { "type": "boolean" },
+        "dataflow_depth": { "type": "integer", "minimum": 0, "maximum": 3 },
+        "window": { "type": "integer", "minimum": 0, "maximum": 100 },
+        "max_paths": { "type": "integer", "minimum": 1, "maximum": 500 },
+        "max_results": { "type": "integer", "minimum": 1, "maximum": 500 },
+        "target": { "type": "string" }
+      }
+    },
+    "evidence": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Report filter only — does not change engine classifications.",
+      "properties": {
+        "classifications": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": ["FACT", "CORRELATION", "INFERENCE", "UNKNOWN", "REJECTED"]
+          }
+        }
+      }
+    },
+    "limits": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "max_results": { "type": "integer", "minimum": 1, "maximum": 10000 },
+        "max_contexts": { "type": "integer", "minimum": 1, "maximum": 10000 },
+        "max_xrefs": { "type": "integer", "minimum": 1, "maximum": 5000 },
+        "max_chains": { "type": "integer", "minimum": 1, "maximum": 500 },
+        "max_findings": { "type": "integer", "minimum": 1, "maximum": 50000 }
+      }
+    },
+    "output": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Formats only. Output directories are owned by CLI/workspace.",
+      "properties": {
+        "format": {
+          "type": "array",
+          "items": { "type": "string", "enum": ["json", "markdown", "md", "all"] }
+        },
+        "include_raw": { "type": "boolean" }
+      }
+    },
+    "profile": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "name": { "type": "string" },
+        "path": {
+          "type": "string",
+          "description": "Relative path only (e.g. profiles/bmw_connected.yaml)."
+        }
+      }
+    }
+  },
+  "not": {
+    "anyOf": [
+      { "required": ["exec"] },
+      { "required": ["python"] },
+      { "required": ["shell"] },
+      { "required": ["command"] },
+      { "required": ["subprocess"] },
+      { "required": ["eval"] }
+    ]
+  }
+}

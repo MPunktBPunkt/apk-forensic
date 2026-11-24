@@ -75,6 +75,12 @@ def render_markdown(report: Report) -> str:
     lines.append(f"- Analysis status: `{_md_escape(d['analysis']['status'])}`")
     lines.append(f"- Finding count: {len(findings)}")
     lines.append(f"- Warning count: {len(d['analysis'].get('warnings') or [])}")
+    if d.get("search_plan") or d.get("analysis", {}).get("plan_sha256"):
+        sp = d.get("search_plan") or {}
+        plan_name = (sp.get("plan") or {}).get("name")
+        plan_hash = d.get("analysis", {}).get("plan_sha256") or sp.get("plan_sha256")
+        lines.append(f"- SearchPlan: `{_md_escape(plan_name)}`")
+        lines.append(f"- plan_sha256: `{_md_escape(plan_hash)}`")
     lines.append("")
     lines.append("## Limitations")
     lines.append("")

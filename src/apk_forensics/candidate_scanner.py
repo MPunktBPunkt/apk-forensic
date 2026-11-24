@@ -201,6 +201,177 @@ def _is_token_boundary(data: bytes, start: int, length: int) -> bool:
     return left_ok and right_ok
 
 
+def _api_candidates_for_config(cfg: AnalysisConfig) -> list[dict[str, str]]:
+    """Optionally filter generic API candidates by SearchPlan api_patterns."""
+    patterns = [p.lower() for p in (cfg.api_patterns or [])]
+    if not patterns:
+        return list(GENERIC_API_CANDIDATES)
+    selected: list[dict[str, str]] = []
+    for api in GENERIC_API_CANDIDATES:
+        cat = (api.get("category") or "").lower()
+        sub = (api.get("subcategory") or "").lower()
+        value = (api.get("value") or "").lower()
+        for pat in patterns:
+            if pat in cat or pat in sub or pat in value:
+                selected.append(api)
+                break
+    return selected or list(GENERIC_API_CANDIDATES)
+
+
+def scan_search_terms(
+    blob: ScanBlob,
+    *,
+    artifact_sha256: str,
+    config: AnalysisConfig,
+) -> list[Finding]:
+    """Literal SearchPlan terms → FACT presence evidence (not semantic claims)."""
+    findings: list[Finding] = []
+    for term in config.search_terms or []:
+        needle = term.encode("utf-8")
+        if not needle:
+            continue
+        start = 0
+        while True:
+            idx = blob.data.find(needle, start)
+            if idx < 0:
+                break
+            before, after = context_around(blob.data, idx, len(needle), config.max_context_length)
+            findings.append(
+                make_finding(
+                    artifact_sha256=artifact_sha256,
+                    kind="string",
+                    category="search",
+                    subcategory="search.term",
+                    value=term,
+                    normalized_value=term,
+                    classification=Classification.FACT.value,
+                    confidence=Confidence.HIGH.value,
+                    source_entry=blob.entry,
+                    file_type=blob.file_type,
+                    offset=idx,
+                    length=len(needle),
+                    matched_text=term,
+                    context_before=before,
+                    context_after=after,
+                    pattern="search_term",
+                    scanner="search_term_scanner",
+                    tags=["search", "plan_term"],
+                    notes=[
+                        f"Matched SearchPlan term {term!r}",
+                        "Presence only; does not prove runtime use.",
+                    ],
+                )
+            )
+            start = idx + len(needle)
+            if len(findings) >= config.max_findings_per_scanner:
+                return findings
+    return findings
+
+
+def scan_search_regex(
+    blob: ScanBlob,
+    *,
+    artifact_sha256: str,
+    config: AnalysisConfig,
+) -> list[Finding]:
+    """Explicit SearchPlan regex patterns only (never auto-promoted from terms)."""
+    findings: list[Finding] = []
+    for pattern in config.search_regex or []:
+        try:
+            cre = re.compile(pattern.encode("utf-8") if isinstance(pattern, str) else pattern)
+        except re.error:
+            continue
+        # Work on bytes via latin-1 round-trip for offsets when pattern is str
+        try:
+            text = blob.data.decode("latin-1")
+            cre_t = re.compile(pattern)
+        except re.error:
+            continue
+        for match in cre_t.finditer(text):
+            raw = match.group(0)
+            offset = match.start()
+            before, after = context_around(blob.data, offset, len(raw.encode("latin-1")), config.max_context_length)
+            findings.append(
+                make_finding(
+                    artifact_sha256=artifact_sha256,
+                    kind="string",
+                    category="search",
+                    subcategory="search.regex",
+                    value=raw[:512],
+                    normalized_value=raw[:512],
+                    classification=Classification.FACT.value,
+                    confidence=Confidence.MEDIUM.value,
+                    source_entry=blob.entry,
+                    file_type=blob.file_type,
+                    offset=offset,
+                    length=len(raw),
+                    matched_text=raw[:512],
+                    context_before=before,
+                    context_after=after,
+                    pattern=pattern,
+                    scanner="search_regex_scanner",
+                    tags=["search", "plan_regex"],
+                    notes=[
+                        f"Matched SearchPlan regex {pattern!r}",
+                        "Regex match is presence evidence only.",
+                    ],
+                )
+            )
+            if len(findings) >= config.max_findings_per_scanner:
+                return findings
+        _ = cre  # keep compiled for future byte-path; currently text path used
+    return findings
+
+
+def scan_plan_uuids(
+    blob: ScanBlob,
+    *,
+    artifact_sha256: str,
+    config: AnalysisConfig,
+) -> list[Finding]:
+    """Locate explicitly requested UUIDs (normalized case-insensitive)."""
+    targets = {u.lower() for u in (config.search_uuids or [])}
+    if not targets:
+        return []
+    findings: list[Finding] = []
+    for match in UUID_RE.finditer(blob.data):
+        raw = match.group().decode("ascii")
+        try:
+            normalized = str(uuid.UUID(raw)).lower()
+        except ValueError:
+            continue
+        if normalized not in targets:
+            continue
+        offset = match.start()
+        before, after = context_around(blob.data, offset, len(match.group()), config.max_context_length)
+        findings.append(
+            make_finding(
+                artifact_sha256=artifact_sha256,
+                kind="uuid",
+                category="search",
+                subcategory="search.uuid",
+                value=raw,
+                normalized_value=normalized,
+                classification=Classification.FACT.value,
+                confidence=Confidence.HIGH.value,
+                source_entry=blob.entry,
+                file_type=blob.file_type,
+                offset=offset,
+                length=len(match.group()),
+                matched_text=raw,
+                context_before=before,
+                context_after=after,
+                pattern="plan_uuid",
+                scanner="search_uuid_scanner",
+                tags=["search", "uuid", "plan_uuid"],
+                notes=["Matched SearchPlan UUID request; no protocol semantics inferred."],
+            )
+        )
+        if len(findings) >= config.max_findings_per_scanner:
+            break
+    return findings
+
+
 def scan_apis(
     blob: ScanBlob,
     *,
@@ -210,7 +381,7 @@ def scan_apis(
 ) -> list[Finding]:
     cfg = config or AnalysisConfig()
     findings: list[Finding] = []
-    api_list = candidates or GENERIC_API_CANDIDATES
+    api_list = candidates if candidates is not None else _api_candidates_for_config(cfg)
 
     # Prefer exact binary substring matches with offsets.
     for api in api_list:
@@ -274,9 +445,23 @@ def scan_blob_candidates(
         warnings.append(f"String extraction failed for {blob.entry}: {exc}")
         strings = []
 
-    findings.extend(scan_uuids(blob, artifact_sha256=artifact_sha256, config=cfg))
-    findings.extend(scan_ports(strings, blob=blob, artifact_sha256=artifact_sha256, config=cfg))
-    findings.extend(scan_apis(blob, artifact_sha256=artifact_sha256, config=cfg))
+    modules = cfg.enabled_modules
+    run_uuid = modules is None or ("uuid" in modules or "candidate" in modules)
+    run_api = modules is None or ("candidate" in modules or "strings" in modules)
+    run_ports = modules is None or ("candidate" in modules)
+
+    if run_uuid:
+        findings.extend(scan_uuids(blob, artifact_sha256=artifact_sha256, config=cfg))
+    if run_ports:
+        findings.extend(scan_ports(strings, blob=blob, artifact_sha256=artifact_sha256, config=cfg))
+    if run_api:
+        findings.extend(scan_apis(blob, artifact_sha256=artifact_sha256, config=cfg))
+    if cfg.search_terms:
+        findings.extend(scan_search_terms(blob, artifact_sha256=artifact_sha256, config=cfg))
+    if cfg.search_regex:
+        findings.extend(scan_search_regex(blob, artifact_sha256=artifact_sha256, config=cfg))
+    if cfg.search_uuids:
+        findings.extend(scan_plan_uuids(blob, artifact_sha256=artifact_sha256, config=cfg))
     return findings, strings, warnings
 
 

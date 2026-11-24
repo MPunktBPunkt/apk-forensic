@@ -252,9 +252,20 @@ class AnalysisInfo:
     scanners: list[dict[str, Any]] = field(default_factory=list)
     warnings: list[str] = field(default_factory=list)
     errors: list[str] = field(default_factory=list)
+    engine_version: str | None = None
+    plan_sha256: str | None = None
+    search_plan_schema_version: str | None = None
 
     def to_dict(self) -> dict[str, Any]:
-        return asdict(self)
+        payload = asdict(self)
+        # Drop null optional plan fields for compact reports without a plan
+        if payload.get("plan_sha256") is None:
+            payload.pop("plan_sha256", None)
+        if payload.get("search_plan_schema_version") is None:
+            payload.pop("search_plan_schema_version", None)
+        if payload.get("engine_version") is None:
+            payload.pop("engine_version", None)
+        return payload
 
 
 @dataclass
@@ -276,6 +287,7 @@ class Report:
     dex_context: dict[str, Any] | None = None
     bluetooth_path: dict[str, Any] | None = None
     artifact_bundle: dict[str, Any] | None = None
+    search_plan: dict[str, Any] | None = None
     raw: dict[str, Any] | None = None
 
     def to_dict(self) -> dict[str, Any]:
@@ -301,6 +313,8 @@ class Report:
             payload["bluetooth_path"] = self.bluetooth_path
         if self.artifact_bundle is not None:
             payload["artifact_bundle"] = self.artifact_bundle
+        if self.search_plan is not None:
+            payload["search_plan"] = self.search_plan
         if self.raw is not None:
             payload["raw"] = self.raw
         return payload

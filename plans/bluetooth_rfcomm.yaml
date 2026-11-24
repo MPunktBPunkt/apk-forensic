@@ -1,0 +1,81 @@
+# SearchPlan — Bluetooth / RFCOMM investigation request
+# Describes WHAT to investigate. Not a findings document.
+schema_version: "1.0"
+
+plan:
+  name: bluetooth_rfcomm
+  description: >
+    Bounded static investigation of Bluetooth RFCOMM / SPP related symbols,
+    UUID presence, DEX context, and XREF candidates. Presence is not runtime proof.
+  modules:
+    - manifest
+    - zip_inventory
+    - dex
+    - strings
+    - uuid
+    - candidate
+    - dex_context
+    - xref
+    - bluetooth
+    - native
+
+input:
+  description: APK path provided by CLI / workspace (not by this plan).
+
+search:
+  terms:
+    - BluetoothSocket
+    - BluetoothDevice
+    - BluetoothAdapter
+    - RFCOMM
+    - SPP
+    - createRfcommSocketToServiceRecord
+    - createInsecureRfcommSocketToServiceRecord
+    - InputStream
+    - OutputStream
+    - getInputStream
+    - getOutputStream
+    - fetchUuidsWithSdp
+  regex:
+    - "createRfcommSocket.*"
+  uuids:
+    - "00001101-0000-1000-8000-00805F9B34FB"
+  api_patterns:
+    - bluetooth
+    - rfcomm
+
+dex_context:
+  enabled: true
+  instruction_window: 8
+  xref_depth: 2
+  max_callers: 20
+  max_callees: 20
+
+bluetooth:
+  enabled: true
+  dataflow_depth: 2
+  window: 12
+  max_paths: 50
+  max_results: 100
+
+evidence:
+  classifications:
+    - FACT
+    - CORRELATION
+    - INFERENCE
+    - UNKNOWN
+
+limits:
+  max_results: 100
+  max_contexts: 100
+  max_xrefs: 1000
+  max_chains: 20
+
+output:
+  format:
+    - json
+    - markdown
+  include_raw: false
+
+profile:
+  name: bmw_connected

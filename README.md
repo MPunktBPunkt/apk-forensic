@@ -1,8 +1,8 @@
 # apk-forensics
 
-Local, static APK forensics toolkit (v0.4.0).
+Local, static APK forensics toolkit (v0.5.0).
 
-It turns Android APKs into reproducible static fingerprints: hashes, ZIP inventory, manifest metadata (when available), DEX/native inventories, readable strings, UUID/port/API candidates, optional profile correlations, optional DEX context / Bluetooth RFCOMM path analysis, **ArtifactBundles** for base+split sets, and controlled **workspace storage lifecycle**.
+It turns Android APKs into reproducible static fingerprints: hashes, ZIP inventory, manifest metadata (when available), DEX/native inventories, readable strings, UUID/port/API candidates, optional profile correlations, optional DEX context / Bluetooth RFCOMM path analysis, **ArtifactBundles**, controlled **workspace storage lifecycle**, and a declarative **SearchPlan** layer for CLI / YAML / future GUI / future AI frontends.
 
 ## Purpose
 
@@ -11,6 +11,7 @@ It turns Android APKs into reproducible static fingerprints: hashes, ZIP invento
 - Keep domain knowledge (e.g. BMW Connected vocabulary) in **external profiles**
 - Stay generic so the same core can scan any APK
 - Manage analysis artifacts without uncontrolled disk growth
+- Accept the same declarative analysis request from multiple frontends
 
 ## Ownership principle
 
@@ -30,27 +31,31 @@ User-provided original APKs are never auto-deleted. Cleanup only touches paths t
 - No automatic vehicle/head-unit identification
 - No automatic deletion of original APKs
 - No cloud storage
+- No LLM / autonomous agent / GUI (SearchPlan interface only in v0.5)
 
 ## Architecture
 
 ```text
+CLI / YAML / GUI* / KI*
+        │
+        ▼
+   SearchPlan  (request only)
+        │
+        ▼
+ Analysis Engine  →  Evidence Report
+
 APK-Forensics
 │
-├── Core
-│   └── Artifact (single APK) → static evidence (FACT)
-│
-├── ArtifactBundle
-│   └── correlated base + splits (provenance preserved)
-│
-├── Workspace lifecycle
-│   └── source / work / output / cache
-│
-├── Profiles
-│   └── domain candidate vocabulary (CORRELATION)
-│
-└── later
-    └── Correlation layer (APK evidence ↔ wire evidence)
+├── SearchPlan (declarative request)
+├── Core Artifact analysis → static evidence (FACT)
+├── ArtifactBundle (base + splits, provenance)
+├── Workspace lifecycle (source / work / output / cache)
+└── Profiles (CORRELATION vocabulary only)
+
+* GUI / KI consume the same SearchPlan; not shipped in v0.5
 ```
+
+> Ein SearchPlan beschreibt eine Untersuchung. Er ist keine Ergebnisdatei und darf keine Evidenz oder Schlussfolgerungen vortäuschen.
 
 BMW-/Connected-specific knowledge must live only under `profiles/`, never in the core scanners.
 
@@ -90,11 +95,40 @@ pip install -e ".[all]"
 apk-forensics scan ./app.apk --output ./output/app
 ```
 
+With SearchPlan:
+
+```bash
+apk-forensics scan ./app.apk \
+  --plan plans/bluetooth_rfcomm.yaml \
+  --output ./output/app-bt
+```
+
 External path (no copy into the repo):
 
 ```bash
 apk-forensics scan /data/apks/myapp.apk --output ./output/myapp
 ```
+
+### SearchPlan
+
+Declarative YAML (`schemas/search_plan.schema.json`). Pipeline:
+
+```text
+YAML → validate → normalize → plan_sha256 → engine → report
+```
+
+```bash
+apk-forensics plan validate plans/bluetooth_rfcomm.yaml
+apk-forensics plan show plans/bluetooth_rfcomm.yaml --json
+```
+
+Supported modules: `manifest`, `zip_inventory`, `dex`, `strings`, `uuid`, `candidate`, `bluetooth`, `dex_context`, `xref`, `native`.
+
+Search supports literal `terms`, explicit `regex`, normalized `uuids`, and generic `api_patterns`. Terms are never auto-promoted to regex.
+
+Example plans: `plans/bluetooth_rfcomm.yaml`, `plans/native_static.yaml`, `plans/communication_stack.yaml`.
+
+Reproducibility identity: input SHA-256 + engine version + `plan_sha256` + profile + relevant options.
 
 ### 2. Artifact Bundle (base + splits)
 

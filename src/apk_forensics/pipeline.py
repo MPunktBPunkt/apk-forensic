@@ -49,6 +49,7 @@ DEFAULT_LIMITATIONS = [
     "No credential/secret hunting is performed.",
     "Static DEX XREFs and candidate chains do not prove runtime paths.",
     "User-provided original APKs are never owned or auto-deleted by cleanup.",
+    "A SearchPlan describes an investigation request; it is not evidence and invents no findings.",
 ]
 
 
@@ -100,6 +101,15 @@ def _read_selected_blobs(zf, names: list[str], *, max_bytes: int) -> list[ScanBl
     return blobs
 
 
+def _apply_evidence_filter(findings: list[Finding], cfg: AnalysisConfig) -> list[Finding]:
+    """Report filter only — does not reclassify findings."""
+    allowed = cfg.evidence_classifications
+    if not allowed:
+        return findings
+    allowed_set = set(allowed)
+    return [f for f in findings if f.classification in allowed_set]
+
+
 def run_pipeline(
     apk_path: Path,
     output_dir: Path,
@@ -108,10 +118,12 @@ def run_pipeline(
     profile_path: str | None = None,
     artifact_meta: Any | None = None,
     copy_input: bool = False,
+    search_plan: Any | None = None,
 ) -> tuple[Report, dict[str, Path], list[str]]:
     """Run shallow (+ optional deep) analysis on a single APK.
 
     The input APK is opened in place and is not copied unless ``copy_input`` is True.
+    ``search_plan`` is an optional normalized SearchPlan describing the request.
     """
     cfg = config or AnalysisConfig()
     warnings: list[str] = []
@@ -120,6 +132,11 @@ def run_pipeline(
     findings: list[Finding] = []
     profile: AnalysisProfile | None = None
     started = utc_now_iso()
+    plan_section = None
+    if search_plan is not None and hasattr(search_plan, "to_report_section"):
+        plan_section = search_plan.to_report_section()
+    elif isinstance(search_plan, dict):
+        plan_section = search_plan
 
     with timed_ms() as total_timing:
         if not apk_path.exists() or not apk_path.is_file():
@@ -213,6 +230,8 @@ def run_pipeline(
             # Normalize findings: drop REJECTED from main list unless debug
             if not cfg.debug:
                 findings = [f for f in findings if f.classification != "REJECTED"]
+            # Optional SearchPlan evidence filter (report wish only)
+            findings = _apply_evidence_filter(findings, cfg)
             findings = sort_and_assign_display_ids(findings)
 
             dex_context_section = None
@@ -319,6 +338,11 @@ def run_pipeline(
                     scanners=[s.to_dict() for s in scanners],
                     warnings=warnings,
                     errors=errors,
+                    engine_version=__version__,
+                    plan_sha256=getattr(cfg, "search_plan_sha256", None),
+                    search_plan_schema_version=(
+                        plan_section.get("schema_version") if plan_section else None
+                    ),
                 ),
                 manifest={
                     k: v
@@ -349,6 +373,7 @@ def run_pipeline(
                 limitations=list(DEFAULT_LIMITATIONS),
                 dex_context=dex_context_section,
                 bluetooth_path=bluetooth_section,
+                search_plan=plan_section,
             )
             stamp_finding_provenance(
                 report,

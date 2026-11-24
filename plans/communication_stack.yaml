@@ -1,0 +1,74 @@
+# SearchPlan — Generic communication stack investigation
+# API/string presence ≠ field usage. No protocol claims.
+schema_version: "1.0"
+
+plan:
+  name: communication_stack
+  description: >
+    Broad static sweep for Bluetooth, USB, network, and stream-related symbols.
+    Findings prove presence of references/strings only.
+  modules:
+    - manifest
+    - zip_inventory
+    - dex
+    - strings
+    - uuid
+    - candidate
+    - dex_context
+    - xref
+    - bluetooth
+    - native
+
+input:
+  description: APK path provided by CLI / workspace (not by this plan).
+
+search:
+  terms:
+    - BluetoothSocket
+    - BluetoothDevice
+    - UsbManager
+    - UsbDevice
+    - UsbAccessory
+    - java.net.Socket
+    - DatagramSocket
+    - InputStream
+    - OutputStream
+    - getInputStream
+    - getOutputStream
+    - connect
+  api_patterns:
+    - bluetooth
+    - rfcomm
+    - usb
+    - network
+    - socket
+
+dex_context:
+  enabled: true
+  instruction_window: 6
+  xref_depth: 1
+  max_callers: 20
+  max_callees: 20
+
+bluetooth:
+  enabled: true
+  dataflow_depth: 2
+
+evidence:
+  classifications:
+    - FACT
+    - CORRELATION
+    - INFERENCE
+    - UNKNOWN
+
+limits:
+  max_results: 100
+  max_contexts: 100
+  max_xrefs: 1000
+  max_chains: 20
+
+output:
+  format:
+    - json
+    - markdown
+  include_raw: false

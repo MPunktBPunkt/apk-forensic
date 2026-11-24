@@ -56,3 +56,13 @@ class AnalysisConfig:
     keep_work: bool = False
     use_cache: bool = False
     copy_input: bool = False
+    # v0.5 SearchPlan
+    search_terms: list[str] | None = None
+    search_regex: list[str] | None = None
+    search_uuids: list[str] | None = None
+    api_patterns: list[str] | None = None
+    evidence_classifications: list[str] | None = None
+    search_plan_sha256: str | None = None
+    enabled_modules: set[str] | None = None
+    max_xrefs: int = 1000
+    max_chains: int = 20

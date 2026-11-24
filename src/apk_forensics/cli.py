@@ -14,6 +14,13 @@ from apk_forensics.config import AnalysisConfig
 from apk_forensics.errors import ApkForensicsError, ExitCode, InputError, InvalidApkError
 from apk_forensics.logging_config import configure_logging
 from apk_forensics.pipeline import run_pipeline
+from apk_forensics.search_plan import (
+    PlanValidationError,
+    apply_search_plan_to_config,
+    format_plan_valid_summary,
+    load_search_plan,
+    resolve_profile_from_plan,
+)
 from apk_forensics.storage import collect_storage_report, execute_cleanup, parse_older_than, plan_cleanup
 from apk_forensics.workspace import create_work_session, discover_workspace
 
@@ -47,6 +54,12 @@ def build_parser() -> argparse.ArgumentParser:
         default=None,
         dest="splits",
         help="Additional split APK path (repeatable); used with apk_path as base",
+    )
+    scan.add_argument(
+        "--plan",
+        type=Path,
+        default=None,
+        help="Path to a declarative SearchPlan YAML (validated + normalized before scan)",
     )
     scan.add_argument(
         "--profile",
@@ -169,6 +182,14 @@ def build_parser() -> argparse.ArgumentParser:
         default=None,
         help="Output subdirectory name to protect (repeatable)",
     )
+
+    plan_cmd = sub.add_parser("plan", help="Validate / show declarative SearchPlans.")
+    plan_sub = plan_cmd.add_subparsers(dest="plan_command", required=True)
+    plan_validate = plan_sub.add_parser("validate", help="Validate a SearchPlan without scanning.")
+    plan_validate.add_argument("plan_path", type=Path, help="Path to SearchPlan YAML")
+    plan_show = plan_sub.add_parser("show", help="Show normalized SearchPlan + plan_sha256.")
+    plan_show.add_argument("plan_path", type=Path, help="Path to SearchPlan YAML")
+    plan_show.add_argument("--json", action="store_true", help="Emit canonical JSON")
     return parser
 
 
@@ -264,12 +285,46 @@ def _cmd_clean(args: argparse.Namespace) -> int:
     return ExitCode.SUCCESS
 
 
+def _cmd_plan(args: argparse.Namespace) -> int:
+    import json
+
+    try:
+        plan = load_search_plan(args.plan_path)
+    except PlanValidationError as exc:
+        print(str(exc), file=sys.stderr)
+        return ExitCode.INVALID_ARGS
+
+    if args.plan_command == "validate":
+        print(format_plan_valid_summary(plan), end="")
+        return ExitCode.SUCCESS
+
+    if args.plan_command == "show":
+        payload = plan.to_report_section()
+        if args.json:
+            print(json.dumps(payload, indent=2, ensure_ascii=False))
+        else:
+            print(format_plan_valid_summary(plan), end="")
+            print()
+            print(json.dumps(payload, indent=2, ensure_ascii=False))
+        return ExitCode.SUCCESS
+
+    return ExitCode.INVALID_ARGS
+
+
 def _cmd_scan(args: argparse.Namespace) -> int:
     err = _validate_scan_args(args)
     if err is not None:
         return err
 
     configure_logging(debug=bool(args.debug))
+
+    search_plan = None
+    if args.plan is not None:
+        try:
+            search_plan = load_search_plan(args.plan)
+        except PlanValidationError as exc:
+            print(str(exc), file=sys.stderr)
+            return ExitCode.INVALID_ARGS
 
     formats = _resolve_formats(args.formats)
     config = AnalysisConfig(
@@ -302,6 +357,23 @@ def _cmd_scan(args: argparse.Namespace) -> int:
         config.min_string_length = args.min_string_length
     if args.max_context_length is not None:
         config.max_context_length = args.max_context_length
+
+    # SearchPlan overlays config; explicit CLI flags for deep analysis still apply if set
+    if search_plan is not None:
+        apply_search_plan_to_config(search_plan, config)
+        # CLI can still force-enable deep modules if user passed flags after plan defaults
+        if args.dex_context:
+            config.dex_context = True
+        if args.bluetooth_path:
+            config.bluetooth_path = True
+        if args.formats:
+            config.formats = formats
+        if args.include_raw:
+            config.include_raw = True
+        if args.query:
+            config.dex_query = args.query
+
+    profile_arg = resolve_profile_from_plan(search_plan, args.profile) if search_plan else args.profile
 
     workspace = discover_workspace()
     workspace.ensure()
@@ -345,11 +417,14 @@ def _cmd_scan(args: argparse.Namespace) -> int:
                 paths,
                 args.output,
                 config=config,
-                profile_path=args.profile,
+                profile_path=profile_arg,
                 work_session=work,
+                search_plan=search_plan,
             )
             print(f"APK Forensics {__version__}")
             print(f"Mode: ArtifactBundle ({len(paths)} members)")
+            if search_plan is not None:
+                print(f"Plan: {search_plan.plan_name} sha256={search_plan.plan_sha256[:16]}…")
             print(f"Bundle: {(bundle_report.get('artifact_bundle') or {}).get('bundle_id')}")
             print(f"Correlation: {(bundle_report.get('artifact_bundle') or {}).get('correlation_status')}")
             print(f"Status: {(bundle_report.get('analysis') or {}).get('status')}")
@@ -379,8 +454,9 @@ def _cmd_scan(args: argparse.Namespace) -> int:
             paths[0],
             args.output,
             config=config,
-            profile_path=args.profile,
+            profile_path=profile_arg,
             copy_input=config.copy_input,
+            search_plan=search_plan,
         )
         work.cleanup()
     except InvalidApkError as exc:
@@ -418,6 +494,8 @@ def _cmd_scan(args: argparse.Namespace) -> int:
     print(f"APK Forensics {__version__}")
     print(f"Input: {report.input.path}")
     print(f"SHA256: {report.input.sha256}")
+    if search_plan is not None:
+        print(f"Plan: {search_plan.plan_name} sha256={search_plan.plan_sha256}")
     print(f"Status: {report.analysis.status}")
     if config.dex_context or config.bluetooth_path:
         print(f"Shallow findings: {finding_count}")
@@ -460,6 +538,8 @@ def main(argv: list[str] | None = None) -> int:
         return _cmd_storage(args)
     if args.command == "clean":
         return _cmd_clean(args)
+    if args.command == "plan":
+        return _cmd_plan(args)
     if args.command == "scan":
         return _cmd_scan(args)
 

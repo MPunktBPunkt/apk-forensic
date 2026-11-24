@@ -1,5 +1,20 @@
 # Changelog
 
+## 0.5.0
+
+- Declarative **SearchPlan** layer (`schema_version: 1.0`) — describes investigations, never findings
+- YAML load → validate → normalize → `plan_sha256` → deterministic engine run
+- CLI: `scan --plan`, `plan validate`, `plan show`
+- JSON Schema: `schemas/search_plan.schema.json`
+- Example plans: `plans/bluetooth_rfcomm.yaml`, `plans/native_static.yaml`, `plans/communication_stack.yaml`
+- Search terms / explicit regex / UUID / api_patterns wired into candidate scanners with provenance tags
+- Reports include `search_plan` + `analysis.plan_sha256` / `engine_version`
+- Evidence classification list is a report filter only (does not reclassify)
+- Rejects executable directives, arbitrary output paths, and profile path traversal
+- Designed so CLI / YAML / future GUI / future AI all feed the same plan into the engine
+- No LLM, GUI, or autonomous agent in this release
+- Note: very large ABI-split APKs with deep `bluetooth`+`dex_context` plans may be memory-heavy; prefer scoped plans per artifact role when needed
+
 ## 0.4.0
 
 - Generic **ArtifactBundle** model for base APK + configuration splits
