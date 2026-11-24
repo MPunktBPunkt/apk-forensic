@@ -1,5 +1,14 @@
 # Changelog
 
+## 1.5.0
+
+- **Structured-value & application-flow closure**: byte-derived values → field store/load → branch/param/state/roundtrip
+- Neutral `VALUE-V###` catalog (no semantic naming); V0–V5 dataflow classes; T6.0–T6.5 stages
+- Nodes/events: `FIELD_STORE_FROM_BYTES`, `FIELD_LOAD`, `BRANCH_ON_VALUE`, `VALUE_PARAMETER`, `ROUNDTRIP_*`
+- CLI: `diagnose-application-flow` → `STRUCTURED_VALUE_REPORT`, `VALUE_LINEAGE_REPORT`, `FIELD_CONSUMER_CLOSURE_REPORT`, `APPLICATION_FLOW_EVIDENCE_REPORT`
+- PATH-COMM provenance preserved (v1.4 = 12; expansion ≠ APK evidence)
+- Protocol semantics remain **UNKNOWN**; `max_field_hops=2` unchanged
+
 ## 1.4.0
 
 - **Buffer-to-semantics closure**: audit why T5 was 0/13; operational T5 = byte/buffer processing (not READ_LENGTH, not names alone)

@@ -311,6 +311,25 @@ def build_parser() -> argparse.ArgumentParser:
         help="Optional BASELINE_META.json from a frozen v1.2 snapshot",
     )
 
+    app_cmd = sub.add_parser(
+        "diagnose-application-flow",
+        help="v1.5 structured-value & application-flow closure (field consumers / branches).",
+    )
+    app_cmd.add_argument("--from-report", type=Path, required=True, help="Persisted report.json")
+    app_cmd.add_argument("--apk", type=Path, required=True, help="APK for method bodies")
+    app_cmd.add_argument("--output", type=Path, required=True, help="Output directory")
+    app_cmd.add_argument(
+        "--baseline-meta",
+        type=Path,
+        default=None,
+        help="Optional baseline meta (path_comm provenance)",
+    )
+    app_cmd.add_argument(
+        "--expand-interface-consumers",
+        action="store_true",
+        help="Use v1.4 interface/Packet seed expansion when loading methods",
+    )
+
     sem_cmd = sub.add_parser(
         "diagnose-buffer-semantics",
         help="v1.4 buffer-to-semantics closure (T5 audit + optional interface-consumer expansion).",
@@ -1067,6 +1086,98 @@ def _cmd_diagnose_transport_closure(args: argparse.Namespace) -> int:
     return ExitCode.SUCCESS
 
 
+def _cmd_diagnose_application_flow(args: argparse.Namespace) -> int:
+    import json
+    from apk_forensics.application_flow_closure import (
+        build_application_flow_report,
+        build_path_comm_provenance,
+        write_application_flow_reports,
+    )
+    from apk_forensics.communication_evidence import (
+        _collect_io_method_keys,
+        load_methods_for_communication,
+    )
+    from apk_forensics.structured_value_flow import analyze_application_value_flow
+
+    report_path = Path(args.from_report).resolve()
+    apk_path = Path(args.apk).resolve()
+    out_dir = Path(args.output).resolve()
+    report = json.loads(report_path.read_text(encoding="utf-8"))
+    baseline_meta = {}
+    if args.baseline_meta and Path(args.baseline_meta).is_file():
+        baseline_meta = json.loads(Path(args.baseline_meta).resolve().read_text(encoding="utf-8"))
+
+    bt = report.get("bluetooth_path") or {}
+    keys = _collect_io_method_keys(bt)
+    methods, warnings, retention = load_methods_for_communication(
+        apk_path,
+        keys,
+        max_methods=200,
+        expand_interface_consumers=bool(args.expand_interface_consumers),
+        max_expand_extra=80,
+    )
+    flow = analyze_application_value_flow(methods)
+    baseline_pc = int(
+        baseline_meta.get("path_comm")
+        or baseline_meta.get("v13_path_comm")
+        or len((report.get("communication_evidence") or {}).get("paths") or [])
+        or 0
+    )
+    # Prefer frozen v1.4 expanded PATH-COMM=12 when present
+    if baseline_meta.get("v14_path_comm") is not None:
+        baseline_pc = int(baseline_meta["v14_path_comm"])
+    current_pc = baseline_pc  # v1.5 does not recompute PATH-COMM by default
+    # If expanded communication artifact exists alongside, note it
+    exp_path = Path("output/v14-semantic-closure/communication_evidence_expanded.json")
+    if exp_path.is_file():
+        exp = json.loads(exp_path.read_text(encoding="utf-8"))
+        current_pc = len(exp.get("paths") or [])
+        if baseline_meta.get("v14_path_comm") is None:
+            baseline_pc = 12 if current_pc == 12 else baseline_pc
+
+    provenance_pc = build_path_comm_provenance(
+        baseline_path_comm=int(baseline_meta.get("v14_path_comm") or 12),
+        current_path_comm=current_pc,
+        v14_note=(
+            "v1.4 PATH-COMM=12 from READ_LENGTH correction + interface seed expansion "
+            "(analyzer expansion, not APK change)."
+        ),
+    )
+    app_report = build_application_flow_report(
+        flow,
+        path_comm_provenance=provenance_pc,
+        provenance={
+            "source_report": str(report_path),
+            "apk": str(apk_path),
+            "postprocessing_version": __version__,
+            "methods_analyzed": len(methods),
+            "method_retention": retention,
+            "warnings": warnings,
+            "expand_interface_consumers": bool(args.expand_interface_consumers),
+            "max_field_hops": 2,
+            "limits_raised": False,
+        },
+    )
+    written = write_application_flow_reports(out_dir, flow, app_report)
+    # persist raw flow for reproducibility
+    out_dir.mkdir(parents=True, exist_ok=True)
+    (out_dir / "structured_value_flow.json").write_text(
+        json.dumps(flow, indent=2, ensure_ascii=False) + "\n", encoding="utf-8"
+    )
+    ans = app_report.get("answers") or {}
+    print(f"APK Forensics {__version__} diagnose-application-flow")
+    print(f"Source: {report_path}")
+    print(f"Methods: {len(methods)}")
+    print(f"Structured values (catalog): {ans.get('1_structured_values_from_s4')}")
+    print(f"Field stores: {ans.get('2_written_to_fields')} loads: {ans.get('3_later_loaded')}")
+    print(f"Branches: {ans.get('6_influence_branches')} roundtrip: {ans.get('11_true_roundtrip_correlations')}")
+    print(f"Protocol semantics UNKNOWN: {ans.get('21_protocol_semantics_unknown')}")
+    print(f"PATH-COMM provenance changed: {ans.get('19_path_comm_changed')}")
+    for k, p in written.items():
+        print(f"{k}: {p}")
+    return ExitCode.SUCCESS
+
+
 def _cmd_diagnose_buffer_semantics(args: argparse.Namespace) -> int:
     import json
     from apk_forensics.buffer_semantic_closure import (
@@ -1396,6 +1507,8 @@ def main(argv: list[str] | None = None) -> int:
         return _cmd_diagnose_transport_closure(args)
     if args.command == "diagnose-buffer-semantics":
         return _cmd_diagnose_buffer_semantics(args)
+    if args.command == "diagnose-application-flow":
+        return _cmd_diagnose_application_flow(args)
     if args.command == "calibrate":
         return _cmd_calibrate(args)
     if args.command == "postprocess-communication":

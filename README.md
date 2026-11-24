@@ -1,6 +1,6 @@
 # apk-forensics
 
-Local, static APK forensics toolkit (v1.4.0).
+Local, static APK forensics toolkit (v1.5.0).
 
 It turns Android APKs into reproducible static fingerprints: hashes, ZIP inventory, manifest metadata (when available), DEX/native inventories, readable strings, UUID/port/API candidates, optional profile correlations, optional DEX context / Bluetooth RFCOMM path analysis with **bounded caller reconstruction**, **cross-method socket/stream object-flow**, a **canonical Transport Evidence Graph**, and a **Communication Evidence Graph** (bytes/buffers → decoder/encoder → message/object — without protocol guessing), plus **transport-to-byte evidence closure** and **buffer-to-semantics closure** (T5 byte processing / S0–S4 — without protocol guessing), **resource-estimate breakdown / estimate-vs-actual calibration** and **path coverage** (COMPLETE/TRUNCATED/BOUNDARY) kept separate from evidence classes, **ArtifactBundles**, controlled **workspace storage lifecycle**, a declarative **SearchPlan** layer, and an **AnalysisJob + Resource Guard** for deterministic preflight budgeting.
 
@@ -159,6 +159,19 @@ apk-forensics scan ./app.apk \
 - `REJECT` → never started (no override)  
 
 The guard **never** silently lowers `xref_depth`, disables modules, or rewrites the plan.
+
+### Structured-Value & Application-Flow Closure (v1.5)
+
+```bash
+apk-forensics diagnose-application-flow \
+  --from-report ./output/bmw-connected-600-v10/report.json \
+  --apk ./artifacts/de.bmw.connected-6.0.0.4962.apk \
+  --baseline-meta ./output/v15-baseline/BASELINE_META.json \
+  --expand-interface-consumers \
+  --output ./output/v15-application-flow
+```
+
+Tracks byte-derived `VALUE-V###` through field store/load, branches, and optional roundtrip — without protocol naming.
 
 ### Buffer-to-Semantics Closure (v1.4)
 
