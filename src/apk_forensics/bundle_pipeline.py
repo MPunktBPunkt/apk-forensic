@@ -109,6 +109,7 @@ def run_bundle_pipeline(
     profile_path: str | None = None,
     work_session: WorkSession | None = None,
     search_plan: Any | None = None,
+    analysis_job: Any | None = None,
 ) -> tuple[dict[str, Any], dict[str, Path], list[str]]:
     """Analyze each APK separately, then emit a unified bundle view."""
     cfg = config or AnalysisConfig()
@@ -142,6 +143,7 @@ def run_bundle_pipeline(
             profile_path=profile_path,
             artifact_meta=artifact,
             search_plan=search_plan,
+            analysis_job=analysis_job,
         )
         stamp_finding_provenance(
             report,
@@ -207,6 +209,9 @@ def run_bundle_pipeline(
     }
     if plan_section is not None:
         bundle_report["search_plan"] = plan_section
+    if analysis_job is not None:
+        bundle_report["analysis_job"] = analysis_job.to_dict()
+        bundle_report["resource"] = analysis_job.resource_report_section()
 
     outputs_all: dict[str, Path] = {}
     formats = set(cfg.formats)

@@ -1,5 +1,30 @@
 # Changelog
 
+## 0.7.0
+
+- **RFCOMM caller reconstruction** (bounded depth ≤ 2; multi-caller FACT via DEX invoke refs)
+- **Socket object tracking** with register-linked create → connect → getInputStream/getOutputStream
+- **InputStream consumer / OutputStream producer** reconstruction (read/write; missing → UNKNOWN)
+- **BluetoothDataflowPath** evidence (`BTDATA-*`) with PARTIAL structure + FACT/INFERENCE/UNKNOWN stages
+- SearchPlan bluetooth knobs: `caller_depth`, `reconstruct_*`, `max_callers` / `max_callees` / `max_dataflow_paths` / `max_dataflow_nodes`
+- Resource estimator accounts for caller/dataflow depth and node caps (no silent plan rewrite)
+- Report: `bluetooth_dataflow` section + Markdown “Bluetooth RFCOMM Dataflow”
+- Targets prioritized: create+connect+streams → create+connect → create
+- End-to-end path classification remains **INFERENCE**; no SCN6/BCL/Etch/runtime upgrade from names or profiles
+
+## 0.6.0
+
+- **AnalysisJob** layer: job_id, status machine, timestamps, termination_reason
+- **ResourcePolicy** presets: `conservative` / `standard` (default) / `unlimited`
+- **ResourceEstimator** deterministic preflight (ZIP metadata + plan factors; no deep analysis)
+- **ResourceGuard** decisions: `OK` / `WARNING` / `REJECT` — never silently rewrites SearchPlan
+- CLI: `plan estimate` / `estimate`, `--resource-policy`, `--allow-resource-warning`
+- WARNING without override blocks start; REJECT is never overridden
+- Runtime / finding / context / xref hard limits fail closed (no silent truncation)
+- Cooperative `CancellationToken` checkpoints in the pipeline
+- Reports include `analysis_job` + `resource` (estimate vs actual; null when unmeasured)
+- Work session created only after successful preflight (rejected → no work dir)
+
 ## 0.5.0
 
 - Declarative **SearchPlan** layer (`schema_version: 1.0`) — describes investigations, never findings

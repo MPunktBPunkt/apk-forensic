@@ -8,12 +8,25 @@ import traceback
 from pathlib import Path
 
 from apk_forensics import __version__
+from apk_forensics.analysis_job import (
+    JobCancelled,
+    JobLimitExceeded,
+    JobRuntimeLimit,
+    create_analysis_job,
+    format_preflight_text,
+    mark_completed,
+    mark_failed,
+    mark_running,
+    preflight_or_reject,
+)
 from apk_forensics.artifact_bundle import load_paths_from_bundle_arg
 from apk_forensics.bundle_pipeline import run_bundle_pipeline
 from apk_forensics.config import AnalysisConfig
 from apk_forensics.errors import ApkForensicsError, ExitCode, InputError, InvalidApkError
 from apk_forensics.logging_config import configure_logging
 from apk_forensics.pipeline import run_pipeline
+from apk_forensics.resource_guard import ResourceRejectedError, ResourceWarningBlockedError
+from apk_forensics.resource_policy import DEFAULT_POLICY_NAME, get_resource_policy
 from apk_forensics.search_plan import (
     PlanValidationError,
     apply_search_plan_to_config,
@@ -98,6 +111,17 @@ def build_parser() -> argparse.ArgumentParser:
         action="store_true",
         help="Enable optional bounded analysis cache (default: off)",
     )
+    scan.add_argument(
+        "--resource-policy",
+        default=DEFAULT_POLICY_NAME,
+        choices=["conservative", "standard", "unlimited"],
+        help="Resource policy for preflight/runtime budgets (default: standard)",
+    )
+    scan.add_argument(
+        "--allow-resource-warning",
+        action="store_true",
+        help="Proceed when Resource Guard returns WARNING (REJECT cannot be overridden)",
+    )
 
     # v0.2 DEX context options
     scan.add_argument(
@@ -145,6 +169,25 @@ def build_parser() -> argparse.ArgumentParser:
     scan.add_argument("--bluetooth-window", type=int, default=12)
     scan.add_argument("--bluetooth-dataflow-depth", type=int, default=2)
     scan.add_argument("--bluetooth-max-paths", type=int, default=50)
+    scan.add_argument("--bluetooth-caller-depth", type=int, default=2)
+    scan.add_argument(
+        "--no-bluetooth-callers",
+        action="store_true",
+        help="Disable RFCOMM caller reconstruction",
+    )
+    scan.add_argument(
+        "--no-bluetooth-streams",
+        action="store_true",
+        help="Disable socket/stream reconstruction",
+    )
+    scan.add_argument(
+        "--no-bluetooth-read-write",
+        action="store_true",
+        help="Disable InputStream/OutputStream read-write reconstruction",
+    )
+    scan.add_argument("--bluetooth-max-callers", type=int, default=50)
+    scan.add_argument("--bluetooth-max-dataflow-paths", type=int, default=50)
+    scan.add_argument("--bluetooth-max-dataflow-nodes", type=int, default=200)
 
     storage_cmd = sub.add_parser("storage", help="Show managed workspace storage usage.")
     storage_cmd.add_argument(
@@ -183,13 +226,53 @@ def build_parser() -> argparse.ArgumentParser:
         help="Output subdirectory name to protect (repeatable)",
     )
 
-    plan_cmd = sub.add_parser("plan", help="Validate / show declarative SearchPlans.")
+    plan_cmd = sub.add_parser("plan", help="Validate / show / estimate declarative SearchPlans.")
     plan_sub = plan_cmd.add_subparsers(dest="plan_command", required=True)
     plan_validate = plan_sub.add_parser("validate", help="Validate a SearchPlan without scanning.")
     plan_validate.add_argument("plan_path", type=Path, help="Path to SearchPlan YAML")
     plan_show = plan_sub.add_parser("show", help="Show normalized SearchPlan + plan_sha256.")
     plan_show.add_argument("plan_path", type=Path, help="Path to SearchPlan YAML")
     plan_show.add_argument("--json", action="store_true", help="Emit canonical JSON")
+    plan_estimate = plan_sub.add_parser(
+        "estimate",
+        help="Preflight resource estimate for APK(s) + SearchPlan (no deep analysis).",
+    )
+    plan_estimate.add_argument("apk_path", type=Path, help="Path to APK")
+    plan_estimate.add_argument("--plan", type=Path, required=True, help="SearchPlan YAML")
+    plan_estimate.add_argument(
+        "--split",
+        action="append",
+        default=None,
+        dest="splits",
+        help="Additional split APK (repeatable)",
+    )
+    plan_estimate.add_argument(
+        "--resource-policy",
+        default=DEFAULT_POLICY_NAME,
+        choices=["conservative", "standard", "unlimited"],
+    )
+    plan_estimate.add_argument("--json", action="store_true", help="Emit JSON")
+
+    # Alias: apk-forensics estimate ...
+    estimate_cmd = sub.add_parser(
+        "estimate",
+        help="Alias for 'plan estimate' — preflight resource estimate (no deep analysis).",
+    )
+    estimate_cmd.add_argument("apk_path", type=Path, help="Path to APK")
+    estimate_cmd.add_argument("--plan", type=Path, required=True, help="SearchPlan YAML")
+    estimate_cmd.add_argument(
+        "--split",
+        action="append",
+        default=None,
+        dest="splits",
+        help="Additional split APK (repeatable)",
+    )
+    estimate_cmd.add_argument(
+        "--resource-policy",
+        default=DEFAULT_POLICY_NAME,
+        choices=["conservative", "standard", "unlimited"],
+    )
+    estimate_cmd.add_argument("--json", action="store_true", help="Emit JSON")
     return parser
 
 
@@ -226,6 +309,18 @@ def _validate_scan_args(args: argparse.Namespace) -> int | None:
         return ExitCode.INVALID_ARGS
     if args.bluetooth_max_results < 1 or args.bluetooth_max_results > 500:
         print("error: --bluetooth-max-results must be between 1 and 500", file=sys.stderr)
+        return ExitCode.INVALID_ARGS
+    if args.bluetooth_caller_depth < 0 or args.bluetooth_caller_depth > 2:
+        print("error: --bluetooth-caller-depth must be between 0 and 2", file=sys.stderr)
+        return ExitCode.INVALID_ARGS
+    if args.bluetooth_max_callers < 0 or args.bluetooth_max_callers > 100:
+        print("error: --bluetooth-max-callers must be between 0 and 100", file=sys.stderr)
+        return ExitCode.INVALID_ARGS
+    if args.bluetooth_max_dataflow_paths < 0 or args.bluetooth_max_dataflow_paths > 100:
+        print("error: --bluetooth-max-dataflow-paths must be between 0 and 100", file=sys.stderr)
+        return ExitCode.INVALID_ARGS
+    if args.bluetooth_max_dataflow_nodes < 0 or args.bluetooth_max_dataflow_nodes > 500:
+        print("error: --bluetooth-max-dataflow-nodes must be between 0 and 500", file=sys.stderr)
         return ExitCode.INVALID_ARGS
     if args.apk_path is None and not args.bundle and not args.splits:
         print("error: provide apk_path and/or --bundle / --split", file=sys.stderr)
@@ -288,6 +383,9 @@ def _cmd_clean(args: argparse.Namespace) -> int:
 def _cmd_plan(args: argparse.Namespace) -> int:
     import json
 
+    if args.plan_command == "estimate":
+        return _cmd_estimate(args)
+
     try:
         plan = load_search_plan(args.plan_path)
     except PlanValidationError as exc:
@@ -309,6 +407,74 @@ def _cmd_plan(args: argparse.Namespace) -> int:
         return ExitCode.SUCCESS
 
     return ExitCode.INVALID_ARGS
+
+
+def _cmd_estimate(args: argparse.Namespace) -> int:
+    import json
+
+    try:
+        plan = load_search_plan(args.plan)
+    except PlanValidationError as exc:
+        print(str(exc), file=sys.stderr)
+        return ExitCode.INVALID_ARGS
+
+    paths = [args.apk_path.resolve()]
+    for s in args.splits or []:
+        paths.append(Path(s).resolve())
+    for p in paths:
+        if not p.is_file():
+            print(f"error: input not found: {p}", file=sys.stderr)
+            return ExitCode.INPUT_UNREADABLE
+
+    try:
+        policy = get_resource_policy(args.resource_policy)
+    except ValueError as exc:
+        print(f"error: {exc}", file=sys.stderr)
+        return ExitCode.INVALID_ARGS
+
+    try:
+        job, fingerprints, factors = create_analysis_job(
+            apk_paths=paths,
+            search_plan=plan,
+            policy=policy,
+        )
+    except InvalidApkError as exc:
+        print(f"error: {exc}", file=sys.stderr)
+        return ExitCode.INVALID_APK
+    except Exception as exc:  # noqa: BLE001
+        print(f"error: {exc}", file=sys.stderr)
+        return ExitCode.FATAL
+
+    assert job.resource_decision is not None and job.resource_estimate is not None
+    if args.json:
+        payload = {
+            "plan_sha256": plan.plan_sha256,
+            "plan_name": plan.plan_name,
+            "job_id": job.job_id,
+            "artifacts": [f.to_dict() for f in fingerprints],
+            "factors": factors.to_dict(),
+            "estimate": job.resource_estimate.to_dict(),
+            "decision": job.resource_decision.to_dict(),
+            "policy": policy.to_dict(),
+        }
+        print(json.dumps(payload, indent=2, ensure_ascii=False))
+    else:
+        print(
+            format_preflight_text(
+                plan=plan,
+                fingerprints=fingerprints,
+                factors=factors,
+                estimate=job.resource_estimate,
+                decision=job.resource_decision,
+            ),
+            end="",
+        )
+    # Estimate never starts analysis; WARNING/REJECT are informational here
+    if job.resource_decision.decision == "REJECT":
+        return ExitCode.RESOURCE_REJECTED
+    if job.resource_decision.decision == "WARNING":
+        return ExitCode.RESOURCE_WARNING_BLOCKED
+    return ExitCode.SUCCESS
 
 
 def _cmd_scan(args: argparse.Namespace) -> int:
@@ -349,6 +515,13 @@ def _cmd_scan(args: argparse.Namespace) -> int:
         bluetooth_dataflow_depth=int(args.bluetooth_dataflow_depth),
         bluetooth_max_paths=int(args.bluetooth_max_paths),
         bluetooth_max_results=int(args.bluetooth_max_results),
+        bluetooth_caller_depth=int(args.bluetooth_caller_depth),
+        bluetooth_reconstruct_callers=not bool(args.no_bluetooth_callers),
+        bluetooth_reconstruct_streams=not bool(args.no_bluetooth_streams),
+        bluetooth_reconstruct_read_write=not bool(args.no_bluetooth_read_write),
+        bluetooth_max_callers=int(args.bluetooth_max_callers),
+        bluetooth_max_dataflow_paths=int(args.bluetooth_max_dataflow_paths),
+        bluetooth_max_dataflow_nodes=int(args.bluetooth_max_dataflow_nodes),
         keep_work=bool(args.keep_work),
         use_cache=bool(args.use_cache),
         copy_input=bool(args.copy_input),
@@ -375,12 +548,7 @@ def _cmd_scan(args: argparse.Namespace) -> int:
 
     profile_arg = resolve_profile_from_plan(search_plan, args.profile) if search_plan else args.profile
 
-    workspace = discover_workspace()
-    workspace.ensure()
-    run_name = args.output.name if args.output else "scan"
-    work = create_work_session(workspace, run_name=run_name, keep=config.keep_work)
-
-    # Resolve input set
+    # Resolve input set before creating work (rejected jobs leave no work dir)
     paths: list[Path] = []
     try:
         if args.bundle:
@@ -390,7 +558,6 @@ def _cmd_scan(args: argparse.Namespace) -> int:
         if args.splits:
             for s in args.splits:
                 paths.append(Path(s).resolve())
-        # Deduplicate while preserving order
         seen: set[str] = set()
         uniq: list[Path] = []
         for p in paths:
@@ -401,8 +568,45 @@ def _cmd_scan(args: argparse.Namespace) -> int:
         paths = uniq
     except FileNotFoundError as exc:
         print(f"error: {exc}", file=sys.stderr)
-        work.cleanup()
         return ExitCode.INPUT_UNREADABLE
+
+    if not paths:
+        print("error: provide apk_path and/or --bundle / --split", file=sys.stderr)
+        return ExitCode.INVALID_ARGS
+
+    try:
+        policy = get_resource_policy(args.resource_policy)
+    except ValueError as exc:
+        print(f"error: {exc}", file=sys.stderr)
+        return ExitCode.INVALID_ARGS
+
+    try:
+        job, _fingerprints, _factors = create_analysis_job(
+            apk_paths=paths,
+            search_plan=search_plan,
+            policy=policy,
+            allow_resource_warning=bool(args.allow_resource_warning),
+            cli_dex_context=bool(config.dex_context),
+            cli_bluetooth=bool(config.bluetooth_path),
+        )
+        preflight_or_reject(job)
+    except ResourceRejectedError as exc:
+        print(str(exc), file=sys.stderr)
+        return ExitCode.RESOURCE_REJECTED
+    except ResourceWarningBlockedError as exc:
+        print(str(exc), file=sys.stderr)
+        return ExitCode.RESOURCE_WARNING_BLOCKED
+    except InvalidApkError as exc:
+        print(f"error: {exc}", file=sys.stderr)
+        return ExitCode.INVALID_APK
+    except InputError as exc:
+        print(f"error: {exc}", file=sys.stderr)
+        return getattr(exc, "exit_code", ExitCode.INPUT_UNREADABLE)
+    except Exception as exc:  # noqa: BLE001
+        print(f"error: preflight failed: {exc}", file=sys.stderr)
+        if args.debug:
+            traceback.print_exc()
+        return ExitCode.FATAL
 
     if config.copy_input:
         print(
@@ -411,7 +615,13 @@ def _cmd_scan(args: argparse.Namespace) -> int:
             file=sys.stderr,
         )
 
+    workspace = discover_workspace()
+    workspace.ensure()
+    run_name = args.output.name if args.output else "scan"
+    work = create_work_session(workspace, run_name=run_name, keep=config.keep_work)
+
     try:
+        mark_running(job)
         if len(paths) > 1 or args.bundle:
             bundle_report, outputs, _warnings = run_bundle_pipeline(
                 paths,
@@ -420,9 +630,28 @@ def _cmd_scan(args: argparse.Namespace) -> int:
                 profile_path=profile_arg,
                 work_session=work,
                 search_plan=search_plan,
+                analysis_job=job,
             )
+            findings_n = len(bundle_report.get("findings") or [])
+            mark_completed(job, findings=findings_n, dex_contexts=None, xrefs=None)
+            # Refresh job sections on bundle report and rewrite if present
+            bundle_report["analysis_job"] = job.to_dict()
+            bundle_report["resource"] = job.resource_report_section()
+            if "json" in outputs:
+                import json
+
+                outputs["json"].write_text(
+                    json.dumps(bundle_report, indent=2, ensure_ascii=False) + "\n",
+                    encoding="utf-8",
+                )
             print(f"APK Forensics {__version__}")
             print(f"Mode: ArtifactBundle ({len(paths)} members)")
+            print(f"Job: {job.job_id[:16]}… status={job.status}")
+            if job.resource_decision:
+                print(
+                    f"Resource: {job.resource_decision.decision} "
+                    f"(est {job.resource_estimate.memory_mb if job.resource_estimate else '?'} MiB)"
+                )
             if search_plan is not None:
                 print(f"Plan: {search_plan.plan_name} sha256={search_plan.plan_sha256[:16]}…")
             print(f"Bundle: {(bundle_report.get('artifact_bundle') or {}).get('bundle_id')}")
@@ -449,7 +678,6 @@ def _cmd_scan(args: argparse.Namespace) -> int:
                 return ExitCode.PARTIAL_OR_WARNINGS
             return ExitCode.SUCCESS
 
-        # Single APK
         report, outputs, _warnings = run_pipeline(
             paths[0],
             args.output,
@@ -457,27 +685,67 @@ def _cmd_scan(args: argparse.Namespace) -> int:
             profile_path=profile_arg,
             copy_input=config.copy_input,
             search_plan=search_plan,
+            analysis_job=job,
         )
+        dex = report.dex_context or {}
+        dex_counts = dex.get("counts") or {}
+        mark_completed(
+            job,
+            findings=len([f for f in report.findings if f.classification != "REJECTED"]),
+            dex_contexts=dex_counts.get("contexts"),
+            xrefs=dex_counts.get("xref_candidates"),
+        )
+        report.analysis_job = job.to_dict()
+        report.resource = job.resource_report_section()
+        if "json" in outputs:
+            from apk_forensics.report_writer import write_json_report
+
+            write_json_report(report, outputs["json"])
+        if "markdown" in outputs:
+            from apk_forensics.report_writer import write_markdown_report
+
+            write_markdown_report(report, outputs["markdown"])
         work.cleanup()
+    except JobCancelled as exc:
+        from apk_forensics.analysis_job import mark_cancelled
+
+        mark_cancelled(job, reason=str(exc) or "cancelled")
+        print(f"error: {exc}", file=sys.stderr)
+        if args.debug:
+            traceback.print_exc()
+        work.cleanup()
+        return getattr(exc, "exit_code", ExitCode.PARTIAL_OR_WARNINGS)
+    except (JobRuntimeLimit, JobLimitExceeded) as exc:
+        reason = getattr(exc, "termination_reason", None) or "runtime_limit"
+        mark_failed(job, reason)
+        print(f"error: {exc}", file=sys.stderr)
+        if args.debug:
+            traceback.print_exc()
+        work.cleanup()
+        return getattr(exc, "exit_code", ExitCode.FATAL)
     except InvalidApkError as exc:
+        mark_failed(job, "invalid_apk")
         print(f"error: {exc}", file=sys.stderr)
         if args.debug:
             traceback.print_exc()
         work.cleanup()
         return ExitCode.INVALID_APK
     except InputError as exc:
+        mark_failed(job, "input_error")
         print(f"error: {exc}", file=sys.stderr)
         if args.debug:
             traceback.print_exc()
         work.cleanup()
         return getattr(exc, "exit_code", ExitCode.INPUT_UNREADABLE)
     except ApkForensicsError as exc:
+        mark_failed(job, "analysis_exception")
         print(f"error: {exc}", file=sys.stderr)
         if args.debug:
             traceback.print_exc()
         work.cleanup()
         return getattr(exc, "exit_code", ExitCode.FATAL)
     except Exception as exc:  # noqa: BLE001
+        mark_failed(job, "unexpected_fatal_error")
         print(f"fatal: {exc}", file=sys.stderr)
         if args.debug:
             traceback.print_exc()
@@ -494,6 +762,14 @@ def _cmd_scan(args: argparse.Namespace) -> int:
     print(f"APK Forensics {__version__}")
     print(f"Input: {report.input.path}")
     print(f"SHA256: {report.input.sha256}")
+    print(f"Job: {job.job_id[:16]}… status={job.status}")
+    if job.resource_decision and job.resource_estimate:
+        print(
+            f"Resource: {job.resource_decision.decision} "
+            f"est={job.resource_estimate.memory_mb}MiB "
+            f"actual_rt={job.resource_actual.runtime_seconds}s "
+            f"peak_rss={job.resource_actual.peak_memory_mb}"
+        )
     if search_plan is not None:
         print(f"Plan: {search_plan.plan_name} sha256={search_plan.plan_sha256}")
     print(f"Status: {report.analysis.status}")
@@ -509,6 +785,10 @@ def _cmd_scan(args: argparse.Namespace) -> int:
         print(f"RFCOMM targets: {bt_counts.get('targets', len(bt.get('targets') or []))}")
         print(f"UUID resolutions: {bt_counts.get('uuid_resolutions', len(bt.get('uuid_resolutions') or []))}")
         print(f"Bluetooth paths: {bt_counts.get('paths', len(bt.get('paths') or []))}")
+        print(f"RFCOMM callers: {bt_counts.get('caller_paths', len(bt.get('caller_paths') or []))}")
+        print(f"Dataflow paths: {bt_counts.get('dataflow_paths', len(bt.get('dataflow_paths') or []))}")
+        print(f"InputStream consumers: {bt_counts.get('input_consumers', 0)}")
+        print(f"OutputStream producers: {bt_counts.get('output_producers', 0)}")
     print(f"Warnings: {warning_count}")
     if "json" in outputs:
         print(f"JSON: {outputs['json']}")
@@ -540,6 +820,8 @@ def main(argv: list[str] | None = None) -> int:
         return _cmd_clean(args)
     if args.command == "plan":
         return _cmd_plan(args)
+    if args.command == "estimate":
+        return _cmd_estimate(args)
     if args.command == "scan":
         return _cmd_scan(args)
 

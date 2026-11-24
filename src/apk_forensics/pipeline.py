@@ -50,7 +50,19 @@ DEFAULT_LIMITATIONS = [
     "Static DEX XREFs and candidate chains do not prove runtime paths.",
     "User-provided original APKs are never owned or auto-deleted by cleanup.",
     "A SearchPlan describes an investigation request; it is not evidence and invents no findings.",
+    "Resource Guard never silently rewrites SearchPlan parameters; WARNING/REJECT are explicit.",
 ]
+
+
+def _job_checkpoint(analysis_job: Any | None) -> None:
+    if analysis_job is None:
+        return
+    from apk_forensics.analysis_job import check_runtime_limit
+
+    token = getattr(analysis_job, "cancellation", None)
+    if token is not None:
+        token.check()
+    check_runtime_limit(analysis_job)
 
 
 def stamp_finding_provenance(
@@ -119,11 +131,13 @@ def run_pipeline(
     artifact_meta: Any | None = None,
     copy_input: bool = False,
     search_plan: Any | None = None,
+    analysis_job: Any | None = None,
 ) -> tuple[Report, dict[str, Path], list[str]]:
     """Run shallow (+ optional deep) analysis on a single APK.
 
     The input APK is opened in place and is not copied unless ``copy_input`` is True.
     ``search_plan`` is an optional normalized SearchPlan describing the request.
+    ``analysis_job`` optional v0.6 job for cancellation / runtime checkpoints / report section.
     """
     cfg = config or AnalysisConfig()
     warnings: list[str] = []
@@ -158,6 +172,7 @@ def run_pipeline(
             raise
 
         with zf:
+            _job_checkpoint(analysis_job)
             zip_result = build_zip_inventory(zf, config=cfg, compute_hashes=True)
             scanners.append(zip_result)
             warnings.extend(zip_result.warnings)
@@ -169,17 +184,20 @@ def run_pipeline(
                 except Exception as exc:  # noqa: BLE001
                     raise InputError(f"Failed to load profile: {exc}", exit_code=2) from exc
 
+            _job_checkpoint(analysis_job)
             manifest_result = analyze_manifest(zf, apk_path=apk_path, config=cfg)
             scanners.append(manifest_result)
             warnings.extend(manifest_result.warnings)
             errors.extend(manifest_result.errors)
 
+            _job_checkpoint(analysis_job)
             dex_result = analyze_dex(zf, config=cfg)
             scanners.append(dex_result)
             warnings.extend(dex_result.warnings)
             errors.extend(dex_result.errors)
             dex_blobs: list[ScanBlob] = list(dex_result.data.get("blobs") or [])
 
+            _job_checkpoint(analysis_job)
             native_result = analyze_native(zf, artifact_sha256=sha256, config=cfg)
             scanners.append(native_result)
             warnings.extend(native_result.warnings)
@@ -203,6 +221,7 @@ def run_pipeline(
                 except Exception as exc:  # noqa: BLE001
                     warnings.append(f"Could not include manifest in candidate scan: {exc}")
 
+            _job_checkpoint(analysis_job)
             candidate_result = run_candidate_scanner(
                 blobs,
                 artifact_sha256=sha256,
@@ -212,6 +231,19 @@ def run_pipeline(
             warnings.extend(candidate_result.warnings)
             errors.extend(candidate_result.errors)
             findings.extend(candidate_result.findings)
+
+            # Resource finding limit: fail closed (no silent truncation / plan rewrite)
+            policy = getattr(analysis_job, "resource_policy", None) if analysis_job else None
+            if policy is not None and policy.max_findings is not None:
+                non_rejected = [f for f in findings if f.classification != "REJECTED"]
+                if len(non_rejected) > policy.max_findings:
+                    from apk_forensics.analysis_job import JobLimitExceeded
+
+                    raise JobLimitExceeded(
+                        "finding_limit",
+                        f"finding_limit: {len(non_rejected)} findings exceed "
+                        f"max_findings={policy.max_findings}",
+                    )
 
             if profile is not None:
                 profile_blobs = [(b.entry, b.file_type, b.data) for b in blobs]
@@ -236,6 +268,7 @@ def run_pipeline(
 
             dex_context_section = None
             if cfg.dex_context:
+                _job_checkpoint(analysis_job)
                 dex_context_section = run_dex_context_analysis(
                     apk_path,
                     findings,
@@ -256,9 +289,32 @@ def run_pipeline(
                         ),
                     )
                 )
+                if policy is not None:
+                    counts = (dex_context_section or {}).get("counts") or {}
+                    ctx_n = counts.get("contexts", len((dex_context_section or {}).get("contexts") or []))
+                    xref_n = counts.get(
+                        "xref_candidates",
+                        len((dex_context_section or {}).get("xref_candidates") or []),
+                    )
+                    if policy.max_dex_contexts is not None and ctx_n > policy.max_dex_contexts:
+                        from apk_forensics.analysis_job import JobLimitExceeded
+
+                        raise JobLimitExceeded(
+                            "context_limit",
+                            f"context_limit: {ctx_n} contexts exceed "
+                            f"max_dex_contexts={policy.max_dex_contexts}",
+                        )
+                    if policy.max_xrefs is not None and xref_n > policy.max_xrefs:
+                        from apk_forensics.analysis_job import JobLimitExceeded
+
+                        raise JobLimitExceeded(
+                            "xref_limit",
+                            f"xref_limit: {xref_n} xrefs exceed max_xrefs={policy.max_xrefs}",
+                        )
 
             bluetooth_section = None
             if cfg.bluetooth_path:
+                _job_checkpoint(analysis_job)
                 bluetooth_section = run_bluetooth_path_analysis(
                     apk_path,
                     findings,
@@ -373,7 +429,16 @@ def run_pipeline(
                 limitations=list(DEFAULT_LIMITATIONS),
                 dex_context=dex_context_section,
                 bluetooth_path=bluetooth_section,
+                bluetooth_dataflow=(
+                    (bluetooth_section or {}).get("bluetooth_dataflow")
+                    if bluetooth_section is not None
+                    else None
+                ),
                 search_plan=plan_section,
+                analysis_job=analysis_job.to_dict() if analysis_job is not None else None,
+                resource=(
+                    analysis_job.resource_report_section() if analysis_job is not None else None
+                ),
             )
             stamp_finding_provenance(
                 report,

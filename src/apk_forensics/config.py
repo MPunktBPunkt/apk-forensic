@@ -45,13 +45,21 @@ class AnalysisConfig:
     dex_category: str | None = None
     dex_kind: str | None = None
     include_unmatched: bool = False
-    # v0.3 Bluetooth RFCOMM path
+    # v0.3 / v0.7 Bluetooth RFCOMM path + caller/dataflow
     bluetooth_path: bool = False
     bluetooth_target: str | None = None
     bluetooth_window: int = 12
     bluetooth_dataflow_depth: int = 2
     bluetooth_max_paths: int = 50
     bluetooth_max_results: int = 100
+    bluetooth_caller_depth: int = 2
+    bluetooth_reconstruct_callers: bool = True
+    bluetooth_reconstruct_streams: bool = True
+    bluetooth_reconstruct_read_write: bool = True
+    bluetooth_max_callers: int = 50
+    bluetooth_max_callees: int = 50
+    bluetooth_max_dataflow_paths: int = 50
+    bluetooth_max_dataflow_nodes: int = 200
     # v0.4 storage / cache
     keep_work: bool = False
     use_cache: bool = False

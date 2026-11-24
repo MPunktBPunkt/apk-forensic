@@ -115,6 +115,17 @@ BLUETOOTH_BOUNDS = {
     "window": (0, 100),
     "max_paths": (1, 500),
     "max_results": (1, 500),
+    "caller_depth": (0, 2),
+    "max_callers": (0, 100),
+    "max_callees": (0, 100),
+    "max_dataflow_paths": (0, 100),
+    "max_dataflow_nodes": (0, 500),
+}
+
+BLUETOOTH_BOOL_FIELDS = {
+    "reconstruct_callers",
+    "reconstruct_streams",
+    "reconstruct_read_write",
 }
 
 MAX_SEARCH_TERMS = 500
@@ -157,6 +168,15 @@ class SearchPlan:
     bluetooth_window: int = 12
     bluetooth_max_paths: int = 50
     bluetooth_max_results: int = 100
+    bluetooth_target: str | None = None
+    bluetooth_caller_depth: int = 2
+    bluetooth_reconstruct_callers: bool = True
+    bluetooth_reconstruct_streams: bool = True
+    bluetooth_reconstruct_read_write: bool = True
+    bluetooth_max_callers: int = 50
+    bluetooth_max_callees: int = 50
+    bluetooth_max_dataflow_paths: int = 50
+    bluetooth_max_dataflow_nodes: int = 200
     evidence_classifications: list[str] = field(
         default_factory=lambda: ["FACT", "CORRELATION", "INFERENCE", "UNKNOWN"]
     )
@@ -199,6 +219,15 @@ class SearchPlan:
                 "window": self.bluetooth_window,
                 "max_paths": self.bluetooth_max_paths,
                 "max_results": self.bluetooth_max_results,
+                "target": self.bluetooth_target,
+                "caller_depth": self.bluetooth_caller_depth,
+                "reconstruct_callers": self.bluetooth_reconstruct_callers,
+                "reconstruct_streams": self.bluetooth_reconstruct_streams,
+                "reconstruct_read_write": self.bluetooth_reconstruct_read_write,
+                "max_callers": self.bluetooth_max_callers,
+                "max_callees": self.bluetooth_max_callees,
+                "max_dataflow_paths": self.bluetooth_max_dataflow_paths,
+                "max_dataflow_nodes": self.bluetooth_max_dataflow_nodes,
             },
             "evidence": {
                 "classifications": list(self.evidence_classifications),
@@ -478,8 +507,24 @@ def validate_and_normalize(raw: dict[str, Any]) -> SearchPlan:
     )
 
     bt_sec = _require_mapping(raw.get("bluetooth"), "bluetooth", errors)
+    bt_allowed = {
+        "enabled",
+        "dataflow_depth",
+        "window",
+        "max_paths",
+        "max_results",
+        "target",
+        "caller_depth",
+        "reconstruct_callers",
+        "reconstruct_streams",
+        "reconstruct_read_write",
+        "max_callers",
+        "max_callees",
+        "max_dataflow_paths",
+        "max_dataflow_nodes",
+    }
     for key in bt_sec:
-        if key not in {"enabled", "dataflow_depth", "window", "max_paths", "max_results", "target"}:
+        if key not in bt_allowed:
             errors.append(f"unknown field: bluetooth.{key}")
     bt_enabled = _as_bool(bt_sec.get("enabled"), "bluetooth.enabled", errors, default=False)
     if "bluetooth" in modules_norm and "enabled" not in bt_sec:
@@ -512,8 +557,61 @@ def validate_and_normalize(raw: dict[str, Any]) -> SearchPlan:
         errors,
         100,
     )
-    if bt_sec.get("target") is not None and not isinstance(bt_sec.get("target"), str):
+    bt_target = bt_sec.get("target")
+    if bt_target is not None and not isinstance(bt_target, str):
         errors.append("bluetooth.target must be a string")
+        bt_target = None
+    elif isinstance(bt_target, str) and not bt_target.strip():
+        bt_target = None
+    elif isinstance(bt_target, str):
+        bt_target = bt_target.strip()
+    bt_caller_depth = _as_int_in_bounds(
+        bt_sec.get("caller_depth"),
+        "bluetooth.caller_depth",
+        BLUETOOTH_BOUNDS["caller_depth"],
+        errors,
+        2,
+    )
+    bt_reconstruct_callers = _as_bool(
+        bt_sec.get("reconstruct_callers"), "bluetooth.reconstruct_callers", errors, default=True
+    )
+    bt_reconstruct_streams = _as_bool(
+        bt_sec.get("reconstruct_streams"), "bluetooth.reconstruct_streams", errors, default=True
+    )
+    bt_reconstruct_read_write = _as_bool(
+        bt_sec.get("reconstruct_read_write"),
+        "bluetooth.reconstruct_read_write",
+        errors,
+        default=True,
+    )
+    bt_max_callers = _as_int_in_bounds(
+        bt_sec.get("max_callers"),
+        "bluetooth.max_callers",
+        BLUETOOTH_BOUNDS["max_callers"],
+        errors,
+        50,
+    )
+    bt_max_callees = _as_int_in_bounds(
+        bt_sec.get("max_callees"),
+        "bluetooth.max_callees",
+        BLUETOOTH_BOUNDS["max_callees"],
+        errors,
+        50,
+    )
+    bt_max_dataflow_paths = _as_int_in_bounds(
+        bt_sec.get("max_dataflow_paths"),
+        "bluetooth.max_dataflow_paths",
+        BLUETOOTH_BOUNDS["max_dataflow_paths"],
+        errors,
+        50,
+    )
+    bt_max_dataflow_nodes = _as_int_in_bounds(
+        bt_sec.get("max_dataflow_nodes"),
+        "bluetooth.max_dataflow_nodes",
+        BLUETOOTH_BOUNDS["max_dataflow_nodes"],
+        errors,
+        200,
+    )
 
     evidence_sec = _require_mapping(raw.get("evidence"), "evidence", errors)
     for key in evidence_sec:
@@ -626,6 +724,15 @@ def validate_and_normalize(raw: dict[str, Any]) -> SearchPlan:
         bluetooth_window=bt_window,
         bluetooth_max_paths=bt_max_paths,
         bluetooth_max_results=bt_max_results,
+        bluetooth_target=bt_target,
+        bluetooth_caller_depth=bt_caller_depth,
+        bluetooth_reconstruct_callers=bt_reconstruct_callers,
+        bluetooth_reconstruct_streams=bt_reconstruct_streams,
+        bluetooth_reconstruct_read_write=bt_reconstruct_read_write,
+        bluetooth_max_callers=bt_max_callers,
+        bluetooth_max_callees=bt_max_callees,
+        bluetooth_max_dataflow_paths=bt_max_dataflow_paths,
+        bluetooth_max_dataflow_nodes=bt_max_dataflow_nodes,
         evidence_classifications=class_norm,
         max_results=max_results,
         max_contexts=max_contexts,
@@ -679,6 +786,16 @@ def apply_search_plan_to_config(plan: SearchPlan, config: AnalysisConfig) -> Ana
     config.bluetooth_window = plan.bluetooth_window
     config.bluetooth_max_paths = plan.bluetooth_max_paths
     config.bluetooth_max_results = plan.bluetooth_max_results
+    if plan.bluetooth_target:
+        config.bluetooth_target = plan.bluetooth_target
+    config.bluetooth_caller_depth = plan.bluetooth_caller_depth
+    config.bluetooth_reconstruct_callers = plan.bluetooth_reconstruct_callers
+    config.bluetooth_reconstruct_streams = plan.bluetooth_reconstruct_streams
+    config.bluetooth_reconstruct_read_write = plan.bluetooth_reconstruct_read_write
+    config.bluetooth_max_callers = plan.bluetooth_max_callers
+    config.bluetooth_max_callees = plan.bluetooth_max_callees
+    config.bluetooth_max_dataflow_paths = plan.bluetooth_max_dataflow_paths
+    config.bluetooth_max_dataflow_nodes = plan.bluetooth_max_dataflow_nodes
     config.max_findings_per_scanner = plan.max_findings
     config.max_xrefs = plan.max_xrefs
     config.max_chains = plan.max_chains

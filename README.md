@@ -1,8 +1,8 @@
 # apk-forensics
 
-Local, static APK forensics toolkit (v0.5.0).
+Local, static APK forensics toolkit (v0.7.0).
 
-It turns Android APKs into reproducible static fingerprints: hashes, ZIP inventory, manifest metadata (when available), DEX/native inventories, readable strings, UUID/port/API candidates, optional profile correlations, optional DEX context / Bluetooth RFCOMM path analysis, **ArtifactBundles**, controlled **workspace storage lifecycle**, and a declarative **SearchPlan** layer for CLI / YAML / future GUI / future AI frontends.
+It turns Android APKs into reproducible static fingerprints: hashes, ZIP inventory, manifest metadata (when available), DEX/native inventories, readable strings, UUID/port/API candidates, optional profile correlations, optional DEX context / Bluetooth RFCOMM path analysis with **bounded caller & stream dataflow reconstruction**, **ArtifactBundles**, controlled **workspace storage lifecycle**, a declarative **SearchPlan** layer, and an **AnalysisJob + Resource Guard** for deterministic preflight budgeting.
 
 ## Purpose
 
@@ -31,29 +31,35 @@ User-provided original APKs are never auto-deleted. Cleanup only touches paths t
 - No automatic vehicle/head-unit identification
 - No automatic deletion of original APKs
 - No cloud storage
-- No LLM / autonomous agent / GUI (SearchPlan interface only in v0.5)
+- No LLM / autonomous agent / GUI
+- No silent SearchPlan rewriting by the Resource Guard
 
 ## Architecture
 
 ```text
-CLI / YAML / GUI* / KI*
-        │
-        ▼
-   SearchPlan  (request only)
-        │
-        ▼
- Analysis Engine  →  Evidence Report
-
-APK-Forensics
-│
-├── SearchPlan (declarative request)
-├── Core Artifact analysis → static evidence (FACT)
-├── ArtifactBundle (base + splits, provenance)
-├── Workspace lifecycle (source / work / output / cache)
-└── Profiles (CORRELATION vocabulary only)
-
-* GUI / KI consume the same SearchPlan; not shipped in v0.5
+SearchPlan
+    │
+    ▼
+Validator
+    │
+    ▼
+Resource Estimator
+    │
+    ├── REJECT ──────► Job rejected (no pipeline)
+    │
+    ├── WARNING ─────► needs --allow-resource-warning
+    │
+    └── OK
+          │
+          ▼
+      Analysis Job
+          │
+          ▼
+       Pipeline → Evidence → Report
 ```
+
+SearchPlan limits = fachliche Ergebnisbegrenzung.  
+Resource limits = System-/Laufzeitbegrenzung. Nicht vermischen.
 
 > Ein SearchPlan beschreibt eine Untersuchung. Er ist keine Ergebnisdatei und darf keine Evidenz oder Schlussfolgerungen vortäuschen.
 
@@ -129,6 +135,76 @@ Search supports literal `terms`, explicit `regex`, normalized `uuids`, and gener
 Example plans: `plans/bluetooth_rfcomm.yaml`, `plans/native_static.yaml`, `plans/communication_stack.yaml`.
 
 Reproducibility identity: input SHA-256 + engine version + `plan_sha256` + profile + relevant options.
+
+### Analysis Job + Resource Guard
+
+```bash
+apk-forensics plan estimate ./app.apk --plan plans/bluetooth_rfcomm.yaml
+apk-forensics estimate ./app.apk --plan plans/bluetooth_rfcomm.yaml --json
+```
+
+Policies: `conservative` | `standard` (default) | `unlimited`  
+(`unlimited` = guard does not bound that axis; OS OOM remains an error.)
+
+```bash
+apk-forensics scan ./app.apk \
+  --plan plans/bluetooth_rfcomm.yaml \
+  --resource-policy standard \
+  --allow-resource-warning \
+  --output ./output/app
+```
+
+- `OK` → start  
+- `WARNING` → blocked unless `--allow-resource-warning`  
+- `REJECT` → never started (no override)  
+
+The guard **never** silently lowers `xref_depth`, disables modules, or rewrites the plan.
+
+### Bluetooth RFCOMM Dataflow (v0.7)
+
+Extends path analysis with bounded reconstruction — not a full call graph:
+
+```text
+RFCOMM Target
+     │
+     ├───────────────► Caller Reconstruction (depth ≤ 2)
+     │
+     ▼
+BluetoothSocket
+     │
+     ├───────────────► connect()
+     │
+     ├───────────────► InputStream
+     │                      │
+     │                      ▼
+     │                    read()
+     │                      │
+     │                      ▼
+     │                    Consumer (or UNKNOWN)
+     │
+     └───────────────► OutputStream
+                            │
+                            ▼
+                          write()
+                            │
+                            ▼
+                          Producer (or UNKNOWN)
+```
+
+SearchPlan bluetooth knobs (all hard-capped):
+
+- `caller_depth` (0–2), `dataflow_depth` (0–3)
+- `reconstruct_callers` / `reconstruct_streams` / `reconstruct_read_write`
+- `max_callers` / `max_callees` ≤ 100
+- `max_dataflow_paths` ≤ 100, `max_dataflow_nodes` ≤ 500
+
+Evidence rules:
+
+- Exact DEX invoke / register-linked socket I/O → **FACT**
+- Same-method window co-occurrence or name heuristics → **INFERENCE** / `METHOD_NAME_CANDIDATE`
+- Missing consumer/producer → **UNKNOWN** (never REJECTED)
+- End-to-end RFCOMM path stays **INFERENCE**; `runtime_execution_proven: false` unless runtime evidence exists
+- Profile tokens (SCN6, BCL, Etch, …) remain **CORRELATION** only — never APK FACT
 
 ### 2. Artifact Bundle (base + splits)
 

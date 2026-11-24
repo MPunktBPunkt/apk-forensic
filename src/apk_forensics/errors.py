@@ -10,6 +10,8 @@ class ExitCode:
     INPUT_UNREADABLE = 3
     INVALID_APK = 4
     FATAL = 5
+    RESOURCE_WARNING_BLOCKED = 6
+    RESOURCE_REJECTED = 7
 
 
 class ApkForensicsError(Exception):

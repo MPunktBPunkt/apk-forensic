@@ -57,6 +57,14 @@ bluetooth:
   window: 12
   max_paths: 50
   max_results: 100
+  caller_depth: 2
+  reconstruct_callers: true
+  reconstruct_streams: true
+  reconstruct_read_write: true
+  max_callers: 50
+  max_callees: 50
+  max_dataflow_paths: 50
+  max_dataflow_nodes: 200
 
 evidence:
   classifications:

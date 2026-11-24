@@ -81,6 +81,9 @@ def render_markdown(report: Report) -> str:
         plan_hash = d.get("analysis", {}).get("plan_sha256") or sp.get("plan_sha256")
         lines.append(f"- SearchPlan: `{_md_escape(plan_name)}`")
         lines.append(f"- plan_sha256: `{_md_escape(plan_hash)}`")
+    if d.get("analysis_job"):
+        lines.append(f"- Job ID: `{_md_escape((d.get('analysis_job') or {}).get('job_id'))}`")
+        lines.append(f"- Job status: `{_md_escape((d.get('analysis_job') or {}).get('status'))}`")
     lines.append("")
     lines.append("## Limitations")
     lines.append("")
@@ -95,6 +98,51 @@ def render_markdown(report: Report) -> str:
     lines.append(f"| Size | {d['input']['size_bytes']} |")
     lines.append(f"| SHA-256 | `{_md_escape(d['input']['sha256'])}` |")
     lines.append("")
+
+    job = d.get("analysis_job") or {}
+    resource = d.get("resource") or {}
+    if job or resource:
+        lines.append("## Analysis Job")
+        lines.append("")
+        lines.append(f"- Job ID: `{_md_escape(job.get('job_id'))}`")
+        lines.append(f"- Status: `{_md_escape(job.get('status'))}`")
+        lines.append(f"- Plan SHA-256: `{_md_escape(job.get('plan_sha256'))}`")
+        lines.append(f"- Input SHA-256: `{_md_escape(job.get('input_artifact_sha256'))}`")
+        lines.append(f"- Created: `{_md_escape(job.get('created_at'))}`")
+        lines.append(f"- Started: `{_md_escape(job.get('started_at'))}`")
+        lines.append(f"- Finished: `{_md_escape(job.get('finished_at'))}`")
+        lines.append("")
+        lines.append("## Resource Policy")
+        lines.append("")
+        pol = (resource.get("policy") or {}) if resource else {}
+        lines.append(f"- Policy: `{_md_escape(pol.get('name'))}`")
+        lines.append(f"- Memory limit: `{_md_escape(pol.get('max_memory_mb'))}` MiB")
+        lines.append(f"- Runtime limit: `{_md_escape(pol.get('max_runtime_seconds'))}` s")
+        lines.append(f"- Finding limit: `{_md_escape(pol.get('max_findings'))}`")
+        lines.append("")
+        lines.append("## Resource Preflight")
+        lines.append("")
+        est = resource.get("estimate") or {}
+        lines.append(f"- Decision: `{_md_escape(resource.get('decision'))}`")
+        lines.append(f"- Estimated memory: `{_md_escape(est.get('memory_mb'))}` MiB")
+        lines.append(f"- Estimated runtime: `{_md_escape(est.get('runtime_seconds'))}` s")
+        lines.append(f"- Risk: `{_md_escape(est.get('risk'))}`")
+        lines.append("")
+        lines.append("Reasons:")
+        lines.append("")
+        for reason in resource.get("decision_reasons") or est.get("reasons") or []:
+            lines.append(f"- {_md_escape(reason)}")
+        lines.append("")
+        lines.append("## Resource Actual")
+        lines.append("")
+        act = resource.get("actual") or {}
+        lines.append(f"- Runtime: `{_md_escape(act.get('runtime_seconds'))}` s")
+        lines.append(f"- Peak memory: `{_md_escape(act.get('peak_memory_mb'))}` MiB")
+        lines.append(f"- Findings: `{_md_escape(act.get('findings'))}`")
+        lines.append(f"- DEX contexts: `{_md_escape(act.get('dex_contexts'))}`")
+        lines.append(f"- XREFs: `{_md_escape(act.get('xrefs'))}`")
+        lines.append(f"- Termination: `{_md_escape(resource.get('termination_reason'))}`")
+        lines.append("")
 
     manifest = d.get("manifest") or {}
     lines.append("## Manifest")
@@ -412,6 +460,12 @@ def _render_bluetooth_path_markdown(bt: dict) -> list[str]:
     lines.append(f"| Socket paths | {counts.get('socket_paths', len(bt.get('socket_paths') or []))} |")
     lines.append(f"| I/O paths | {counts.get('io_paths', len(bt.get('io_paths') or []))} |")
     lines.append(f"| Candidate paths | {counts.get('paths', len(bt.get('paths') or []))} |")
+    lines.append(f"| RFCOMM callers | {counts.get('caller_paths', len(bt.get('caller_paths') or []))} |")
+    lines.append(
+        f"| Dataflow paths | {counts.get('dataflow_paths', len(bt.get('dataflow_paths') or []))} |"
+    )
+    lines.append(f"| InputStream consumers | {counts.get('input_consumers', 0)} |")
+    lines.append(f"| OutputStream producers | {counts.get('output_producers', 0)} |")
     lines.append("")
     lines.append(
         "> A statically reconstructed Bluetooth path is not proof of runtime execution.  \n"
@@ -482,6 +536,114 @@ def _render_bluetooth_path_markdown(bt: dict) -> list[str]:
         lines.append("")
         for lim in path.get("limitations") or path.get("notes") or []:
             lines.append(f"- {_md_escape(lim)}")
+        lines.append("")
+
+    lines.extend(_render_bluetooth_dataflow_markdown(bt))
+    return lines
+
+
+def _render_bluetooth_dataflow_markdown(bt: dict) -> list[str]:
+    lines: list[str] = []
+    df = bt.get("bluetooth_dataflow") or {}
+    paths = list(df.get("paths") or bt.get("dataflow_paths") or [])
+    lines.append("## Bluetooth RFCOMM Dataflow")
+    lines.append("")
+    if not paths:
+        lines.append("_No dataflow paths reconstructed._")
+        lines.append("")
+        return lines
+
+    for path in paths[:20]:
+        lines.append(f"### Target")
+        lines.append("")
+        lines.append(f"`{_md_escape(path.get('target'))}`")
+        lines.append("")
+        lines.append(f"#### {_md_escape(path.get('display_id') or path.get('id'))}")
+        lines.append("")
+
+        lines.append("### Caller Reconstruction")
+        lines.append("")
+        callers = ((path.get("caller_reconstruction") or {}).get("callers")) or []
+        if not callers:
+            lines.append("_UNKNOWN — no static callers in bounded scan_")
+            lines.append("")
+        else:
+            for c in callers[:20]:
+                lines.append(
+                    f"- `{_md_escape(c.get('method'))}` "
+                    f"[{_md_escape(c.get('classification'))}/{_md_escape(c.get('confidence'))}] "
+                    f"depth={c.get('depth')}"
+                )
+            lines.append("")
+
+        lines.append("### Socket Reconstruction")
+        lines.append("")
+        for key in ("socket_creation", "connect", "input", "output"):
+            stage = path.get(key)
+            if not stage:
+                lines.append(f"- `{key}`: UNKNOWN")
+                continue
+            lines.append(
+                f"- `{_md_escape(stage.get('method') or key)}` "
+                f"[{_md_escape(stage.get('classification'))}/"
+                f"{_md_escape(stage.get('confidence'))}]"
+            )
+        lines.append("")
+
+        lines.append("### InputStream")
+        lines.append("")
+        reads = path.get("read_chain") or []
+        if not reads:
+            lines.append("_UNKNOWN — no bounded read consumer_")
+            lines.append("")
+        else:
+            for r in reads[:10]:
+                lines.append(
+                    f"- `{_md_escape(r.get('text') or r.get('raw'))}` "
+                    f"[{_md_escape(r.get('classification'))}]"
+                )
+            lines.append("")
+
+        lines.append("### OutputStream")
+        lines.append("")
+        writes = path.get("write_chain") or []
+        if not writes:
+            lines.append("_UNKNOWN — no bounded write producer_")
+            lines.append("")
+        else:
+            for w in writes[:10]:
+                lines.append(
+                    f"- `{_md_escape(w.get('text') or w.get('raw'))}` "
+                    f"[{_md_escape(w.get('classification'))}]"
+                )
+            lines.append("")
+
+        lines.append("### Dataflow Paths")
+        lines.append("")
+        lines.append(
+            f"- structure=`{_md_escape(path.get('structure'))}` "
+            f"classification=`{_md_escape(path.get('classification'))}` "
+            f"confidence=`{_md_escape(path.get('confidence'))}`"
+        )
+        lines.append(
+            f"- runtime_execution_proven="
+            f"{'yes' if path.get('runtime_execution_proven') else 'no'}"
+        )
+        lines.append(
+            f"- wire_correlation_available="
+            f"{'yes' if path.get('wire_correlation_available') else 'no'}"
+        )
+        lines.append("")
+
+        lines.append("### Evidence Classification")
+        lines.append("")
+        for node in path.get("nodes") or []:
+            lines.append(
+                f"- `{_md_escape(node.get('role') or node.get('type'))}` "
+                f"`{_md_escape(node.get('value'))}` "
+                f"[{_md_escape(node.get('classification'))}/"
+                f"{_md_escape(node.get('confidence'))}]"
+            )
         lines.append("")
     return lines
 

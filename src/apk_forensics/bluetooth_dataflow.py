@@ -123,6 +123,10 @@ def build_candidate_path(
         summary_parts.append("UUID=UNKNOWN")
     summary_parts.append("BluetoothSocket")
 
+    link_cls = "FACT" if socket_path.get("register_linked") else "INFERENCE"
+    link_conf = "high" if socket_path.get("register_linked") else "medium"
+    n_in = None
+    n_out = None
     if socket_path.get("has_connect"):
         n_connect = add_node("connect", "method", "BluetoothSocket.connect", "dex_reference")
         edges.append(
@@ -130,8 +134,8 @@ def build_candidate_path(
                 "from": n_socket,
                 "to": n_connect,
                 "relationship": "same_method",
-                "classification": "FACT",
-                "confidence": "high",
+                "classification": link_cls,
+                "confidence": link_conf,
             }
         )
         summary_parts.append("connect")
@@ -142,8 +146,8 @@ def build_candidate_path(
                 "from": n_socket,
                 "to": n_in,
                 "relationship": "same_method",
-                "classification": "FACT",
-                "confidence": "high",
+                "classification": link_cls,
+                "confidence": link_conf,
             }
         )
         summary_parts.append("getInputStream")
@@ -154,13 +158,40 @@ def build_candidate_path(
                 "from": n_socket,
                 "to": n_out,
                 "relationship": "same_method",
-                "classification": "FACT",
-                "confidence": "high",
+                "classification": link_cls,
+                "confidence": link_conf,
             }
         )
         summary_parts.append("getOutputStream")
 
-    # Path-level classification
+    read_calls = list(io_path.get("read_calls") or [])
+    write_calls = list(io_path.get("write_calls") or [])
+    if read_calls:
+        n_read = add_node("read", "method", "InputStream.read", "instruction_context", "INFERENCE")
+        edges.append(
+            {
+                "from": n_in or n_socket,
+                "to": n_read,
+                "relationship": "same_method",
+                "classification": read_calls[0].get("classification") or "INFERENCE",
+                "confidence": read_calls[0].get("confidence") or "medium",
+            }
+        )
+        summary_parts.append("read")
+    if write_calls:
+        n_write = add_node("write", "method", "OutputStream.write", "instruction_context", "INFERENCE")
+        edges.append(
+            {
+                "from": n_out or n_socket,
+                "to": n_write,
+                "relationship": "same_method",
+                "classification": write_calls[0].get("classification") or "INFERENCE",
+                "confidence": write_calls[0].get("confidence") or "medium",
+            }
+        )
+        summary_parts.append("write")
+
+    # Path-level classification — end-to-end remains INFERENCE (no runtime/wire proof).
     if uuid_val and socket_path.get("has_connect") and (
         socket_path.get("has_input_stream") or socket_path.get("has_output_stream")
     ):
@@ -189,12 +220,18 @@ def build_candidate_path(
             "connect": socket_path.get("connect"),
             "getInputStream": socket_path.get("getInputStream"),
             "getOutputStream": socket_path.get("getOutputStream"),
+            "register_linked": socket_path.get("register_linked"),
+            "classification": socket_path.get("classification"),
+            "confidence": socket_path.get("confidence"),
         },
         "io_path": {
             "read_calls": io_path.get("read_calls"),
             "write_calls": io_path.get("write_calls"),
             "buffer_refs": io_path.get("buffer_refs"),
+            "input_consumers": io_path.get("input_consumers"),
+            "output_producers": io_path.get("output_producers"),
         },
+        "caller_reconstruction": None,
         "profile_correlations": profile_correlations,
         "nodes": nodes,
         "edges": edges,
@@ -212,4 +249,152 @@ def build_candidate_path(
         ],
         "limitations": list(uuid_resolution.get("limitations") or [])
         + list(device_source.get("notes") or []),
+    }
+
+
+def _dataflow_id(*parts: str) -> str:
+    return "btdata-" + hashlib.sha256("|".join(parts).encode()).hexdigest()[:20]
+
+
+def build_dataflow_path(
+    *,
+    target_method: str,
+    path_id: str | None,
+    socket_creation: dict[str, Any],
+    connect: dict[str, Any] | None,
+    input_info: dict[str, Any] | None,
+    output_info: dict[str, Any] | None,
+    read_chain: list[dict[str, Any]],
+    write_chain: list[dict[str, Any]],
+    caller_reconstruction: dict[str, Any] | None,
+    max_nodes: int,
+) -> dict[str, Any]:
+    """Build a BluetoothDataflowPath evidence object (BTDATA-*)."""
+    nodes: list[dict[str, Any]] = []
+    seen_keys: set[str] = set()
+
+    def add(node: dict[str, Any]) -> None:
+        key = f"{node.get('type')}|{node.get('value')}|{node.get('classification')}"
+        if key in seen_keys or len(nodes) >= max_nodes:
+            return
+        seen_keys.add(key)
+        nodes.append(node)
+
+    add(
+        {
+            "type": "method",
+            "value": target_method,
+            "role": "target",
+            "classification": "FACT",
+            "confidence": "high",
+        }
+    )
+    add(
+        {
+            "type": "api",
+            "value": socket_creation.get("method") or "createRfcommSocketToServiceRecord",
+            "role": "socket_creation",
+            "classification": socket_creation.get("classification") or "FACT",
+            "confidence": socket_creation.get("confidence") or "high",
+        }
+    )
+    if connect:
+        add(
+            {
+                "type": "api",
+                "value": connect.get("method") or "BluetoothSocket.connect",
+                "role": "connect",
+                "classification": connect.get("classification") or "FACT",
+                "confidence": connect.get("confidence") or "high",
+            }
+        )
+    if input_info:
+        add(
+            {
+                "type": "api",
+                "value": input_info.get("method") or "BluetoothSocket.getInputStream",
+                "role": "input",
+                "classification": input_info.get("classification") or "FACT",
+                "confidence": input_info.get("confidence") or "high",
+            }
+        )
+    if output_info:
+        add(
+            {
+                "type": "api",
+                "value": output_info.get("method") or "BluetoothSocket.getOutputStream",
+                "role": "output",
+                "classification": output_info.get("classification") or "FACT",
+                "confidence": output_info.get("confidence") or "high",
+            }
+        )
+    for step in read_chain:
+        add(
+            {
+                "type": "io",
+                "value": step.get("text") or "InputStream.read",
+                "role": "read",
+                "classification": step.get("classification") or "UNKNOWN",
+                "confidence": step.get("confidence") or "low",
+            }
+        )
+    for step in write_chain:
+        add(
+            {
+                "type": "io",
+                "value": step.get("text") or "OutputStream.write",
+                "role": "write",
+                "classification": step.get("classification") or "UNKNOWN",
+                "confidence": step.get("confidence") or "low",
+            }
+        )
+
+    stages_present = sum(
+        1
+        for x in (True, bool(connect), bool(input_info), bool(output_info), bool(read_chain), bool(write_chain))
+        if x
+    )
+    if stages_present >= 4 and (read_chain or write_chain):
+        structure = "PARTIAL"
+        confidence = "medium"
+    elif stages_present >= 3:
+        structure = "PARTIAL"
+        confidence = "medium"
+    else:
+        structure = "PARTIAL"
+        confidence = "low"
+
+    return {
+        "id": _dataflow_id(target_method, path_id or "", str(len(nodes))),
+        "display_id": "",
+        "target": target_method,
+        "path_id": path_id,
+        "socket_creation": {
+            "method": socket_creation.get("method") or "createRfcommSocketToServiceRecord",
+            "classification": socket_creation.get("classification") or "FACT",
+            "confidence": socket_creation.get("confidence") or "high",
+            "evidence_level": socket_creation.get("evidence_level") or "dex_reference",
+        },
+        "connect": connect,
+        "input": input_info,
+        "output": output_info,
+        "read_chain": read_chain,
+        "write_chain": write_chain,
+        "caller_reconstruction": caller_reconstruction,
+        "nodes": nodes,
+        "node_count": len(nodes),
+        "classification": "INFERENCE",
+        "structure": structure,
+        "confidence": confidence,
+        "runtime_execution_proven": False,
+        "wire_correlation_available": False,
+        "notes": [
+            "BluetoothDataflowPath is a bounded static reconstruction, not runtime proof.",
+            "PARTIAL describes structural completeness; evidence classes remain FACT/INFERENCE/UNKNOWN.",
+            "Protocol names (BCL/Etch/SCN6) are never inferred from stream I/O alone.",
+        ],
+        "limitations": [
+            "Bounded dataflow only; no full SSA or global data-flow graph.",
+            "Missing read/write consumers are UNKNOWN, not REJECTED.",
+        ],
     }

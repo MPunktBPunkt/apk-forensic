@@ -286,8 +286,11 @@ class Report:
     limitations: list[str] = field(default_factory=list)
     dex_context: dict[str, Any] | None = None
     bluetooth_path: dict[str, Any] | None = None
+    bluetooth_dataflow: dict[str, Any] | None = None
     artifact_bundle: dict[str, Any] | None = None
     search_plan: dict[str, Any] | None = None
+    analysis_job: dict[str, Any] | None = None
+    resource: dict[str, Any] | None = None
     raw: dict[str, Any] | None = None
 
     def to_dict(self) -> dict[str, Any]:
@@ -311,10 +314,16 @@ class Report:
             payload["dex_context"] = self.dex_context
         if self.bluetooth_path is not None:
             payload["bluetooth_path"] = self.bluetooth_path
+        if self.bluetooth_dataflow is not None:
+            payload["bluetooth_dataflow"] = self.bluetooth_dataflow
         if self.artifact_bundle is not None:
             payload["artifact_bundle"] = self.artifact_bundle
         if self.search_plan is not None:
             payload["search_plan"] = self.search_plan
+        if self.analysis_job is not None:
+            payload["analysis_job"] = self.analysis_job
+        if self.resource is not None:
+            payload["resource"] = self.resource
         if self.raw is not None:
             payload["raw"] = self.raw
         return payload
