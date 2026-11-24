@@ -1,8 +1,8 @@
 # apk-forensics
 
-Local, static APK forensics toolkit (v0.7.0).
+Local, static APK forensics toolkit (v0.9.0).
 
-It turns Android APKs into reproducible static fingerprints: hashes, ZIP inventory, manifest metadata (when available), DEX/native inventories, readable strings, UUID/port/API candidates, optional profile correlations, optional DEX context / Bluetooth RFCOMM path analysis with **bounded caller & stream dataflow reconstruction**, **ArtifactBundles**, controlled **workspace storage lifecycle**, a declarative **SearchPlan** layer, and an **AnalysisJob + Resource Guard** for deterministic preflight budgeting.
+It turns Android APKs into reproducible static fingerprints: hashes, ZIP inventory, manifest metadata (when available), DEX/native inventories, readable strings, UUID/port/API candidates, optional profile correlations, optional DEX context / Bluetooth RFCOMM path analysis with **bounded caller reconstruction**, **cross-method socket/stream object-flow**, and a **canonical Evidence Graph** (raw → canonical → evidence paths + exact boundaries + provenance), **ArtifactBundles**, controlled **workspace storage lifecycle**, a declarative **SearchPlan** layer, and an **AnalysisJob + Resource Guard** for deterministic preflight budgeting.
 
 ## Purpose
 
@@ -160,51 +160,82 @@ apk-forensics scan ./app.apk \
 
 The guard **never** silently lowers `xref_depth`, disables modules, or rewrites the plan.
 
-### Bluetooth RFCOMM Dataflow (v0.7)
+### Bluetooth RFCOMM Dataflow (v0.7 / v0.8) + Evidence Graph (v0.9)
 
 Extends path analysis with bounded reconstruction — not a full call graph:
 
 ```text
 RFCOMM Target
      │
-     ├───────────────► Caller Reconstruction (depth ≤ 2)
+     ▼
+Caller Reconstruction
      │
      ▼
-BluetoothSocket
+Socket Object S1
      │
-     ├───────────────► connect()
-     │
-     ├───────────────► InputStream
-     │                      │
-     │                      ▼
-     │                    read()
-     │                      │
-     │                      ▼
-     │                    Consumer (or UNKNOWN)
-     │
-     └───────────────► OutputStream
-                            │
-                            ▼
-                          write()
-                            │
-                            ▼
-                          Producer (or UNKNOWN)
+     ├── RETURN
+     ├── PARAMETER
+     ├── FIELD
+     └── CONSTRUCTOR
+              │
+              ▼
+        Cross-Method Tracking (v0.8, opt-in)
+              │
+       ┌──────┴──────┐
+       ▼             ▼
+   InputStream    OutputStream
+       │             │
+       ▼             ▼
+     read()        write()
+       │             │
+       ▼             ▼
+   Consumer       Producer
+              │
+              ▼
+     Evidence Graph (v0.9)
+     Raw → Canonical → PATH-*
 ```
 
-SearchPlan bluetooth knobs (all hard-capped):
+Three report layers (do not mix counts):
+
+1. **Raw graph** — all bounded object/dataflow nodes, edges, transfers  
+2. **Canonical graph** — deterministic object IDs (`socket:S1`, `input:I1`, …), deduped edges with provenance  
+3. **Evidence paths** — compact `PATH-*` chains (socket / input / output / combined)
+
+MyBMW example (why steps are FACT, chain is INFERENCE):
+
+```text
+BluetoothSocket create/connect     FACT
+mBtSocket FIELD_STORE/LOAD         FACT
+getInputStream / getOutputStream   FACT
+mInputStream / mOutputStream       FACT
+InputStream.read* / write*/flush   FACT
+─────────────────────────────────
+End-to-end communication path      INFERENCE
+Runtime / wire / BCL/Etch/RHMI     UNKNOWN
+```
+
+SearchPlan knobs (all hard-capped):
 
 - `caller_depth` (0–2), `dataflow_depth` (0–3)
 - `reconstruct_callers` / `reconstruct_streams` / `reconstruct_read_write`
+- `interprocedural` (default **false**; official `bluetooth_rfcomm` plan sets true)
+- `max_method_hops` ≤ 5, `max_field_hops` ≤ 4, `max_object_nodes` ≤ 500
 - `max_callers` / `max_callees` ≤ 100
 - `max_dataflow_paths` ≤ 100, `max_dataflow_nodes` ≤ 500
+- `evidence_graph.enabled` (default **false**; official plan sets true) plus
+  `canonicalize` / `deduplicate` / `extract_paths` / `include_boundaries` / `max_evidence_paths`
 
 Evidence rules:
 
-- Exact DEX invoke / register-linked socket I/O → **FACT**
+- Exact DEX invoke / register / return / field / constructor flow → **FACT**
+- Chained multi-step path → end-to-end **INFERENCE**
 - Same-method window co-occurrence or name heuristics → **INFERENCE** / `METHOD_NAME_CANDIDATE`
-- Missing consumer/producer → **UNKNOWN** (never REJECTED)
-- End-to-end RFCOMM path stays **INFERENCE**; `runtime_execution_proven: false` unless runtime evidence exists
+- Unresolved cross-method boundary → **UNKNOWN** with exact reason (never REJECTED)
+- Method names (e.g. `doBclHandshake`) are labels only — not protocol proof
 - Profile tokens (SCN6, BCL, Etch, …) remain **CORRELATION** only — never APK FACT
+- Ranking reorders review priority only; it never changes classification
+- Raw node/edge totals are **not** communication-operation counts
 
 ### 2. Artifact Bundle (base + splits)
 

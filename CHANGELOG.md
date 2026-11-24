@@ -1,5 +1,29 @@
 # Changelog
 
+## 0.9.0
+
+- **Evidence Graph**: Raw object/dataflow → canonical objects/nodes/edges → compact `PATH-*` evidence paths
+- Deterministic object IDs (`socket:S*`, `input:I*`, `output:O*`) with provenance back to raw evidence
+- Exact UNKNOWN **boundaries** (`return_no_move_result`, hop/node caps, cycles, unresolved parameter/field, …)
+- Deduplication of duplicate field/call/stream transfers without dropping raw provenance
+- Ranking for review order only — never changes FACT/INFERENCE/UNKNOWN
+- Method names never imply protocol semantics (`doBclHandshake` ≠ BCL)
+- Cross-version evidence scaffold (`ADDED`/`REMOVED`/`UNCHANGED`/`CHANGED` fingerprints)
+- SearchPlan `evidence_graph` (default disabled; official `bluetooth_rfcomm` enables it)
+- Resource estimator accounts for evidence-graph work without silent plan rewrite
+- Report: executive summary + evidence paths + boundaries; raw vs canonical counts separated
+
+## 0.8.0
+
+- **Cross-method Bluetooth object-flow**: bounded return / parameter / field / constructor tracking for `BluetoothSocket`, `InputStream`, `OutputStream`
+- Stream wrappers (`Buffered*` / `Data*`) with object-linked read/write detection
+- Cycle detection + hard caps: `max_method_hops`, `max_field_hops`, `max_object_nodes`
+- Caller reduction: direct / depth_1 / depth_2 / duplicate / truncated (+ unique chains)
+- SearchPlan: `interprocedural` (default `false` for backward compatibility); official `bluetooth_rfcomm` plan enables it
+- Extended `BluetoothDataflowPath` (`objects`, `edges`, `boundaries`, `input_read_chain` / `output_write_chain`, ranking)
+- Resource estimator accounts for interprocedural hops/nodes without silent plan rewrite
+- End-to-end path stays **INFERENCE**; unresolved boundaries are **UNKNOWN** (never REJECTED)
+
 ## 0.7.0
 
 - **RFCOMM caller reconstruction** (bounded depth ≤ 2; multi-caller FACT via DEX invoke refs)

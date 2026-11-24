@@ -15,7 +15,7 @@ def test_bluetooth_path_skipped_without_androguard(synthetic_apk: Path, tmp_path
             tmp_path / "out",
             config=AnalysisConfig(formats=("json", "markdown"), bluetooth_path=True),
         )
-    assert report.schema_version == "0.3"
+    assert report.schema_version == "0.4"
     assert report.bluetooth_path is not None
     assert report.bluetooth_path["enabled"] is True
     assert report.bluetooth_path["status"] == "skipped"

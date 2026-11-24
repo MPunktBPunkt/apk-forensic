@@ -53,7 +53,7 @@ dex_context:
 
 bluetooth:
   enabled: true
-  dataflow_depth: 2
+  dataflow_depth: 3
   window: 12
   max_paths: 50
   max_results: 100
@@ -65,6 +65,18 @@ bluetooth:
   max_callees: 50
   max_dataflow_paths: 50
   max_dataflow_nodes: 200
+  interprocedural: true
+  max_method_hops: 3
+  max_field_hops: 2
+  max_object_nodes: 500
+
+evidence_graph:
+  enabled: true
+  canonicalize: true
+  deduplicate: true
+  extract_paths: true
+  include_boundaries: true
+  max_evidence_paths: 50
 
 evidence:
   classifications:

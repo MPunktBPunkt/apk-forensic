@@ -120,12 +120,16 @@ BLUETOOTH_BOUNDS = {
     "max_callees": (0, 100),
     "max_dataflow_paths": (0, 100),
     "max_dataflow_nodes": (0, 500),
+    "max_method_hops": (0, 5),
+    "max_field_hops": (0, 4),
+    "max_object_nodes": (0, 500),
 }
 
 BLUETOOTH_BOOL_FIELDS = {
     "reconstruct_callers",
     "reconstruct_streams",
     "reconstruct_read_write",
+    "interprocedural",
 }
 
 MAX_SEARCH_TERMS = 500
@@ -177,6 +181,16 @@ class SearchPlan:
     bluetooth_max_callees: int = 50
     bluetooth_max_dataflow_paths: int = 50
     bluetooth_max_dataflow_nodes: int = 200
+    bluetooth_interprocedural: bool = False
+    bluetooth_max_method_hops: int = 3
+    bluetooth_max_field_hops: int = 2
+    bluetooth_max_object_nodes: int = 500
+    evidence_graph_enabled: bool = False
+    evidence_graph_canonicalize: bool = True
+    evidence_graph_deduplicate: bool = True
+    evidence_graph_extract_paths: bool = True
+    evidence_graph_include_boundaries: bool = True
+    evidence_graph_max_paths: int = 50
     evidence_classifications: list[str] = field(
         default_factory=lambda: ["FACT", "CORRELATION", "INFERENCE", "UNKNOWN"]
     )
@@ -228,6 +242,18 @@ class SearchPlan:
                 "max_callees": self.bluetooth_max_callees,
                 "max_dataflow_paths": self.bluetooth_max_dataflow_paths,
                 "max_dataflow_nodes": self.bluetooth_max_dataflow_nodes,
+                "interprocedural": self.bluetooth_interprocedural,
+                "max_method_hops": self.bluetooth_max_method_hops,
+                "max_field_hops": self.bluetooth_max_field_hops,
+                "max_object_nodes": self.bluetooth_max_object_nodes,
+            },
+            "evidence_graph": {
+                "enabled": self.evidence_graph_enabled,
+                "canonicalize": self.evidence_graph_canonicalize,
+                "deduplicate": self.evidence_graph_deduplicate,
+                "extract_paths": self.evidence_graph_extract_paths,
+                "include_boundaries": self.evidence_graph_include_boundaries,
+                "max_evidence_paths": self.evidence_graph_max_paths,
             },
             "evidence": {
                 "classifications": list(self.evidence_classifications),
@@ -365,6 +391,7 @@ def validate_and_normalize(raw: dict[str, Any]) -> SearchPlan:
         "search",
         "dex_context",
         "bluetooth",
+        "evidence_graph",
         "evidence",
         "limits",
         "output",
@@ -522,6 +549,10 @@ def validate_and_normalize(raw: dict[str, Any]) -> SearchPlan:
         "max_callees",
         "max_dataflow_paths",
         "max_dataflow_nodes",
+        "interprocedural",
+        "max_method_hops",
+        "max_field_hops",
+        "max_object_nodes",
     }
     for key in bt_sec:
         if key not in bt_allowed:
@@ -611,6 +642,62 @@ def validate_and_normalize(raw: dict[str, Any]) -> SearchPlan:
         BLUETOOTH_BOUNDS["max_dataflow_nodes"],
         errors,
         200,
+    )
+    bt_interprocedural = _as_bool(
+        bt_sec.get("interprocedural"), "bluetooth.interprocedural", errors, default=False
+    )
+    bt_max_method_hops = _as_int_in_bounds(
+        bt_sec.get("max_method_hops"),
+        "bluetooth.max_method_hops",
+        BLUETOOTH_BOUNDS["max_method_hops"],
+        errors,
+        3,
+    )
+    bt_max_field_hops = _as_int_in_bounds(
+        bt_sec.get("max_field_hops"),
+        "bluetooth.max_field_hops",
+        BLUETOOTH_BOUNDS["max_field_hops"],
+        errors,
+        2,
+    )
+    bt_max_object_nodes = _as_int_in_bounds(
+        bt_sec.get("max_object_nodes"),
+        "bluetooth.max_object_nodes",
+        BLUETOOTH_BOUNDS["max_object_nodes"],
+        errors,
+        500,
+    )
+
+    eg_sec = _require_mapping(raw.get("evidence_graph"), "evidence_graph", errors)
+    for key in eg_sec:
+        if key not in {
+            "enabled",
+            "canonicalize",
+            "deduplicate",
+            "extract_paths",
+            "include_boundaries",
+            "max_evidence_paths",
+        }:
+            errors.append(f"unknown field: evidence_graph.{key}")
+    eg_enabled = _as_bool(eg_sec.get("enabled"), "evidence_graph.enabled", errors, default=False)
+    eg_canonicalize = _as_bool(
+        eg_sec.get("canonicalize"), "evidence_graph.canonicalize", errors, default=True
+    )
+    eg_deduplicate = _as_bool(
+        eg_sec.get("deduplicate"), "evidence_graph.deduplicate", errors, default=True
+    )
+    eg_extract_paths = _as_bool(
+        eg_sec.get("extract_paths"), "evidence_graph.extract_paths", errors, default=True
+    )
+    eg_include_boundaries = _as_bool(
+        eg_sec.get("include_boundaries"), "evidence_graph.include_boundaries", errors, default=True
+    )
+    eg_max_paths = _as_int_in_bounds(
+        eg_sec.get("max_evidence_paths"),
+        "evidence_graph.max_evidence_paths",
+        (0, 500),
+        errors,
+        50,
     )
 
     evidence_sec = _require_mapping(raw.get("evidence"), "evidence", errors)
@@ -733,6 +820,16 @@ def validate_and_normalize(raw: dict[str, Any]) -> SearchPlan:
         bluetooth_max_callees=bt_max_callees,
         bluetooth_max_dataflow_paths=bt_max_dataflow_paths,
         bluetooth_max_dataflow_nodes=bt_max_dataflow_nodes,
+        bluetooth_interprocedural=bt_interprocedural,
+        bluetooth_max_method_hops=bt_max_method_hops,
+        bluetooth_max_field_hops=bt_max_field_hops,
+        bluetooth_max_object_nodes=bt_max_object_nodes,
+        evidence_graph_enabled=eg_enabled,
+        evidence_graph_canonicalize=eg_canonicalize,
+        evidence_graph_deduplicate=eg_deduplicate,
+        evidence_graph_extract_paths=eg_extract_paths,
+        evidence_graph_include_boundaries=eg_include_boundaries,
+        evidence_graph_max_paths=eg_max_paths,
         evidence_classifications=class_norm,
         max_results=max_results,
         max_contexts=max_contexts,
@@ -796,6 +893,16 @@ def apply_search_plan_to_config(plan: SearchPlan, config: AnalysisConfig) -> Ana
     config.bluetooth_max_callees = plan.bluetooth_max_callees
     config.bluetooth_max_dataflow_paths = plan.bluetooth_max_dataflow_paths
     config.bluetooth_max_dataflow_nodes = plan.bluetooth_max_dataflow_nodes
+    config.bluetooth_interprocedural = plan.bluetooth_interprocedural
+    config.bluetooth_max_method_hops = plan.bluetooth_max_method_hops
+    config.bluetooth_max_field_hops = plan.bluetooth_max_field_hops
+    config.bluetooth_max_object_nodes = plan.bluetooth_max_object_nodes
+    config.evidence_graph = plan.evidence_graph_enabled
+    config.evidence_graph_canonicalize = plan.evidence_graph_canonicalize
+    config.evidence_graph_deduplicate = plan.evidence_graph_deduplicate
+    config.evidence_graph_extract_paths = plan.evidence_graph_extract_paths
+    config.evidence_graph_include_boundaries = plan.evidence_graph_include_boundaries
+    config.evidence_graph_max_paths = plan.evidence_graph_max_paths
     config.max_findings_per_scanner = plan.max_findings
     config.max_xrefs = plan.max_xrefs
     config.max_chains = plan.max_chains

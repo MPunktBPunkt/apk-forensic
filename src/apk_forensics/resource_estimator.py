@@ -50,6 +50,12 @@ class PlanFactors:
     bt_max_dataflow_nodes: int = 0
     bt_reconstruct_callers: bool = False
     bt_reconstruct_streams: bool = False
+    bt_interprocedural: bool = False
+    bt_max_method_hops: int = 0
+    bt_max_field_hops: int = 0
+    bt_max_object_nodes: int = 0
+    evidence_graph: bool = False
+    evidence_graph_max_paths: int = 0
 
     def to_dict(self) -> dict[str, Any]:
         return asdict(self)
@@ -155,6 +161,12 @@ def plan_factors_from_search_plan(plan: SearchPlan | None, *, cli_dex: bool = Fa
         bt_max_dataflow_nodes=int(plan.bluetooth_max_dataflow_nodes) if plan.bluetooth_enabled else 0,
         bt_reconstruct_callers=bool(plan.bluetooth_reconstruct_callers) if plan.bluetooth_enabled else False,
         bt_reconstruct_streams=bool(plan.bluetooth_reconstruct_streams) if plan.bluetooth_enabled else False,
+        bt_interprocedural=bool(plan.bluetooth_interprocedural) if plan.bluetooth_enabled else False,
+        bt_max_method_hops=int(plan.bluetooth_max_method_hops) if plan.bluetooth_enabled else 0,
+        bt_max_field_hops=int(plan.bluetooth_max_field_hops) if plan.bluetooth_enabled else 0,
+        bt_max_object_nodes=int(plan.bluetooth_max_object_nodes) if plan.bluetooth_enabled else 0,
+        evidence_graph=bool(plan.evidence_graph_enabled),
+        evidence_graph_max_paths=int(plan.evidence_graph_max_paths) if plan.evidence_graph_enabled else 0,
     )
 
 
@@ -178,6 +190,14 @@ def estimate_resources(
     PER_BT_CALLER_DEPTH_MB = 10  # * caller_depth * dex_count
     PER_BT_DATAFLOW_DEPTH_MB = 12  # * dataflow_depth * dex_count
     PER_BT_DATAFLOW_NODES_MB = 2  # * (nodes // 100) * dex_count
+    # Tuned so MyBMW-sized bluetooth+interprocedural plans stay WARNING, not REJECT.
+    PER_BT_INTERPROC_BASE_MB = 8
+    PER_BT_METHOD_HOP_MB = 1  # * method_hops * dex
+    PER_BT_FIELD_HOP_MB = 1  # * field_hops * dex
+    PER_BT_OBJECT_NODES_MB = 1  # * (object_nodes // 100) * dex
+    # Keep MyBMW-sized bluetooth+interproc+evidence_graph under hard 2048 MiB (WARNING ok).
+    PER_EVIDENCE_GRAPH_BASE_MB = 4
+    PER_EVIDENCE_PATH_MB = 0  # paths are post-processing; negligible vs object-flow
     PER_NATIVE_MB = 3
     PER_TERM_MB = 1
     PER_DEX_MB_BYTES = 2  # dex_total_mb * 2 when context
@@ -191,6 +211,12 @@ def estimate_resources(
     PER_BT_CALLER_DEPTH_RT = 5  # * caller_depth * dex
     PER_BT_DATAFLOW_DEPTH_RT = 6  # * dataflow_depth * dex
     PER_BT_DATAFLOW_NODES_RT = 2  # * (nodes // 100) * dex
+    PER_BT_INTERPROC_BASE_RT = 8
+    PER_BT_METHOD_HOP_RT = 3  # * method_hops * dex
+    PER_BT_FIELD_HOP_RT = 2  # * field_hops * dex
+    PER_BT_OBJECT_NODES_RT = 1  # * (object_nodes // 100) * dex
+    PER_EVIDENCE_GRAPH_BASE_RT = 5
+    PER_EVIDENCE_PATH_RT = 0
     PER_NATIVE_RUNTIME = 1
     PER_TERM_RUNTIME = 1  # per 10 terms
 
@@ -238,6 +264,22 @@ def estimate_resources(
             reasons.append(f"bt_dataflow_depth={factors.bt_dataflow_depth}")
         if factors.bt_max_dataflow_nodes:
             memory += max(dex_count, 0) * (factors.bt_max_dataflow_nodes // 100) * PER_BT_DATAFLOW_NODES_MB
+        if factors.bt_interprocedural:
+            memory += PER_BT_INTERPROC_BASE_MB
+            memory += max(dex_count, 0) * factors.bt_max_method_hops * PER_BT_METHOD_HOP_MB
+            memory += max(dex_count, 0) * factors.bt_max_field_hops * PER_BT_FIELD_HOP_MB
+            memory += max(dex_count, 0) * (factors.bt_max_object_nodes // 100) * PER_BT_OBJECT_NODES_MB
+            reasons.append("bluetooth interprocedural object-flow")
+            if factors.bt_max_method_hops:
+                reasons.append(f"bt_max_method_hops={factors.bt_max_method_hops}")
+            if factors.bt_max_field_hops:
+                reasons.append(f"bt_max_field_hops={factors.bt_max_field_hops}")
+    if factors.evidence_graph:
+        memory += PER_EVIDENCE_GRAPH_BASE_MB
+        memory += (max(factors.evidence_graph_max_paths, 0) // 10) * PER_EVIDENCE_PATH_MB
+        reasons.append("evidence_graph canonicalize/paths")
+        if factors.evidence_graph_max_paths:
+            reasons.append(f"evidence_graph_max_paths={factors.evidence_graph_max_paths}")
 
     if total_size_mb >= 100:
         reasons.append(f"large input artifact(s) ~{total_size_mb} MiB")
@@ -266,8 +308,16 @@ def estimate_resources(
             runtime += dex_count * factors.bt_dataflow_depth * PER_BT_DATAFLOW_DEPTH_RT
         if factors.bt_max_dataflow_nodes:
             runtime += dex_count * (factors.bt_max_dataflow_nodes // 100) * PER_BT_DATAFLOW_NODES_RT
+        if factors.bt_interprocedural:
+            runtime += PER_BT_INTERPROC_BASE_RT
+            runtime += dex_count * factors.bt_max_method_hops * PER_BT_METHOD_HOP_RT
+            runtime += dex_count * factors.bt_max_field_hops * PER_BT_FIELD_HOP_RT
+            runtime += dex_count * (factors.bt_max_object_nodes // 100) * PER_BT_OBJECT_NODES_RT
     elif factors.bluetooth:
         runtime += 10
+    if factors.evidence_graph:
+        runtime += PER_EVIDENCE_GRAPH_BASE_RT
+        runtime += (max(factors.evidence_graph_max_paths, 0) // 10) * PER_EVIDENCE_PATH_RT
 
     findings = BASE_FINDINGS
     findings += dex_count * PER_DEX_FINDINGS
@@ -316,6 +366,9 @@ def estimate_resources(
             "PER_BT_DATAFLOW_DEPTH_MB": PER_BT_DATAFLOW_DEPTH_MB,
             "PER_BT_CALLER_DEPTH_RT": PER_BT_CALLER_DEPTH_RT,
             "PER_BT_DATAFLOW_DEPTH_RT": PER_BT_DATAFLOW_DEPTH_RT,
+            "PER_BT_INTERPROC_BASE_MB": PER_BT_INTERPROC_BASE_MB,
+            "PER_BT_METHOD_HOP_MB": PER_BT_METHOD_HOP_MB,
+            "PER_BT_FIELD_HOP_MB": PER_BT_FIELD_HOP_MB,
             "BASE_RUNTIME_S": BASE_RUNTIME_S,
             "PER_DEX_CONTEXT_RUNTIME": PER_DEX_CONTEXT_RUNTIME,
         },

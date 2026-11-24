@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import gc
 from collections import defaultdict
 from pathlib import Path
 from typing import Any
@@ -9,6 +10,7 @@ from typing import Any
 from apk_forensics.bluetooth_callers import (
     prioritize_rfcomm_targets,
     reconstruct_caller_paths,
+    summarize_caller_reconstruction,
 )
 from apk_forensics.bluetooth_dataflow import (
     build_candidate_path,
@@ -17,9 +19,11 @@ from apk_forensics.bluetooth_dataflow import (
 )
 from apk_forensics.bluetooth_device import analyze_device_source
 from apk_forensics.bluetooth_matcher import find_bluetooth_hits
+from apk_forensics.bluetooth_object_flow import trace_object_flow
 from apk_forensics.bluetooth_socket import analyze_io_path, analyze_socket_path
 from apk_forensics.bluetooth_uuid import resolve_rfcomm_uuid_argument, resolve_uuid_literal_in_method
 from apk_forensics.config import AnalysisConfig
+from apk_forensics.evidence_graph import build_evidence_graph, empty_evidence_graph
 from apk_forensics.dex_model_adapter import (
     MethodInfo,
     get_androguard_version,
@@ -64,6 +68,7 @@ def empty_bluetooth_section(
         "dataflow_paths": [],
         "input_consumers": [],
         "output_producers": [],
+        "evidence_graph": empty_evidence_graph(enabled=False),
         "warnings": list(warnings or []),
         "limitations": list(BT_LIMITATIONS),
     }
@@ -145,6 +150,16 @@ def run_bluetooth_path_analysis(
         "bluetooth_max_callees": config.bluetooth_max_callees,
         "bluetooth_max_dataflow_paths": config.bluetooth_max_dataflow_paths,
         "bluetooth_max_dataflow_nodes": config.bluetooth_max_dataflow_nodes,
+        "bluetooth_interprocedural": config.bluetooth_interprocedural,
+        "bluetooth_max_method_hops": config.bluetooth_max_method_hops,
+        "bluetooth_max_field_hops": config.bluetooth_max_field_hops,
+        "bluetooth_max_object_nodes": config.bluetooth_max_object_nodes,
+        "evidence_graph": config.evidence_graph,
+        "evidence_graph_canonicalize": config.evidence_graph_canonicalize,
+        "evidence_graph_deduplicate": config.evidence_graph_deduplicate,
+        "evidence_graph_extract_paths": config.evidence_graph_extract_paths,
+        "evidence_graph_include_boundaries": config.evidence_graph_include_boundaries,
+        "evidence_graph_max_paths": config.evidence_graph_max_paths,
     }
 
     if not config.bluetooth_path:
@@ -323,12 +338,9 @@ def run_bluetooth_path_analysis(
 
                 consumers = (io_info.get("input_consumers") or {}) if config.bluetooth_reconstruct_read_write else {}
                 producers = (io_info.get("output_producers") or {}) if config.bluetooth_reconstruct_read_write else {}
-                if consumers:
-                    input_consumers.append({"target": _method_key(method), **consumers})
-                if producers:
-                    output_producers.append({"target": _method_key(method), **producers})
 
                 caller_rec = None
+                caller_summary = None
                 if config.bluetooth_reconstruct_callers:
                     caller_rec = reconstruct_caller_paths(
                         method,
@@ -336,9 +348,53 @@ def run_bluetooth_path_analysis(
                         caller_depth=config.bluetooth_caller_depth,
                         max_callers=config.bluetooth_max_callers,
                     )
+                    caller_summary = summarize_caller_reconstruction(
+                        caller_rec, max_callers_cap=config.bluetooth_max_callers
+                    )
+                    caller_rec["summary"] = caller_summary
                     caller_reconstructions.append(caller_rec)
                     for p in caller_rec.get("paths") or []:
                         caller_paths.append(p)
+
+                object_flow = None
+                if config.bluetooth_interprocedural and config.bluetooth_reconstruct_streams:
+                    object_flow = trace_object_flow(
+                        method,
+                        hit.instruction_index,
+                        kept,
+                        socket_register=socket.get("socket_register"),
+                        max_method_hops=config.bluetooth_max_method_hops,
+                        max_field_hops=config.bluetooth_max_field_hops,
+                        # Analysis budget separate from report truncation (max_dataflow_nodes).
+                        max_object_nodes=config.bluetooth_max_object_nodes,
+                        window=config.bluetooth_window,
+                    )
+                    # Prefer object-flow read/write when present
+                    if object_flow.get("input_read_chain"):
+                        consumers = {
+                            **consumers,
+                            "read_calls": object_flow["input_read_chain"],
+                            "classification": "FACT",
+                            "consumer_status": "FACT",
+                            "confidence": "high",
+                        }
+                        io_info["read_calls"] = object_flow["input_read_chain"]
+                        io_info["input_consumers"] = consumers
+                    if object_flow.get("output_write_chain"):
+                        producers = {
+                            **producers,
+                            "write_calls": object_flow["output_write_chain"],
+                            "classification": "FACT",
+                            "producer_status": "FACT",
+                            "confidence": "high",
+                        }
+                        io_info["write_calls"] = object_flow["output_write_chain"]
+                        io_info["output_producers"] = producers
+
+                if consumers:
+                    input_consumers.append({"target": _method_key(method), **consumers})
+                if producers:
+                    output_producers.append({"target": _method_key(method), **producers})
 
                 method_text = "\n".join(ins.text for ins in method.instructions)
                 profiles = collect_profile_correlations(method_text, scope="same_method")
@@ -358,6 +414,8 @@ def run_bluetooth_path_analysis(
                     profile_correlations=profiles,
                 )
                 path["caller_reconstruction"] = caller_rec
+                path["caller_summary"] = caller_summary
+                path["object_flow"] = object_flow
                 path["artifact_sha256"] = artifact_sha256
                 paths.append(path)
 
@@ -373,7 +431,9 @@ def run_bluetooth_path_analysis(
                             "evidence_level": "instruction_context",
                         }
                     input_info = None
-                    if socket.get("has_input_stream"):
+                    if socket.get("has_input_stream") or any(
+                        t.get("kind") == "get_input_stream" for t in (object_flow or {}).get("transfers") or []
+                    ):
                         input_info = {
                             "method": "BluetoothSocket.getInputStream",
                             "classification": sock_cls,
@@ -381,7 +441,9 @@ def run_bluetooth_path_analysis(
                             "evidence_level": "instruction_context",
                         }
                     output_info = None
-                    if socket.get("has_output_stream"):
+                    if socket.get("has_output_stream") or any(
+                        t.get("kind") == "get_output_stream" for t in (object_flow or {}).get("transfers") or []
+                    ):
                         output_info = {
                             "method": "BluetoothSocket.getOutputStream",
                             "classification": sock_cls,
@@ -390,7 +452,6 @@ def run_bluetooth_path_analysis(
                         }
                     read_chain = list(consumers.get("read_calls") or [])[: config.bluetooth_dataflow_depth + 1]
                     write_chain = list(producers.get("write_calls") or [])[: config.bluetooth_dataflow_depth + 1]
-                    # Depth bound: truncate chains further by configured dataflow depth.
                     depth = max(0, min(config.bluetooth_dataflow_depth, 3))
                     read_chain = read_chain[: max(1, depth)] if depth else []
                     write_chain = write_chain[: max(1, depth)] if depth else []
@@ -416,12 +477,29 @@ def run_bluetooth_path_analysis(
                             "caller_count": (caller_rec or {}).get("caller_count", 0),
                             "callers": (caller_rec or {}).get("callers") or [],
                             "classification": (caller_rec or {}).get("classification"),
+                            "summary": caller_summary,
                         }
                         if caller_rec
                         else None,
                         max_nodes=config.bluetooth_max_dataflow_nodes,
+                        object_flow=object_flow,
+                        caller_summary=caller_summary,
                     )
                     dataflow_paths.append(df)
+                    # Drop bulky per-path object_flow graphs after BTDATA materialization.
+                    if object_flow is not None:
+                        path["object_flow"] = {
+                            "objects": object_flow.get("objects"),
+                            "boundaries": object_flow.get("boundaries"),
+                            "socket_transfers": object_flow.get("socket_transfers"),
+                            "stream_transfers": object_flow.get("stream_transfers"),
+                            "input_read_chain": object_flow.get("input_read_chain"),
+                            "output_write_chain": object_flow.get("output_write_chain"),
+                            "ranking_score": object_flow.get("ranking_score"),
+                            "confidence": object_flow.get("confidence"),
+                            "limitations": object_flow.get("limitations"),
+                        }
+                    gc.collect()
 
                 targets.append(
                     {
@@ -438,6 +516,7 @@ def run_bluetooth_path_analysis(
                         "uuid": uuid_res.get("uuid"),
                         "uuid_source_type": uuid_res.get("source_type"),
                         "caller_count": (caller_rec or {}).get("caller_count", 0),
+                        "caller_summary": caller_summary,
                     }
                 )
 
@@ -458,6 +537,8 @@ def run_bluetooth_path_analysis(
             # Keep priority order from ordered_hits (already strongest-first).
             for idx, path in enumerate(paths, start=1):
                 path["display_id"] = f"BTPATH-{idx:06d}"
+            # Ranking reorders review priority only — does not change classifications.
+            dataflow_paths.sort(key=lambda d: (-int(d.get("ranking_score") or 0), d.get("target") or ""))
             for idx, df in enumerate(dataflow_paths, start=1):
                 df["display_id"] = f"BTDATA-{idx:06d}"
 
@@ -491,21 +572,60 @@ def run_bluetooth_path_analysis(
                 warnings=[str(exc)],
             )
 
+    socket_transfers = sum(len((p.get("object_flow") or {}).get("socket_transfers") or []) for p in paths)
+    stream_transfers = sum(len((p.get("object_flow") or {}).get("stream_transfers") or []) for p in paths)
+    dataflow_nodes = sum(int((d.get("node_count") or 0)) for d in dataflow_paths)
+    dataflow_edges = sum(int((d.get("edge_count") or 0)) for d in dataflow_paths)
+    caller_summaries = [c.get("summary") for c in caller_reconstructions if c.get("summary")]
     dataflow_section = {
         "targets": len(targets),
         "caller_paths": len(caller_paths),
+        "caller_summaries": caller_summaries,
         "dataflow_paths": len(dataflow_paths),
+        "dataflow_nodes": dataflow_nodes,
+        "dataflow_edges": dataflow_edges,
+        "socket_transfers": socket_transfers,
+        "stream_transfers": stream_transfers,
         "input_consumers": len(
-            [c for c in input_consumers if c.get("consumer_status") not in (None, "UNKNOWN") or c.get("read_calls")]
+            [c for c in input_consumers if (c.get("read_calls") or c.get("consumer_status") not in (None, "UNKNOWN"))]
         ),
         "output_producers": len(
-            [p for p in output_producers if p.get("producer_status") not in (None, "UNKNOWN") or p.get("write_calls")]
+            [p for p in output_producers if (p.get("write_calls") or p.get("producer_status") not in (None, "UNKNOWN"))]
         ),
         "paths": dataflow_paths,
         "caller_reconstructions": caller_reconstructions,
         "input_consumer_details": input_consumers,
         "output_producer_details": output_producers,
     }
+
+    if config.evidence_graph:
+        evidence_graph = build_evidence_graph(
+            dataflow_paths=dataflow_paths,
+            apk_sha256=artifact_sha256,
+            enabled=True,
+            canonicalize=config.evidence_graph_canonicalize,
+            deduplicate=config.evidence_graph_deduplicate,
+            extract_paths=config.evidence_graph_extract_paths,
+            include_boundaries=config.evidence_graph_include_boundaries,
+            max_evidence_paths=config.evidence_graph_max_paths,
+        )
+        # Fill cross-version comparable counts from this analysis.
+        cv = evidence_graph.get("cross_version_evidence") or {}
+        comparable = cv.get("comparable") or {}
+        comparable.update(
+            {
+                "rfcomm_targets": len(targets),
+                "uuid_resolutions": len(uuid_resolutions),
+                "bluetooth_paths": len(paths),
+                "caller_paths": len(caller_paths),
+                "input_consumers": dataflow_section["input_consumers"],
+                "output_producers": dataflow_section["output_producers"],
+            }
+        )
+        cv["comparable"] = comparable
+        evidence_graph["cross_version_evidence"] = cv
+    else:
+        evidence_graph = empty_evidence_graph(enabled=False)
 
     return {
         "enabled": True,
@@ -523,6 +643,7 @@ def run_bluetooth_path_analysis(
         "input_consumers": input_consumers,
         "output_producers": output_producers,
         "bluetooth_dataflow": dataflow_section,
+        "evidence_graph": evidence_graph,
         "warnings": warnings,
         "limitations": list(BT_LIMITATIONS),
         "duration_ms": timing["duration_ms"],
@@ -535,8 +656,18 @@ def run_bluetooth_path_analysis(
             "paths": len(paths),
             "caller_paths": len(caller_paths),
             "dataflow_paths": len(dataflow_paths),
+            "dataflow_nodes": dataflow_nodes,
+            "dataflow_edges": dataflow_edges,
+            "socket_transfers": socket_transfers,
+            "stream_transfers": stream_transfers,
             "input_consumers": dataflow_section["input_consumers"],
             "output_producers": dataflow_section["output_producers"],
+            "raw_nodes": (evidence_graph.get("raw") or {}).get("nodes", 0),
+            "raw_edges": (evidence_graph.get("raw") or {}).get("edges", 0),
+            "canonical_objects": (evidence_graph.get("canonical") or {}).get("objects", 0),
+            "canonical_nodes": (evidence_graph.get("canonical") or {}).get("nodes", 0),
+            "canonical_edges": (evidence_graph.get("canonical") or {}).get("edges", 0),
+            "evidence_paths": (evidence_graph.get("canonical") or {}).get("paths", 0),
             "methods_indexed": indexed,
             "methods_retained": len(kept),
         },

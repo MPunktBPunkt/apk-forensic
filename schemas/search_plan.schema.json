@@ -110,7 +110,24 @@
         "max_callers": { "type": "integer", "minimum": 0, "maximum": 100 },
         "max_callees": { "type": "integer", "minimum": 0, "maximum": 100 },
         "max_dataflow_paths": { "type": "integer", "minimum": 0, "maximum": 100 },
-        "max_dataflow_nodes": { "type": "integer", "minimum": 0, "maximum": 500 }
+        "max_dataflow_nodes": { "type": "integer", "minimum": 0, "maximum": 500 },
+        "interprocedural": { "type": "boolean" },
+        "max_method_hops": { "type": "integer", "minimum": 0, "maximum": 5 },
+        "max_field_hops": { "type": "integer", "minimum": 0, "maximum": 4 },
+        "max_object_nodes": { "type": "integer", "minimum": 0, "maximum": 500 }
+      }
+    },
+    "evidence_graph": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "v0.9 canonical evidence graph extraction from raw Bluetooth object/dataflow.",
+      "properties": {
+        "enabled": { "type": "boolean" },
+        "canonicalize": { "type": "boolean" },
+        "deduplicate": { "type": "boolean" },
+        "extract_paths": { "type": "boolean" },
+        "include_boundaries": { "type": "boolean" },
+        "max_evidence_paths": { "type": "integer", "minimum": 0, "maximum": 500 }
       }
     },
     "evidence": {

@@ -60,6 +60,18 @@ class AnalysisConfig:
     bluetooth_max_callees: int = 50
     bluetooth_max_dataflow_paths: int = 50
     bluetooth_max_dataflow_nodes: int = 200
+    # v0.8 interprocedural object-flow (default off for plan backward compatibility)
+    bluetooth_interprocedural: bool = False
+    bluetooth_max_method_hops: int = 3
+    bluetooth_max_field_hops: int = 2
+    bluetooth_max_object_nodes: int = 500
+    # v0.9 evidence graph (default off for plan backward compatibility)
+    evidence_graph: bool = False
+    evidence_graph_canonicalize: bool = True
+    evidence_graph_deduplicate: bool = True
+    evidence_graph_extract_paths: bool = True
+    evidence_graph_include_boundaries: bool = True
+    evidence_graph_max_paths: int = 50
     # v0.4 storage / cache
     keep_work: bool = False
     use_cache: bool = False

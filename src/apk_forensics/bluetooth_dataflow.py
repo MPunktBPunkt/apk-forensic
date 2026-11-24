@@ -268,13 +268,16 @@ def build_dataflow_path(
     write_chain: list[dict[str, Any]],
     caller_reconstruction: dict[str, Any] | None,
     max_nodes: int,
+    object_flow: dict[str, Any] | None = None,
+    caller_summary: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     """Build a BluetoothDataflowPath evidence object (BTDATA-*)."""
     nodes: list[dict[str, Any]] = []
+    edges: list[dict[str, Any]] = []
     seen_keys: set[str] = set()
 
     def add(node: dict[str, Any]) -> None:
-        key = f"{node.get('type')}|{node.get('value')}|{node.get('classification')}"
+        key = f"{node.get('type')}|{node.get('value')}|{node.get('classification')}|{node.get('node_id')}"
         if key in seen_keys or len(nodes) >= max_nodes:
             return
         seen_keys.add(key)
@@ -283,6 +286,7 @@ def build_dataflow_path(
     add(
         {
             "type": "method",
+            "node_type": "METHOD_CALL",
             "value": target_method,
             "role": "target",
             "classification": "FACT",
@@ -292,6 +296,7 @@ def build_dataflow_path(
     add(
         {
             "type": "api",
+            "node_type": "SOCKET",
             "value": socket_creation.get("method") or "createRfcommSocketToServiceRecord",
             "role": "socket_creation",
             "classification": socket_creation.get("classification") or "FACT",
@@ -302,6 +307,7 @@ def build_dataflow_path(
         add(
             {
                 "type": "api",
+                "node_type": "METHOD_CALL",
                 "value": connect.get("method") or "BluetoothSocket.connect",
                 "role": "connect",
                 "classification": connect.get("classification") or "FACT",
@@ -312,6 +318,7 @@ def build_dataflow_path(
         add(
             {
                 "type": "api",
+                "node_type": "INPUT_STREAM",
                 "value": input_info.get("method") or "BluetoothSocket.getInputStream",
                 "role": "input",
                 "classification": input_info.get("classification") or "FACT",
@@ -322,26 +329,37 @@ def build_dataflow_path(
         add(
             {
                 "type": "api",
+                "node_type": "OUTPUT_STREAM",
                 "value": output_info.get("method") or "BluetoothSocket.getOutputStream",
                 "role": "output",
                 "classification": output_info.get("classification") or "FACT",
                 "confidence": output_info.get("confidence") or "high",
             }
         )
-    for step in read_chain:
+
+    flow = object_flow or {}
+    for node in flow.get("nodes") or []:
+        add(node)
+    edges.extend(list(flow.get("edges") or []))
+
+    input_read_chain = list(flow.get("input_read_chain") or read_chain or [])
+    output_write_chain = list(flow.get("output_write_chain") or write_chain or [])
+    for step in input_read_chain:
         add(
             {
                 "type": "io",
+                "node_type": "READ",
                 "value": step.get("text") or "InputStream.read",
                 "role": "read",
                 "classification": step.get("classification") or "UNKNOWN",
                 "confidence": step.get("confidence") or "low",
             }
         )
-    for step in write_chain:
+    for step in output_write_chain:
         add(
             {
                 "type": "io",
+                "node_type": "WRITE",
                 "value": step.get("text") or "OutputStream.write",
                 "role": "write",
                 "classification": step.get("classification") or "UNKNOWN",
@@ -349,26 +367,53 @@ def build_dataflow_path(
             }
         )
 
+    caller_chain: list[str] = []
+    if caller_summary and caller_summary.get("primary_chain"):
+        caller_chain = list((caller_summary["primary_chain"] or {}).get("chain") or [])
+    elif caller_reconstruction:
+        for c in (caller_reconstruction.get("callers") or [])[:3]:
+            if c.get("method"):
+                caller_chain.append(str(c["method"]))
+        caller_chain.append(target_method)
+
+    objects = list(flow.get("objects") or [])
+    object_ids = [o.get("object_id") for o in objects if o.get("object_id")]
+
     stages_present = sum(
         1
-        for x in (True, bool(connect), bool(input_info), bool(output_info), bool(read_chain), bool(write_chain))
+        for x in (
+            True,
+            bool(connect),
+            bool(input_info),
+            bool(output_info),
+            bool(input_read_chain),
+            bool(output_write_chain),
+        )
         if x
     )
-    if stages_present >= 4 and (read_chain or write_chain):
-        structure = "PARTIAL"
-        confidence = "medium"
-    elif stages_present >= 3:
-        structure = "PARTIAL"
-        confidence = "medium"
-    else:
-        structure = "PARTIAL"
-        confidence = "low"
+    structure = "PARTIAL"
+    confidence = flow.get("confidence") or (
+        "medium" if stages_present >= 3 else "low"
+    )
+    ranking = int(flow.get("ranking_score") or 0)
+    if connect:
+        ranking += 5
+    if input_info:
+        ranking += 5
+    if output_info:
+        ranking += 5
+    if caller_chain:
+        ranking += 3
 
     return {
         "id": _dataflow_id(target_method, path_id or "", str(len(nodes))),
         "display_id": "",
         "target": target_method,
         "path_id": path_id,
+        "caller_chain": caller_chain,
+        "caller_summary": caller_summary,
+        "objects": object_ids,
+        "object_details": objects,
         "socket_creation": {
             "method": socket_creation.get("method") or "createRfcommSocketToServiceRecord",
             "classification": socket_creation.get("classification") or "FACT",
@@ -378,11 +423,18 @@ def build_dataflow_path(
         "connect": connect,
         "input": input_info,
         "output": output_info,
-        "read_chain": read_chain,
-        "write_chain": write_chain,
+        "read_chain": input_read_chain,
+        "write_chain": output_write_chain,
+        "input_read_chain": input_read_chain,
+        "output_write_chain": output_write_chain,
+        "transfers": list(flow.get("transfers") or []),
+        "boundaries": list(flow.get("boundaries") or []),
         "caller_reconstruction": caller_reconstruction,
-        "nodes": nodes,
+        "nodes": nodes[:max_nodes],
+        "edges": edges,
         "node_count": len(nodes),
+        "edge_count": len(edges),
+        "ranking_score": ranking,
         "classification": "INFERENCE",
         "structure": structure,
         "confidence": confidence,
@@ -392,9 +444,11 @@ def build_dataflow_path(
             "BluetoothDataflowPath is a bounded static reconstruction, not runtime proof.",
             "PARTIAL describes structural completeness; evidence classes remain FACT/INFERENCE/UNKNOWN.",
             "Protocol names (BCL/Etch/SCN6) are never inferred from stream I/O alone.",
+            "Ranking prioritizes review order and never changes classification.",
         ],
         "limitations": [
             "Bounded dataflow only; no full SSA or global data-flow graph.",
             "Missing read/write consumers are UNKNOWN, not REJECTED.",
-        ],
+        ]
+        + list(flow.get("limitations") or []),
     }

@@ -464,16 +464,26 @@ def _render_bluetooth_path_markdown(bt: dict) -> list[str]:
     lines.append(
         f"| Dataflow paths | {counts.get('dataflow_paths', len(bt.get('dataflow_paths') or []))} |"
     )
+    lines.append(f"| Dataflow nodes | {counts.get('dataflow_nodes', 0)} |")
+    lines.append(f"| Socket transfers | {counts.get('socket_transfers', 0)} |")
+    lines.append(f"| Stream transfers | {counts.get('stream_transfers', 0)} |")
     lines.append(f"| InputStream consumers | {counts.get('input_consumers', 0)} |")
     lines.append(f"| OutputStream producers | {counts.get('output_producers', 0)} |")
+    lines.append(f"| Raw dataflow nodes | {counts.get('dataflow_nodes', 0)} |")
+    lines.append(f"| Raw dataflow edges | {counts.get('dataflow_edges', 0)} |")
+    lines.append(f"| Canonical objects | {counts.get('canonical_objects', 0)} |")
+    lines.append(f"| Canonical nodes | {counts.get('canonical_nodes', 0)} |")
+    lines.append(f"| Evidence paths | {counts.get('evidence_paths', 0)} |")
     lines.append("")
     lines.append(
         "> A statically reconstructed Bluetooth path is not proof of runtime execution.  \n"
         "> A statically resolved SPP UUID is not proof that an RFCOMM channel was opened at runtime.  \n"
         "> The analyzer does not infer RFCOMM channel numbers such as SCN6.  \n"
-        "> Profile matches are correlations and do not constitute protocol proof."
+        "> Profile matches are correlations and do not constitute protocol proof.  \n"
+        "> Raw node/edge counts are not communication-operation counts."
     )
     lines.append("")
+    lines.extend(_render_evidence_graph_markdown(bt))
 
     lines.append("### High-Priority Paths")
     lines.append("")
@@ -539,6 +549,90 @@ def _render_bluetooth_path_markdown(bt: dict) -> list[str]:
         lines.append("")
 
     lines.extend(_render_bluetooth_dataflow_markdown(bt))
+    return lines
+
+
+def _render_evidence_graph_markdown(bt: dict) -> list[str]:
+    lines: list[str] = []
+    eg = bt.get("evidence_graph") or {}
+    if not eg.get("enabled"):
+        return lines
+    summary = eg.get("summary") or {}
+    raw = eg.get("raw") or {}
+    canon = eg.get("canonical") or {}
+    lines.append("## Evidence Graph (v0.9)")
+    lines.append("")
+    lines.append("### Executive Summary")
+    lines.append("")
+    lines.append("| Layer | Metric | Value |")
+    lines.append("|---|---|---:|")
+    lines.append(f"| Raw | nodes | {raw.get('nodes', 0)} |")
+    lines.append(f"| Raw | edges | {raw.get('edges', 0)} |")
+    lines.append(f"| Raw | transfers | {raw.get('transfers', 0)} |")
+    lines.append(f"| Canonical | objects | {canon.get('objects', 0)} |")
+    lines.append(f"| Canonical | nodes | {canon.get('nodes', 0)} |")
+    lines.append(f"| Canonical | edges | {canon.get('edges', 0)} |")
+    lines.append(f"| Evidence | paths | {summary.get('evidence_paths', 0)} |")
+    lines.append(f"| Evidence | input paths | {summary.get('input_paths', 0)} |")
+    lines.append(f"| Evidence | output paths | {summary.get('output_paths', 0)} |")
+    lines.append(
+        f"| Evidence | combined communication paths | {summary.get('combined_communication_paths', 0)} |"
+    )
+    lines.append("")
+    lines.append(
+        f"**Strongest path:** `{_md_escape(summary.get('strongest_path_id'))}` "
+        f"({_md_escape(summary.get('strongest_path_kind'))}) — "
+        f"`{_md_escape(summary.get('strongest_classification'))}` / "
+        f"`{_md_escape(summary.get('strongest_confidence'))}`"
+    )
+    lines.append("")
+    lines.append(f"- Runtime execution: `{_md_escape(summary.get('runtime_execution'))}`")
+    lines.append(f"- Wire correlation: `{_md_escape(summary.get('wire_correlation'))}`")
+    lines.append(f"- Protocol semantics: `{_md_escape(summary.get('protocol_semantics'))}`")
+    lines.append("")
+    lines.append("### Evidence Paths")
+    lines.append("")
+    for path in list(eg.get("evidence_paths") or [])[:20]:
+        lines.append(f"#### {_md_escape(path.get('display_id') or path.get('path_id'))}")
+        lines.append("")
+        lines.append(f"- Kind: `{_md_escape(path.get('kind'))}`")
+        lines.append(
+            f"- End-to-end: `{_md_escape(path.get('classification'))}` / "
+            f"`{_md_escape(path.get('confidence'))}`"
+        )
+        lines.append(f"- Protocol semantics: `{_md_escape(path.get('protocol_semantics'))}`")
+        lines.append("")
+        lines.append("```text")
+        for step in path.get("steps") or []:
+            lines.append(
+                f"{step.get('label')}  [{step.get('classification')}/{step.get('confidence')}]"
+            )
+        lines.append("```")
+        lines.append("")
+        if path.get("boundary"):
+            b = path["boundary"]
+            lines.append(
+                f"- Boundary: reason=`{_md_escape(b.get('reason'))}` "
+                f"object=`{_md_escape(b.get('object'))}` "
+                f"classification=`{_md_escape(b.get('classification'))}`"
+            )
+            lines.append("")
+    lines.append("### Boundaries")
+    lines.append("")
+    boundaries = list(eg.get("boundaries") or [])
+    if not boundaries:
+        lines.append("_No explicit UNKNOWN boundaries on extracted evidence paths._")
+        lines.append("")
+    else:
+        for b in boundaries[:30]:
+            lines.append(
+                f"- `{_md_escape(b.get('boundary_id'))}` "
+                f"reason=`{_md_escape(b.get('reason'))}` "
+                f"object=`{_md_escape(b.get('object'))}` "
+                f"method=`{_md_escape(b.get('method'))}` "
+                f"[{_md_escape(b.get('classification'))}]"
+            )
+        lines.append("")
     return lines
 
 

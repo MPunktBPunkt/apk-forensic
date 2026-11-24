@@ -188,6 +188,14 @@ def build_parser() -> argparse.ArgumentParser:
     scan.add_argument("--bluetooth-max-callers", type=int, default=50)
     scan.add_argument("--bluetooth-max-dataflow-paths", type=int, default=50)
     scan.add_argument("--bluetooth-max-dataflow-nodes", type=int, default=200)
+    scan.add_argument(
+        "--bluetooth-interprocedural",
+        action="store_true",
+        help="Enable bounded cross-method socket/stream object-flow (v0.8)",
+    )
+    scan.add_argument("--bluetooth-max-method-hops", type=int, default=3)
+    scan.add_argument("--bluetooth-max-field-hops", type=int, default=2)
+    scan.add_argument("--bluetooth-max-object-nodes", type=int, default=500)
 
     storage_cmd = sub.add_parser("storage", help="Show managed workspace storage usage.")
     storage_cmd.add_argument(
@@ -522,6 +530,10 @@ def _cmd_scan(args: argparse.Namespace) -> int:
         bluetooth_max_callers=int(args.bluetooth_max_callers),
         bluetooth_max_dataflow_paths=int(args.bluetooth_max_dataflow_paths),
         bluetooth_max_dataflow_nodes=int(args.bluetooth_max_dataflow_nodes),
+        bluetooth_interprocedural=bool(getattr(args, "bluetooth_interprocedural", False)),
+        bluetooth_max_method_hops=int(getattr(args, "bluetooth_max_method_hops", 3)),
+        bluetooth_max_field_hops=int(getattr(args, "bluetooth_max_field_hops", 2)),
+        bluetooth_max_object_nodes=int(getattr(args, "bluetooth_max_object_nodes", 500)),
         keep_work=bool(args.keep_work),
         use_cache=bool(args.use_cache),
         copy_input=bool(args.copy_input),
@@ -787,8 +799,23 @@ def _cmd_scan(args: argparse.Namespace) -> int:
         print(f"Bluetooth paths: {bt_counts.get('paths', len(bt.get('paths') or []))}")
         print(f"RFCOMM callers: {bt_counts.get('caller_paths', len(bt.get('caller_paths') or []))}")
         print(f"Dataflow paths: {bt_counts.get('dataflow_paths', len(bt.get('dataflow_paths') or []))}")
+        print(f"Dataflow nodes: {bt_counts.get('dataflow_nodes', 0)}")
+        print(f"Socket transfers: {bt_counts.get('socket_transfers', 0)}")
+        print(f"Stream transfers: {bt_counts.get('stream_transfers', 0)}")
         print(f"InputStream consumers: {bt_counts.get('input_consumers', 0)}")
         print(f"OutputStream producers: {bt_counts.get('output_producers', 0)}")
+        eg = bt.get("evidence_graph") or {}
+        if eg.get("enabled"):
+            eg_sum = eg.get("summary") or {}
+            print(f"Evidence paths: {eg_sum.get('evidence_paths', bt_counts.get('evidence_paths', 0))}")
+            print(f"Canonical nodes: {bt_counts.get('canonical_nodes', (eg.get('canonical') or {}).get('nodes', 0))}")
+            print(f"Strongest evidence: {eg_sum.get('strongest_path_id')} ({eg_sum.get('strongest_path_kind')})")
+            print(
+                f"End-to-end: {eg_sum.get('strongest_classification')}/"
+                f"{eg_sum.get('strongest_confidence')} "
+                f"runtime={eg_sum.get('runtime_execution')} "
+                f"protocol={eg_sum.get('protocol_semantics')}"
+            )
     print(f"Warnings: {warning_count}")
     if "json" in outputs:
         print(f"JSON: {outputs['json']}")
