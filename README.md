@@ -1,8 +1,8 @@
 # apk-forensics
 
-Local, static APK forensics toolkit (v1.2.0).
+Local, static APK forensics toolkit (v1.4.0).
 
-It turns Android APKs into reproducible static fingerprints: hashes, ZIP inventory, manifest metadata (when available), DEX/native inventories, readable strings, UUID/port/API candidates, optional profile correlations, optional DEX context / Bluetooth RFCOMM path analysis with **bounded caller reconstruction**, **cross-method socket/stream object-flow**, a **canonical Transport Evidence Graph**, and a **Communication Evidence Graph** (bytes/buffers → decoder/encoder → message/object — without protocol guessing), plus **resource-estimate breakdown / estimate-vs-actual calibration** and **path coverage** (COMPLETE/TRUNCATED/BOUNDARY) kept separate from evidence classes, **ArtifactBundles**, controlled **workspace storage lifecycle**, a declarative **SearchPlan** layer, and an **AnalysisJob + Resource Guard** for deterministic preflight budgeting.
+It turns Android APKs into reproducible static fingerprints: hashes, ZIP inventory, manifest metadata (when available), DEX/native inventories, readable strings, UUID/port/API candidates, optional profile correlations, optional DEX context / Bluetooth RFCOMM path analysis with **bounded caller reconstruction**, **cross-method socket/stream object-flow**, a **canonical Transport Evidence Graph**, and a **Communication Evidence Graph** (bytes/buffers → decoder/encoder → message/object — without protocol guessing), plus **transport-to-byte evidence closure** and **buffer-to-semantics closure** (T5 byte processing / S0–S4 — without protocol guessing), **resource-estimate breakdown / estimate-vs-actual calibration** and **path coverage** (COMPLETE/TRUNCATED/BOUNDARY) kept separate from evidence classes, **ArtifactBundles**, controlled **workspace storage lifecycle**, a declarative **SearchPlan** layer, and an **AnalysisJob + Resource Guard** for deterministic preflight budgeting.
 
 ## Purpose
 
@@ -159,6 +159,31 @@ apk-forensics scan ./app.apk \
 - `REJECT` → never started (no override)  
 
 The guard **never** silently lowers `xref_depth`, disables modules, or rewrites the plan.
+
+### Buffer-to-Semantics Closure (v1.4)
+
+```bash
+apk-forensics diagnose-buffer-semantics \
+  --from-report ./output/bmw-connected-600-v10/report.json \
+  --apk ./artifacts/de.bmw.connected-6.0.0.4962.apk \
+  --v13-closure ./output/v13-closure/TRANSPORT_EVIDENCE_CLOSURE_REPORT.json \
+  --baseline-meta ./output/v13-baseline/BASELINE_META.json \
+  --expand-interface-consumers \
+  --output ./output/v14-semantic-closure
+```
+
+Audits why T5 was 0/13, expands seeds to interface buffer consumers when requested, and classifies S0–S4. Protocol semantics stay **UNKNOWN**.
+
+### Transport-to-Byte Evidence Closure (v1.3)
+
+```bash
+apk-forensics diagnose-transport-closure \
+  --from-report ./output/bmw-connected-600-v10/report.json \
+  --baseline-meta ./output/v13-baseline/BASELINE_META.json \
+  --output ./output/v13-closure
+```
+
+Classifies each `PATH-*` through stages **T0–T6** (Socket→Stream→I/O→Buffer→Consumer→Decoder candidate→PATH-COMM) with FACT/CORRELATION/INFERENCE/UNKNOWN edges. Does **not** raise `max_field_hops` or invent protocol semantics. Reports: `TRANSPORT_EVIDENCE_CLOSURE_REPORT`, `OBJECT_IDENTITY_COVERAGE_REPORT`, `BUFFER_DATAFLOW_REPORT`, `PATH_TERMINATION_ANALYSIS`.
 
 ### Field / Alias Coverage (v1.2)
 

@@ -293,6 +293,54 @@ def build_parser() -> argparse.ArgumentParser:
     )
     field_cmd.add_argument("--output", type=Path, required=True, help="Output directory")
 
+    closure_cmd = sub.add_parser(
+        "diagnose-transport-closure",
+        help="v1.3 transport-to-byte evidence closure from a persisted report (offline).",
+    )
+    closure_cmd.add_argument(
+        "--from-report",
+        type=Path,
+        required=True,
+        help="report.json with bluetooth + communication evidence",
+    )
+    closure_cmd.add_argument("--output", type=Path, required=True, help="Output directory")
+    closure_cmd.add_argument(
+        "--baseline-meta",
+        type=Path,
+        default=None,
+        help="Optional BASELINE_META.json from a frozen v1.2 snapshot",
+    )
+
+    sem_cmd = sub.add_parser(
+        "diagnose-buffer-semantics",
+        help="v1.4 buffer-to-semantics closure (T5 audit + optional interface-consumer expansion).",
+    )
+    sem_cmd.add_argument("--from-report", type=Path, required=True, help="Persisted report.json")
+    sem_cmd.add_argument("--output", type=Path, required=True, help="Output directory")
+    sem_cmd.add_argument(
+        "--apk",
+        type=Path,
+        default=None,
+        help="APK for expanded communication re-analysis (interface consumers)",
+    )
+    sem_cmd.add_argument(
+        "--v13-closure",
+        type=Path,
+        default=None,
+        help="Optional TRANSPORT_EVIDENCE_CLOSURE_REPORT.json from v1.3",
+    )
+    sem_cmd.add_argument(
+        "--baseline-meta",
+        type=Path,
+        default=None,
+        help="Optional frozen baseline meta JSON",
+    )
+    sem_cmd.add_argument(
+        "--expand-interface-consumers",
+        action="store_true",
+        help="Widen method seeds to AccessorySocket/Packet buffer consumers (documented gap fix)",
+    )
+
     calibrate_cmd = sub.add_parser(
         "calibrate",
         help="v1.1 resource estimate audit + coverage reports from persisted runs (no APK execution).",
@@ -963,6 +1011,137 @@ def _cmd_diagnose_field_coverage(args: argparse.Namespace) -> int:
     return ExitCode.SUCCESS
 
 
+def _cmd_diagnose_transport_closure(args: argparse.Namespace) -> int:
+    import json
+    from apk_forensics.transport_evidence_closure import (
+        build_buffer_dataflow_report,
+        build_object_identity_report,
+        build_termination_report,
+        build_transport_closure_report,
+        write_closure_reports,
+        _index_communication,
+        _index_dataflow,
+    )
+
+    report_path = Path(args.from_report).resolve()
+    out_dir = Path(args.output).resolve()
+    report = json.loads(report_path.read_text(encoding="utf-8"))
+    baseline_meta = None
+    if args.baseline_meta:
+        baseline_meta = json.loads(Path(args.baseline_meta).resolve().read_text(encoding="utf-8"))
+    closure = build_transport_closure_report(
+        report,
+        baseline_meta=baseline_meta,
+        provenance={
+            "source_report": str(report_path),
+            "source_engine_version": (report.get("tool") or {}).get("version"),
+            "source_plan_sha256": (report.get("analysis") or {}).get("plan_sha256"),
+            "source_artifact_sha256": (report.get("input") or {}).get("sha256"),
+            "postprocessing_version": __version__,
+            "limits_raised": False,
+            "max_field_hops": 2,
+        },
+    )
+    bt = report.get("bluetooth_path") or {}
+    df_index = _index_dataflow(bt)
+    comm_index = _index_communication(report.get("communication_evidence") or {})
+    identity = build_object_identity_report(closure.get("paths") or [], bt)
+    identity["provenance"] = closure.get("provenance")
+    buffer = build_buffer_dataflow_report(closure.get("paths") or [], df_index, comm_index)
+    buffer["provenance"] = closure.get("provenance")
+    termination = build_termination_report(closure)
+    written = write_closure_reports(out_dir, closure, identity, buffer, termination)
+    ans = closure.get("answers") or {}
+    print(f"APK Forensics {__version__} diagnose-transport-closure")
+    print(f"Source: {report_path}")
+    print(f"Transport paths: {(closure.get('summary') or {}).get('transport_paths')}")
+    print(f"T2 I/O: {ans.get('1_paths_reaching_read_write')}")
+    print(f"T3 Buffer: {ans.get('2_paths_reaching_buffer')}")
+    print(f"T4 Consumer/Producer: {ans.get('3_paths_reaching_buffer_consumer_producer')}")
+    print(f"T5 Decoder/Encoder: {ans.get('4_paths_reaching_decoder_encoder_candidate')}")
+    print(f"Protocol semantics: {ans.get('protocol_semantics')}")
+    print(f"Communication baseline changed: {ans.get('14_communication_baseline_changed')}")
+    for k, p in written.items():
+        if not str(k).endswith("_md"):
+            print(f"{k}: {p}")
+    return ExitCode.SUCCESS
+
+
+def _cmd_diagnose_buffer_semantics(args: argparse.Namespace) -> int:
+    import json
+    from apk_forensics.buffer_semantic_closure import (
+        build_byte_processing_report,
+        build_semantic_closure_report,
+        write_semantic_reports,
+    )
+    from apk_forensics.communication_evidence import postprocess_communication_from_report
+
+    report_path = Path(args.from_report).resolve()
+    out_dir = Path(args.output).resolve()
+    report = json.loads(report_path.read_text(encoding="utf-8"))
+    baseline_meta = None
+    if args.baseline_meta:
+        baseline_meta = json.loads(Path(args.baseline_meta).resolve().read_text(encoding="utf-8"))
+    v13_closure = None
+    if args.v13_closure and Path(args.v13_closure).is_file():
+        v13_closure = json.loads(Path(args.v13_closure).resolve().read_text(encoding="utf-8"))
+
+    expanded_comm = None
+    if args.apk and Path(args.apk).is_file():
+        cfg = {
+            "enabled": True,
+            "max_buffer_hops": 5,
+            "max_parser_hops": 3,
+            "max_message_hops": 3,
+            "max_method_hops": 3,
+            "max_dataflow_paths": 100,
+            "max_object_nodes": 500,
+            "interprocedural": True,
+            "expand_interface_consumers": bool(args.expand_interface_consumers),
+            "max_expand_extra": 80,
+        }
+        expanded_comm = postprocess_communication_from_report(
+            report,
+            Path(args.apk).resolve(),
+            config=cfg,
+            postprocessing_version=__version__,
+        )
+        # persist expanded communication for reproducibility
+        out_dir.mkdir(parents=True, exist_ok=True)
+        (out_dir / "communication_evidence_expanded.json").write_text(
+            json.dumps(expanded_comm, indent=2, ensure_ascii=False) + "\n",
+            encoding="utf-8",
+        )
+
+    closure = build_semantic_closure_report(
+        transport_report=report,
+        v13_closure=v13_closure,
+        expanded_comm=expanded_comm,
+        baseline_meta=baseline_meta,
+        provenance={
+            "source_report": str(report_path),
+            "apk": str(args.apk) if args.apk else None,
+            "expand_interface_consumers": bool(args.expand_interface_consumers),
+            "postprocessing_version": __version__,
+            "max_field_hops": 2,
+            "limits_raised": False,
+        },
+    )
+    byte_report = build_byte_processing_report(expanded_comm)
+    written = write_semantic_reports(out_dir, closure, byte_report)
+    ans = closure.get("answers") or {}
+    print(f"APK Forensics {__version__} diagnose-buffer-semantics")
+    print(f"Source: {report_path}")
+    print(f"Hypothesis: {ans.get('2_apk_or_analyzer')}")
+    print(f"Byte processing (CASE-C): {ans.get('4_paths_reaching_byte_processing')}")
+    print(f"Decoder candidates: {ans.get('16_decoder_encoder_candidate_exists')}")
+    print(f"Protocol semantics UNKNOWN: {ans.get('20_protocol_semantics_still_unknown')}")
+    print(f"Communication baseline changed: {ans.get('19_communication_baseline_changed')}")
+    for k, p in written.items():
+        print(f"{k}: {p}")
+    return ExitCode.SUCCESS
+
+
 def _cmd_calibrate(args: argparse.Namespace) -> int:
     import json
     from apk_forensics.coverage_analysis import annotate_paths
@@ -1213,6 +1392,10 @@ def main(argv: list[str] | None = None) -> int:
         return _cmd_estimate(args)
     if args.command == "diagnose-field-coverage":
         return _cmd_diagnose_field_coverage(args)
+    if args.command == "diagnose-transport-closure":
+        return _cmd_diagnose_transport_closure(args)
+    if args.command == "diagnose-buffer-semantics":
+        return _cmd_diagnose_buffer_semantics(args)
     if args.command == "calibrate":
         return _cmd_calibrate(args)
     if args.command == "postprocess-communication":

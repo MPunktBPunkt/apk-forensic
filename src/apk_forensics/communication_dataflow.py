@@ -17,13 +17,41 @@ READ_API_RE = re.compile(
     r"Ljava/io/(?:InputStream|DataInputStream|BufferedInputStream);"
     r"->read(?:\(|$)|"
     r"Ljava/nio/channels/Channels;->newInputStream|"
-    r"Ljava/io/DataInputStream;->read(?:Boolean|Byte|Char|Double|Float|Int|Long|Short|UTF|Fully|Unsigned)"
+    r"Ljava/io/DataInputStream;->read(?:Boolean|Byte|Char|Double|Float|Int|Long|Short|UTF|Fully|Unsigned)|"
+    # Transport interface / wrapper reads (v1.4): fill a caller-supplied byte[]
+    r"L[\w/$]+(?:AccessorySocket|DeviceManagerSocket|BtAccessorySocket);"
+    r"->read(?:\(|$)"
 )
 WRITE_API_RE = re.compile(
     r"Ljava/io/(?:OutputStream|DataOutputStream|BufferedOutputStream);"
     r"->(?:write|flush)(?:\(|$)|"
-    r"Ljava/io/DataOutputStream;->write(?:Boolean|Byte|Bytes|Char|Chars|Double|Float|Int|Long|Short|UTF)"
+    r"Ljava/io/DataOutputStream;->write(?:Boolean|Byte|Bytes|Char|Chars|Double|Float|Int|Long|Short|UTF)|"
+    r"L[\w/$]+(?:AccessorySocket|DeviceManagerSocket|BtAccessorySocket);"
+    r"->(?:write|flush)(?:\(|$)"
 )
+
+# v1.4: operational byte-processing (T5) — not protocol semantics
+T5_BYTE_PROCESSING_DEFINITION = {
+    "requires": (
+        "Tracked byte[]/ByteBuffer identity has a FACT edge into at least one of: "
+        "aget-byte/aget; ByteBuffer.wrap/get*/put*; String([B); "
+        "or a parse/decode-named invoke that also receives the tracked buffer (dataflow_role)."
+    ),
+    "excludes": (
+        "InputStream/AccessorySocket read()I or read([B)I *length* move-result (READ_LENGTH); "
+        "method/class names alone; copy-only without further processing; "
+        "protocol/message meaning claims."
+    ),
+    "sees_v13": (
+        "Transport wrapper read/write; BYTE_ARRAY arg; mis-tagged PRIMITIVE_DECODE from read length; "
+        "PATH-COMM INBOUND_PRIMITIVE without real byte ops."
+    ),
+    "cannot_see_v13": (
+        "Interface consumers (AccessorySocket;->read in BclConnection); "
+        "Packet.decode* ByteBuffer.getShort/getInt; aget-byte loops; "
+        "state mutation onto Packet fields after decode."
+    ),
+}
 
 BYTEBUFFER_OPS = (
     "Ljava/nio/ByteBuffer;->wrap",
@@ -154,6 +182,10 @@ def analyze_method_communication(
     message_ctors: list[dict[str, Any]] = []
     primitive_decodes: list[dict[str, Any]] = []
     string_decodes: list[dict[str, Any]] = []
+    byte_processing: list[dict[str, Any]] = []
+    state_mutations: list[dict[str, Any]] = []
+    object_constructions: list[dict[str, Any]] = []
+    read_lengths: list[dict[str, Any]] = []
     paths: list[dict[str, Any]] = []
 
     # Track registers that hold byte[] / ByteBuffer with hop counts
@@ -256,23 +288,29 @@ def analyze_method_communication(
                 )
                 add_edge(rn, bn, "WRITES_TO", classification="FACT")
                 track_buf(dest, "BYTE_ARRAY", bn, 0)
-            # look ahead for move-result into register (for read()I still track as primitive)
+            # look ahead: move-result of read is byte-*count* (READ_LENGTH), not buffer decode
             if i + 1 < len(instructions) and (instructions[i + 1].opcode or "").startswith("move-result"):
                 mr = instructions[i + 1]
-                if mr.registers:
-                    # scalar result — PRIMITIVE_DECODE candidate from stream
-                    pn = add_node(
-                        node_type="PRIMITIVE_DECODE",
+                if mr.registers and not (instructions[i + 1].opcode or "").startswith("move-result-object"):
+                    ln = add_node(
+                        node_type="READ_LENGTH",
                         label=raw,
                         method=_method_key(method),
                         instruction_index=ins.index,
                         register=mr.registers[0],
                         classification="FACT",
                         confidence="high",
+                        note="Scalar result of read is length/count, not decoded buffer content",
                     )
-                    add_edge(rn, pn, "READS_FROM", classification="FACT")
-                    primitive_decodes.append(
-                        {"method": _method_key(method), "api": raw, "classification": "FACT"}
+                    add_edge(rn, ln, "RETURNS_LENGTH", classification="FACT")
+                    read_lengths.append(
+                        {
+                            "method": _method_key(method),
+                            "api": raw,
+                            "register": mr.registers[0],
+                            "classification": "FACT",
+                            "evidence_role": "READ_LENGTH_NOT_DECODE",
+                        }
                     )
 
         # --- WRITE sites ---
@@ -390,6 +428,25 @@ def analyze_method_communication(
                     primitive_decodes.append(
                         {"method": _method_key(method), "api": raw, "classification": "FACT"}
                     )
+                    byte_processing.append(
+                        {
+                            "method": _method_key(method),
+                            "operation": raw,
+                            "classification": "FACT",
+                            "kind": "BYTEBUFFER_GET",
+                        }
+                    )
+                    # also emit BYTE_PROCESSING node for T5 closure
+                    bpn = add_node(
+                        node_type="BYTE_PROCESSING",
+                        label=raw,
+                        method=_method_key(method),
+                        instruction_index=ins.index,
+                        classification="FACT",
+                        confidence="high",
+                        operation="BYTEBUFFER_GET",
+                    )
+                    add_edge(bn, bpn, "BYTE_PROCESS", classification="FACT")
                 if i + 1 < len(instructions) and (instructions[i + 1].opcode or "").startswith(
                     "move-result"
                 ):
@@ -538,13 +595,77 @@ def analyze_method_communication(
                             seen_states.add(key)
                             mark_boundary("UNKNOWN_HELPER", last=raw, detail=_method_key(method))
 
+        # --- v1.4: aget-byte / aget from tracked buffer → BYTE_PROCESSING (T5) ---
+        op = ins.opcode or ""
+        if op.startswith("aget") and len(regs) >= 2:
+            arr_reg = regs[1]
+            if arr_reg in buf_regs:
+                pn = add_node(
+                    node_type="BYTE_PROCESSING",
+                    label=text or op,
+                    method=_method_key(method),
+                    instruction_index=ins.index,
+                    register=regs[0],
+                    array_register=arr_reg,
+                    classification="FACT",
+                    confidence="high",
+                    operation=op,
+                )
+                add_edge(buf_regs[arr_reg]["source"], pn, "ARRAY_LOAD", classification="FACT")
+                byte_processing.append(
+                    {
+                        "method": _method_key(method),
+                        "operation": op,
+                        "array_register": arr_reg,
+                        "dest_register": regs[0],
+                        "classification": "FACT",
+                        "kind": "ARRAY_LOAD",
+                    }
+                )
+                # destination holds a primitive extracted from buffer (not a buffer)
+                primitive_decodes.append(
+                    {
+                        "method": _method_key(method),
+                        "api": op,
+                        "classification": "FACT",
+                        "from_buffer": arr_reg,
+                    }
+                )
+
+        # bitwise ops on values: record as CORRELATION only when recent BYTE_PROCESSING exists
+        if op.startswith(("shl-", "shr-", "ushr-", "or-", "and-", "xor-")) and byte_processing:
+            bn = add_node(
+                node_type="BYTE_PROCESSING",
+                label=text or op,
+                method=_method_key(method),
+                instruction_index=ins.index,
+                classification="CORRELATION",
+                confidence="medium",
+                operation=op,
+            )
+            # link from last byte processing in this method
+            last_bp = next(
+                (n for n in reversed(nodes) if n.get("node_type") == "BYTE_PROCESSING"),
+                None,
+            )
+            if last_bp:
+                add_edge(last_bp["node_id"], bn, "BITWISE_COMPOSE", classification="CORRELATION")
+            byte_processing.append(
+                {
+                    "method": _method_key(method),
+                    "operation": op,
+                    "classification": "CORRELATION",
+                    "kind": "BITWISE",
+                }
+            )
+
         # register moves preserve buffer identity
-        if (ins.opcode or "") in {"move-object", "move-object/from16", "move-object/16"} and len(regs) >= 2:
+        if op in {"move-object", "move-object/from16", "move-object/16"} and len(regs) >= 2:
             if regs[1] in buf_regs:
                 track_buf(regs[0], buf_regs[regs[1]]["kind"], buf_regs[regs[1]]["source"], buf_regs[regs[1]]["hops"])
 
         # field store/load of buffers
-        if (ins.opcode or "").startswith("iput-object") and len(regs) >= 1 and regs[0] in buf_regs:
+        if op.startswith("iput-object") and len(regs) >= 1 and regs[0] in buf_regs:
             fn = add_node(
                 node_type="FIELD_WRITE",
                 label=ins.referenced_field or text,
@@ -554,7 +675,7 @@ def analyze_method_communication(
                 confidence="high",
             )
             add_edge(buf_regs[regs[0]]["source"], fn, "FIELD_STORE", classification="FACT")
-        if (ins.opcode or "").startswith("iget-object") and regs:
+        if op.startswith("iget-object") and regs:
             # optimistic: if field name suggests stream/buffer
             field = ins.referenced_field or text
             if any(x in field for x in ("[B", "ByteBuffer", "Buffer", "mBuf", "buffer", "payload", "data")):
@@ -568,6 +689,80 @@ def analyze_method_communication(
                     confidence="medium",
                 )
                 track_buf(regs[0], "BYTE_ARRAY", bn, 0)
+
+        # v1.4: primitive/object field stores after byte processing → STATE_MUTATION (T6 candidate)
+        if (
+            op.startswith(("iput", "sput"))
+            and not op.startswith("iput-object")
+            and not op.startswith("sput-object")
+            and (byte_processing or primitive_decodes)
+        ):
+            sn = add_node(
+                node_type="STATE_MUTATION",
+                label=ins.referenced_field or text,
+                method=_method_key(method),
+                instruction_index=ins.index,
+                classification="CORRELATION",
+                confidence="medium",
+            )
+            last_src = next(
+                (
+                    n
+                    for n in reversed(nodes)
+                    if n.get("node_type") in {"BYTE_PROCESSING", "PRIMITIVE_DECODE", "DECODER", "STRING_DECODE"}
+                ),
+                None,
+            )
+            if last_src:
+                add_edge(last_src["node_id"], sn, "STATE_STORE", classification="CORRELATION")
+            state_mutations.append(
+                {
+                    "method": _method_key(method),
+                    "field": ins.referenced_field or text,
+                    "classification": "CORRELATION",
+                    "protocol_semantics": "UNKNOWN",
+                }
+            )
+
+        # object field store of decoded object (e.g. Packet.mCommand)
+        if op.startswith("iput-object") and len(regs) >= 1 and (byte_processing or decoder_cands or primitive_decodes):
+            # skip if we already handled as buffer store above
+            if regs[0] not in buf_regs:
+                sn = add_node(
+                    node_type="STATE_MUTATION",
+                    label=ins.referenced_field or text,
+                    method=_method_key(method),
+                    instruction_index=ins.index,
+                    classification="CORRELATION",
+                    confidence="medium",
+                )
+                last_src = next(
+                    (
+                        n
+                        for n in reversed(nodes)
+                        if n.get("node_type")
+                        in {"DECODER", "PRIMITIVE_DECODE", "BYTE_PROCESSING", "MESSAGE_OBJECT"}
+                    ),
+                    None,
+                )
+                if last_src:
+                    add_edge(last_src["node_id"], sn, "OBJECT_FIELD_STORE", classification="CORRELATION")
+                state_mutations.append(
+                    {
+                        "method": _method_key(method),
+                        "field": ins.referenced_field or text,
+                        "classification": "CORRELATION",
+                        "protocol_semantics": "UNKNOWN",
+                    }
+                )
+                object_constructions.append(
+                    {
+                        "method": _method_key(method),
+                        "field": ins.referenced_field or text,
+                        "classification": "CORRELATION",
+                        "protocol_semantics": "UNKNOWN",
+                    }
+                )
 
     # --- Extract compact communication paths ---
     def path_from_chain(kind: str, direction: str, step_nodes: list[dict[str, Any]]) -> dict[str, Any]:
@@ -616,19 +811,25 @@ def analyze_method_communication(
     strings = [n for n in nodes if n.get("node_type") == "STRING_DECODE"]
     writes = [n for n in nodes if n.get("node_type") == "OUTPUT_WRITE"]
     serializers = [n for n in nodes if n.get("node_type") == "SERIALIZER"]
+    byte_procs = [n for n in nodes if n.get("node_type") == "BYTE_PROCESSING"]
+    mutations = [n for n in nodes if n.get("node_type") == "STATE_MUTATION"]
 
     if reads and arrays:
         chain = [reads[0], arrays[0]]
         if any(n.get("node_type") in {"WRAP", "COPY", "SLICE", "BYTE_BUFFER"} for n in arrays[1:]):
             chain.append(next(n for n in arrays[1:] if n.get("node_type") in {"WRAP", "COPY", "SLICE", "BYTE_BUFFER"}))
+        if byte_procs:
+            chain.append(byte_procs[0])
         if decoders:
             chain.append(decoders[0])
         if messages:
             chain.append(messages[0])
-        elif primitives:
+        elif primitives and not byte_procs:
             chain.append(primitives[0])
         elif strings:
             chain.append(strings[0])
+        if mutations:
+            chain.append(mutations[0])
         paths.append(path_from_chain("INBOUND_DECODE", "INBOUND", chain))
 
     if messages and serializers and writes:
@@ -642,8 +843,30 @@ def analyze_method_communication(
     elif arrays and writes:
         paths.append(path_from_chain("OUTBOUND_BUFFER_WRITE", "OUTBOUND", [arrays[0], writes[0]]))
 
-    if reads and arrays and primitives and not decoders:
-        paths.append(path_from_chain("INBOUND_PRIMITIVE", "INBOUND", [reads[0], arrays[0], primitives[0]]))
+    # Real byte processing without named decoder
+    if arrays and byte_procs and not decoders:
+        chain = [arrays[0], byte_procs[0]]
+        if mutations:
+            chain.append(mutations[0])
+        if reads:
+            chain = [reads[0]] + chain
+        paths.append(path_from_chain("INBOUND_BYTE_PROCESSING", "INBOUND", chain))
+
+    # Do NOT build INBOUND_PRIMITIVE from READ_LENGTH (v1.4 correction).
+    # Only true PRIMITIVE_DECODE nodes (e.g. ByteBuffer.getInt) qualify.
+    if reads and arrays and primitives and not decoders and not byte_procs:
+        # Filter: skip if the only "primitive" was removed; keep ByteBuffer-style
+        real_prims = [p for p in primitives if "read(" not in str(p.get("label") or "").split("->")[-1] or "ByteBuffer" in str(p.get("label"))]
+        # Prefer primitives whose label is a ByteBuffer/DataInput API
+        real_prims = [
+            p
+            for p in primitives
+            if "ByteBuffer" in str(p.get("label") or "")
+            or "DataInput" in str(p.get("label") or "")
+            or (p.get("label") or "").startswith("aget")
+        ]
+        if real_prims:
+            paths.append(path_from_chain("INBOUND_PRIMITIVE", "INBOUND", [reads[0], arrays[0], real_prims[0]]))
 
     # Ranking score
     for p in paths:
@@ -663,6 +886,10 @@ def analyze_method_communication(
             score += 10
         if "PRIMITIVE_DECODE" in types:
             score += 8
+        if "BYTE_PROCESSING" in types:
+            score += 12
+        if "STATE_MUTATION" in types:
+            score += 10
         score += sum(5 for s in p["steps"] if s.get("classification") == "FACT")
         score -= 3 * len(p.get("boundaries") or [])
         p["ranking_score"] = score
@@ -679,12 +906,17 @@ def analyze_method_communication(
         "message_constructions": message_ctors,
         "primitive_decoding": primitive_decodes,
         "string_decoding": string_decodes,
+        "byte_processing": byte_processing,
+        "state_mutations": state_mutations,
+        "object_constructions": object_constructions,
+        "read_lengths": read_lengths,
         "nodes": nodes,
         "edges": edges,
         "boundaries": boundaries,
         "paths": paths,
         "protocol_semantics": "UNKNOWN",
         "method_name_semantics": method_name_semantics(method.method_name),
+        "t5_definition": T5_BYTE_PROCESSING_DEFINITION,
     }
 
 
@@ -724,6 +956,10 @@ def analyze_communication_methods(
         totals["message_constructions"] += len(result.get("message_constructions") or [])
         totals["primitive_decoding"] += len(result.get("primitive_decoding") or [])
         totals["string_decoding"] += len(result.get("string_decoding") or [])
+        totals["byte_processing"] += len(result.get("byte_processing") or [])
+        totals["state_mutations"] += len(result.get("state_mutations") or [])
+        totals["object_constructions"] += len(result.get("object_constructions") or [])
+        totals["read_lengths"] += len(result.get("read_lengths") or [])
 
     # Deduplicate paths by path_id
     seen: set[str] = set()
@@ -744,6 +980,7 @@ def analyze_communication_methods(
         "paths": unique_paths,
         "boundaries": all_boundaries[:500],
         "per_method": per_method,
+        "t5_definition": T5_BYTE_PROCESSING_DEFINITION,
         "summary": {
             "communication_paths": len(unique_paths),
             "inbound_paths": sum(1 for p in unique_paths if p.get("direction") == "INBOUND"),
@@ -753,6 +990,8 @@ def analyze_communication_methods(
             "decoder_candidates": totals["decoder_candidates"],
             "serializer_candidates": totals["serializer_candidates"],
             "message_constructions": totals["message_constructions"],
+            "byte_processing": totals["byte_processing"],
+            "state_mutations": totals["state_mutations"],
             "boundaries": len(all_boundaries),
             "strongest_path_id": unique_paths[0]["display_id"] if unique_paths else None,
             "strongest_classification": unique_paths[0]["classification"] if unique_paths else None,
@@ -765,6 +1004,7 @@ def analyze_communication_methods(
             "Method names never establish protocol identity.",
             "No wire bytes, runtime execution, or peer identity is proven.",
             "Transport evidence classifications are not rewritten by this step.",
+            "READ_LENGTH (read move-result) is not byte-content decoding (v1.4).",
         ],
     }
 

@@ -1,5 +1,25 @@
 # Changelog
 
+## 1.4.0
+
+- **Buffer-to-semantics closure**: audit why T5 was 0/13; operational T5 = byte/buffer processing (not READ_LENGTH, not names alone)
+- **Hypothesis B confirmed**: real ByteBuffer/Packet processing sat behind `AccessorySocket` / `BclConnection` outside v1.3 seeds
+- Correct `read([B)` move-result → `READ_LENGTH` (not `PRIMITIVE_DECODE`); add `BYTE_PROCESSING`, `STATE_MUTATION` nodes
+- Optional seed expansion: `expand_interface_consumers` for AccessorySocket/Packet/BclConnection buffer APIs
+- CLI: `diagnose-buffer-semantics` → `BUFFER_SEMANTIC_CLOSURE_REPORT`, `T5_DECODER_AUDIT`, `BYTE_PROCESSING_REPORT`, `PATH_SEMANTIC_CLOSURE`
+- Fixtures M–W; S0–S4 semantic classes; protocol semantics remain **UNKNOWN**
+- `max_field_hops=2` unchanged; CASE-F negative controls must not gain T5
+
+## 1.3.0
+
+- **Transport-to-byte evidence closure**: offline stage analysis T0–T6 per PATH-* (Socket→Stream→I/O→Buffer→Consumer→Decoder candidate→PATH-COMM)
+- Termination taxonomy A–J + case classes A–G; Coverage ≠ Evidence enforced in reports
+- Object-flow records `buffer_arg_present` / `buffer_register` / `BUFFER_ARG` nodes on `read([B)` / `write([B)` (FACT); no limit inflation
+- CLI: `diagnose-transport-closure` → `TRANSPORT_EVIDENCE_CLOSURE_REPORT`, `OBJECT_IDENTITY_COVERAGE_REPORT`, `BUFFER_DATAFLOW_REPORT`, optional `PATH_TERMINATION_ANALYSIS`
+- Fixtures A–L (closure, same-field, cycle, ambiguous alias, move-result overwrite)
+- Communication baseline unchanged; **protocol_semantics remains UNKNOWN**
+- Defaults unchanged: `max_field_hops=2`, `max_method_hops=3`, `max_object_nodes=500`
+
 ## 1.2.0
 
 - **Field-hop semantics fix**: `field_hops` counts distinct nested field edges per object identity; same-field re-store/load is alias continuation (no hop burn)

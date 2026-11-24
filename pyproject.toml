@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "apk-forensics"
-version = "1.2.0"
+version = "1.4.0"
 description = "Generic local static APK forensics toolkit"
 readme = "README.md"
 license = { text = "MIT" }

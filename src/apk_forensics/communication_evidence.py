@@ -1,7 +1,12 @@
-"""v1.0 Communication Evidence Graph orchestration + offline postprocessing."""
+"""v1.0 Communication Evidence Graph orchestration + offline postprocessing.
+
+v1.4: optional expansion of method seeds to interface buffer consumers
+(AccessorySocket / Packet.decode*) that sit above transport wrappers.
+"""
 
 from __future__ import annotations
 
+import re
 from pathlib import Path
 from typing import Any
 
@@ -16,6 +21,15 @@ from apk_forensics.dex_model_adapter import (
     stream_methods_with_instructions,
 )
 from apk_forensics.utils import timed_ms
+
+# Methods whose bodies reference these APIs are buffer consumers above transport wrappers.
+_BUFFER_CONSUMER_SEED_RE = re.compile(
+    r"(?:AccessorySocket|DeviceManagerSocket);"
+    r"->(?:read|write)\(|"
+    r"BclConnection;->(?:internalread|readPacket|write|knock|data)\(|"
+    r"packet/Packet;->(?:decode|encode)|"
+    r"BufferedBclConnection"
+)
 
 
 def _collect_io_method_keys(bluetooth_section: dict[str, Any]) -> set[str]:
@@ -51,12 +65,61 @@ def _method_key(m: MethodInfo) -> str:
     return f"{m.class_name}->{m.method_name}{m.method_descriptor}"
 
 
+def expand_buffer_consumer_seeds(
+    apk_path: Path,
+    seed_keys: set[str],
+    *,
+    max_extra: int = 80,
+) -> tuple[set[str], dict[str, Any]]:
+    """Add methods that invoke AccessorySocket/Packet buffer APIs (v1.4 gap fix).
+
+    Does not raise SearchPlan limits; only widens the offline/live method seed set
+    when transport wrappers alone hide real byte processing behind interfaces.
+    """
+    meta: dict[str, Any] = {
+        "enabled": True,
+        "max_extra": max_extra,
+        "added": [],
+        "scanned_methods": 0,
+        "note": (
+            "Expansion follows concrete invoke refs to AccessorySocket/Packet/"
+            "BclConnection buffer APIs — not method-name protocol claims."
+        ),
+    }
+    if max_extra <= 0:
+        meta["enabled"] = False
+        return set(seed_keys), meta
+    dex = load_dex_entries_from_apk(apk_path, max_entry_bytes=64 * 1024 * 1024)
+    _units, it, _w, _v = stream_methods_with_instructions(dex)
+    expanded = set(seed_keys)
+    added: list[str] = []
+    for method in it:
+        meta["scanned_methods"] += 1
+        key = _method_key(method)
+        if key in expanded:
+            continue
+        body = " ".join((ins.text or "") for ins in (method.instructions or []))
+        if _BUFFER_CONSUMER_SEED_RE.search(body) or (
+            "packet/Packet" in method.class_name
+            and (method.method_name or "").startswith(("decode", "encode"))
+        ):
+            expanded.add(key)
+            added.append(key)
+            if len(added) >= max_extra:
+                break
+    meta["added"] = added
+    meta["added_count"] = len(added)
+    return expanded, meta
+
+
 def load_methods_for_communication(
     apk_path: Path,
     wanted_keys: set[str],
     *,
     max_methods: int = 200,
     also_same_class: bool = True,
+    expand_interface_consumers: bool = False,
+    max_expand_extra: int = 80,
 ) -> tuple[list[MethodInfo], list[str], dict[str, Any]]:
     """Load a bounded set of MethodInfo bodies relevant to communication analysis.
 
@@ -72,11 +135,23 @@ def load_methods_for_communication(
         "capped": False,
         "limit_kind": "analyzer",
         "note": "Retention cap is an analyzer bound, not a native/reflection APK boundary.",
+        "seed_expansion": None,
     }
     if not wanted_keys:
         return [], ["No transport I/O method keys available for communication analysis."], retention
+
+    keys = set(wanted_keys)
+    if expand_interface_consumers:
+        keys, exp_meta = expand_buffer_consumer_seeds(
+            apk_path, keys, max_extra=max_expand_extra
+        )
+        retention["seed_expansion"] = exp_meta
+        warnings.append(
+            f"v1.4 seed expansion added {exp_meta.get('added_count', 0)} interface/buffer consumer methods."
+        )
+
     wanted_classes = set()
-    for k in wanted_keys:
+    for k in keys:
         if "->" in k:
             wanted_classes.add(k.split("->", 1)[0])
 
@@ -88,7 +163,7 @@ def load_methods_for_communication(
     candidates = 0
     for method in it:
         key = _method_key(method)
-        take = key in wanted_keys
+        take = key in keys
         if also_same_class and method.class_name in wanted_classes:
             # Prefer methods that look communication-related to limit size
             name = method.method_name or ""
@@ -107,6 +182,8 @@ def load_methods_for_communication(
                     "message",
                     "packet",
                     "frame",
+                    "knock",
+                    "handshake",
                 )
             ):
                 take = True
@@ -225,6 +302,8 @@ def run_communication_analysis(
             apk_path,
             keys,
             max_methods=min(int(config.get("max_object_nodes", 500)), 200),
+            expand_interface_consumers=bool(config.get("expand_interface_consumers", False)),
+            max_expand_extra=int(config.get("max_expand_extra", 80)),
         )
         provenance = {
             "mode": "live_post_transport",
@@ -284,6 +363,8 @@ def postprocess_communication_from_report(
         Path(apk_path),
         keys,
         max_methods=min(int(config.get("max_object_nodes", 500)), 200),
+        expand_interface_consumers=bool(config.get("expand_interface_consumers", False)),
+        max_expand_extra=int(config.get("max_expand_extra", 80)),
     )
     provenance["method_retention"] = retention
     result = build_communication_evidence(

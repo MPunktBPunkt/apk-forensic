@@ -724,6 +724,13 @@ def _scan_method(engine: _Engine, st: _State) -> None:
                         active_reg = None
                 continue
             elif _is_stream_read(name, raw) and obj.kind in {"INPUT_STREAM", "WRAPPER"}:
+                # FACT: invoke signature may include byte[] / ByteBuffer argument (T2→T3).
+                # Buffer *identity* across later consumers is a separate closure stage.
+                buf_reg = None
+                has_buf_arg = "[B" in raw or "ByteBuffer" in raw
+                if has_buf_arg and len(regs) >= 2:
+                    # invoke-virtual stream, buffer, ... → regs[0]=receiver, regs[1]=buffer
+                    buf_reg = regs[1]
                 item = {
                     "index": idx,
                     "text": ins.text,
@@ -735,6 +742,9 @@ def _scan_method(engine: _Engine, st: _State) -> None:
                     "confidence": "high",
                     "evidence_level": "dex_reference",
                     "register_linked": True,
+                    "buffer_arg_present": has_buf_arg,
+                    "buffer_register": buf_reg,
+                    "buffer_identity": "REGISTER" if buf_reg else ("SIGNATURE_ONLY" if has_buf_arg else "NONE"),
                 }
                 engine.read_chain.append(item)
                 n_read = engine.add_node(
@@ -754,8 +764,41 @@ def _scan_method(engine: _Engine, st: _State) -> None:
                 src = engine.object_nodes.get(st.object_id)
                 if src:
                     engine.add_edge(_edge(src, n_read, "READS_FROM"))
+                if has_buf_arg:
+                    n_buf = engine.add_node(
+                        _make_node(
+                            node_type="BUFFER_ARG",
+                            method=method,
+                            operation="read_buffer_arg",
+                            classification="FACT",
+                            confidence="high" if buf_reg else "medium",
+                            register=buf_reg,
+                            instruction_index=idx,
+                            instruction_offset=ins.offset,
+                            object_id=st.object_id,
+                            value="[B" if "[B" in raw else "ByteBuffer",
+                        )
+                    )
+                    engine.add_edge(_edge(n_read, n_buf, "WRITES_INTO_BUFFER", "FACT"))
+                    engine.transfers.append(
+                        {
+                            "kind": "read_into_buffer",
+                            "object_id": st.object_id,
+                            "buffer_register": buf_reg,
+                            "buffer_identity": item["buffer_identity"],
+                            "method": _method_key(method),
+                            "classification": "FACT",
+                            "confidence": item["confidence"],
+                            "instruction_index": idx,
+                            "raw": ref.get("raw"),
+                        }
+                    )
                 continue
             elif _is_stream_write(name, raw) and obj.kind in {"OUTPUT_STREAM", "WRAPPER"}:
+                buf_reg = None
+                has_buf_arg = "[B" in raw or "ByteBuffer" in raw
+                if has_buf_arg and len(regs) >= 2:
+                    buf_reg = regs[1]
                 item = {
                     "index": idx,
                     "text": ins.text,
@@ -767,6 +810,9 @@ def _scan_method(engine: _Engine, st: _State) -> None:
                     "confidence": "high",
                     "evidence_level": "dex_reference",
                     "register_linked": True,
+                    "buffer_arg_present": has_buf_arg,
+                    "buffer_register": buf_reg,
+                    "buffer_identity": "REGISTER" if buf_reg else ("SIGNATURE_ONLY" if has_buf_arg else "NONE"),
                 }
                 engine.write_chain.append(item)
                 n_write = engine.add_node(
@@ -786,6 +832,35 @@ def _scan_method(engine: _Engine, st: _State) -> None:
                 src = engine.object_nodes.get(st.object_id)
                 if src:
                     engine.add_edge(_edge(src, n_write, "WRITES_TO"))
+                if has_buf_arg:
+                    n_buf = engine.add_node(
+                        _make_node(
+                            node_type="BUFFER_ARG",
+                            method=method,
+                            operation="write_buffer_arg",
+                            classification="FACT",
+                            confidence="high" if buf_reg else "medium",
+                            register=buf_reg,
+                            instruction_index=idx,
+                            instruction_offset=ins.offset,
+                            object_id=st.object_id,
+                            value="[B" if "[B" in raw else "ByteBuffer",
+                        )
+                    )
+                    engine.add_edge(_edge(n_buf, n_write, "READS_FROM_BUFFER", "FACT"))
+                    engine.transfers.append(
+                        {
+                            "kind": "write_from_buffer",
+                            "object_id": st.object_id,
+                            "buffer_register": buf_reg,
+                            "buffer_identity": item["buffer_identity"],
+                            "method": _method_key(method),
+                            "classification": "FACT",
+                            "confidence": item["confidence"],
+                            "instruction_index": idx,
+                            "raw": ref.get("raw"),
+                        }
+                    )
                 continue
 
         # Argument / constructor transfer (object passed, not necessarily receiver)
