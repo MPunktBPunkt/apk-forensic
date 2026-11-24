@@ -14,6 +14,7 @@ from apk_forensics.analysis_job import (
     JobRuntimeLimit,
     create_analysis_job,
     format_preflight_text,
+    enrich_actual_from_report,
     mark_completed,
     mark_failed,
     mark_running,
@@ -279,6 +280,42 @@ def build_parser() -> argparse.ArgumentParser:
         choices=["conservative", "standard", "unlimited"],
     )
     plan_estimate.add_argument("--json", action="store_true", help="Emit JSON")
+
+    calibrate_cmd = sub.add_parser(
+        "calibrate",
+        help="v1.1 resource estimate audit + coverage reports from persisted runs (no APK execution).",
+    )
+    calibrate_cmd.add_argument(
+        "--output",
+        type=Path,
+        required=True,
+        help="Output directory for RESOURCE_ESTIMATE_REPORT and COVERAGE_REPORT",
+    )
+    calibrate_cmd.add_argument(
+        "--focus-report",
+        type=Path,
+        default=None,
+        help="Primary report.json (default: output/bmw-connected-600-v10/report.json if present)",
+    )
+    calibrate_cmd.add_argument(
+        "--apk",
+        type=Path,
+        default=None,
+        help="APK for estimate-only sensitivity sweeps (optional)",
+    )
+    calibrate_cmd.add_argument(
+        "--plan",
+        type=Path,
+        default=None,
+        help="SearchPlan for sensitivity (default: plans/communication_evidence.yaml)",
+    )
+    calibrate_cmd.add_argument(
+        "--history",
+        type=Path,
+        nargs="*",
+        default=None,
+        help="Additional historical report.json paths (defaults to known output/*/report.json)",
+    )
 
     # Alias: apk-forensics estimate ...
     estimate_cmd = sub.add_parser(
@@ -733,6 +770,7 @@ def _cmd_scan(args: argparse.Namespace) -> int:
             dex_contexts=dex_counts.get("contexts"),
             xrefs=dex_counts.get("xref_candidates"),
         )
+        enrich_actual_from_report(job, report)
         report.analysis_job = job.to_dict()
         report.resource = job.resource_report_section()
         if "json" in outputs:
@@ -868,6 +906,159 @@ def _cmd_scan(args: argparse.Namespace) -> int:
     return ExitCode.SUCCESS
 
 
+def _cmd_calibrate(args: argparse.Namespace) -> int:
+    import json
+    from apk_forensics.coverage_analysis import annotate_paths
+    from apk_forensics.resource_calibration import (
+        build_coverage_report,
+        build_resource_estimate_report,
+        load_historical_runs,
+        render_coverage_markdown,
+        render_resource_estimate_markdown,
+        sensitivity_matrix,
+        write_report_pair,
+    )
+    from apk_forensics.resource_estimator import (
+        ResourceEstimate,
+        estimate_resources,
+        fingerprint_apk as fp_apk,
+        plan_factors_from_search_plan,
+    )
+    from apk_forensics.search_plan import load_search_plan as load_plan
+
+    out_dir = Path(args.output).resolve()
+    default_history = [
+        Path("output/mybmw-v06/report.json"),
+        Path("output/mybmw-v07/report.json"),
+        Path("output/bmw-connected-600-v08/report.json"),
+        Path("output/mybmw-v08/report.json"),
+        Path("output/bmw-connected-600-v09/report.json"),
+        Path("output/bmw-connected-600-v10/report.json"),
+        Path("output/mybmw-v10/report.json"),
+    ]
+    history_paths = list(args.history) if args.history else default_history
+    historical = load_historical_runs(history_paths)
+
+    focus_path = args.focus_report
+    if focus_path is None:
+        cand = Path("output/bmw-connected-600-v10/report.json")
+        focus_path = cand if cand.is_file() else (history_paths[-1] if history_paths else None)
+    focus_report = None
+    focus_est = None
+    focus_act = None
+    focus_label = None
+    if focus_path and Path(focus_path).is_file():
+        focus_report = json.loads(Path(focus_path).read_text(encoding="utf-8"))
+        focus_label = Path(focus_path).parent.name
+        est_d = (focus_report.get("resource") or {}).get("estimate") or {}
+        focus_act = (focus_report.get("resource") or {}).get("actual") or {}
+        if est_d.get("memory_mb") is not None:
+            focus_est = ResourceEstimate(
+                memory_mb=int(est_d["memory_mb"]),
+                runtime_seconds=int(est_d.get("runtime_seconds") or 0),
+                findings=int(est_d.get("findings") or 0),
+                dex_contexts=int(est_d.get("dex_contexts") or 0),
+                xrefs=int(est_d.get("xrefs") or 0),
+                risk=str(est_d.get("risk") or "ok"),
+                reasons=list(est_d.get("reasons") or []),
+                factors=dict(est_d.get("factors") or {}),
+                artifacts=list(est_d.get("artifacts") or []),
+                breakdown=dict(est_d.get("breakdown") or {}),
+            )
+            # Rebuild breakdown if missing (older reports)
+            if not focus_est.breakdown and args.apk and Path(args.apk).is_file():
+                plan_path = args.plan or Path("plans/communication_evidence.yaml")
+                plan = load_plan(Path(plan_path))
+                rebuilt = estimate_resources(
+                    [fp_apk(Path(args.apk))],
+                    plan_factors_from_search_plan(plan),
+                    get_resource_policy("standard"),
+                )
+                # Keep stored totals; attach live breakdown only if totals match
+                if rebuilt.memory_mb == focus_est.memory_mb and rebuilt.runtime_seconds == focus_est.runtime_seconds:
+                    focus_est.breakdown = rebuilt.breakdown
+
+    sensitivity = None
+    if args.apk and Path(args.apk).is_file():
+        plan_path = args.plan or Path("plans/communication_evidence.yaml")
+        plan = load_plan(Path(plan_path))
+        sensitivity = sensitivity_matrix(fp_apk(Path(args.apk)), plan)
+
+    res_report = build_resource_estimate_report(
+        historical=historical,
+        focus_estimate=focus_est,
+        focus_actual=focus_act,
+        sensitivity=sensitivity,
+        focus_label=focus_label,
+    )
+    write_report_pair(
+        out_dir,
+        "RESOURCE_ESTIMATE_REPORT",
+        res_report,
+        render_resource_estimate_markdown(res_report),
+    )
+
+    # Coverage from focus (+ MyBMW) reports — annotate offline without re-scan
+    def _cov_from_report(rep: dict) -> tuple[dict | None, dict | None, dict | None]:
+        bt = rep.get("bluetooth_path") or {}
+        eg = bt.get("evidence_graph") or {}
+        ce = rep.get("communication_evidence") or {}
+        t_paths = list(eg.get("evidence_paths") or [])
+        c_paths = list(ce.get("paths") or [])
+        retention = ce.get("method_retention") or (ce.get("provenance") or {}).get("method_retention")
+        capped = bool((retention or {}).get("capped"))
+        t_ann, t_sum = annotate_paths(t_paths) if t_paths else ([], None)
+        c_ann, c_sum = annotate_paths(c_paths, retention_capped=capped) if c_paths else ([], None)
+        if t_ann:
+            eg = dict(eg)
+            eg["evidence_paths"] = t_ann
+            eg["coverage"] = t_sum
+        if c_ann:
+            ce = dict(ce)
+            ce["paths"] = c_ann
+            ce["coverage"] = c_sum
+        return t_sum, c_sum, retention
+
+    transport_cov = None
+    comm_cov = None
+    retention = None
+    provenance = {}
+    if focus_report:
+        transport_cov, comm_cov, retention = _cov_from_report(focus_report)
+        provenance = {
+            "focus_report": str(Path(focus_path).resolve()) if focus_path else None,
+            "engine_version": (focus_report.get("tool") or {}).get("version"),
+            "plan_sha256": (focus_report.get("analysis") or {}).get("plan_sha256"),
+            "artifact_sha256": (focus_report.get("input") or {}).get("sha256"),
+            "postprocessing_version": __version__,
+        }
+    cov_report = build_coverage_report(
+        transport_coverage=transport_cov,
+        communication_coverage=comm_cov,
+        retention=retention,
+        provenance=provenance,
+    )
+    write_report_pair(
+        out_dir,
+        "COVERAGE_REPORT",
+        cov_report,
+        render_coverage_markdown(cov_report),
+    )
+
+    print(f"APK Forensics {__version__} calibrate")
+    print(f"Output: {out_dir}")
+    print(f"RESOURCE_ESTIMATE_REPORT: {out_dir / 'RESOURCE_ESTIMATE_REPORT.json'}")
+    print(f"COVERAGE_REPORT: {out_dir / 'COVERAGE_REPORT.json'}")
+    if focus_est:
+        print(f"Focus estimate: {focus_est.memory_mb} MiB / {focus_est.runtime_seconds} s")
+    if focus_act:
+        print(
+            f"Focus actual: {focus_act.get('peak_memory_mb')} MiB / "
+            f"{focus_act.get('runtime_seconds')} s"
+        )
+    return ExitCode.SUCCESS
+
+
 def _cmd_postprocess_communication(args: argparse.Namespace) -> int:
     import json
     from apk_forensics.communication_evidence import postprocess_communication_from_report
@@ -963,6 +1154,8 @@ def main(argv: list[str] | None = None) -> int:
         return _cmd_plan(args)
     if args.command == "estimate":
         return _cmd_estimate(args)
+    if args.command == "calibrate":
+        return _cmd_calibrate(args)
     if args.command == "postprocess-communication":
         return _cmd_postprocess_communication(args)
     if args.command == "scan":

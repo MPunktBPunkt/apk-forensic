@@ -128,6 +128,23 @@ def render_markdown(report: Report) -> str:
         lines.append(f"- Estimated runtime: `{_md_escape(est.get('runtime_seconds'))}` s")
         lines.append(f"- Risk: `{_md_escape(est.get('risk'))}`")
         lines.append("")
+        breakdown = est.get("breakdown") or {}
+        comps = [c for c in (breakdown.get("components") or []) if c.get("name") != "TOTAL"]
+        if comps:
+            lines.append("### Estimate Breakdown")
+            lines.append("")
+            lines.append("| Component | Memory (MiB) | Runtime (s) |")
+            lines.append("|---|---:|---:|")
+            for c in comps:
+                lines.append(
+                    f"| {_md_escape(c.get('name'))} | {c.get('memory_mb')} | {c.get('runtime_seconds')} |"
+                )
+            total = next((c for c in (breakdown.get("components") or []) if c.get("name") == "TOTAL"), None)
+            if total:
+                lines.append(
+                    f"| **TOTAL** | **{total.get('memory_mb')}** | **{total.get('runtime_seconds')}** |"
+                )
+            lines.append("")
         lines.append("Reasons:")
         lines.append("")
         for reason in resource.get("decision_reasons") or est.get("reasons") or []:
@@ -138,10 +155,37 @@ def render_markdown(report: Report) -> str:
         act = resource.get("actual") or {}
         lines.append(f"- Runtime: `{_md_escape(act.get('runtime_seconds'))}` s")
         lines.append(f"- Peak memory: `{_md_escape(act.get('peak_memory_mb'))}` MiB")
+        lines.append(f"- CPU time: `{_md_escape(act.get('cpu_time_seconds'))}` s")
         lines.append(f"- Findings: `{_md_escape(act.get('findings'))}`")
         lines.append(f"- DEX contexts: `{_md_escape(act.get('dex_contexts'))}`")
         lines.append(f"- XREFs: `{_md_escape(act.get('xrefs'))}`")
+        lines.append(f"- Raw nodes/edges: `{_md_escape(act.get('raw_node_count'))}` / `{_md_escape(act.get('raw_edge_count'))}`")
+        lines.append(
+            f"- Canonical objects/nodes: `{_md_escape(act.get('canonical_object_count'))}` / "
+            f"`{_md_escape(act.get('canonical_node_count'))}`"
+        )
+        lines.append(f"- Evidence paths: `{_md_escape(act.get('evidence_path_count'))}`")
+        lines.append(f"- Communication paths: `{_md_escape(act.get('communication_path_count'))}`")
+        lines.append(f"- Boundaries / truncations: `{_md_escape(act.get('boundary_count'))}` / `{_md_escape(act.get('truncation_count'))}`")
         lines.append(f"- Termination: `{_md_escape(resource.get('termination_reason'))}`")
+        if est.get("memory_mb") is not None and act.get("peak_memory_mb") is not None:
+            from apk_forensics.resource_calibration import compare_estimate_actual
+
+            cmp_ = compare_estimate_actual(est, act)
+            lines.append("")
+            lines.append("### Estimate vs Actual")
+            lines.append("")
+            lines.append("| Metric | Estimate | Actual | Actual/Estimate |")
+            lines.append("|---|---:|---:|---:|")
+            for row in cmp_.get("table") or []:
+                lines.append(
+                    f"| {row.get('metric')} | {row.get('estimate')} | {row.get('actual')} | "
+                    f"{row.get('actual_over_estimate')} |"
+                )
+            lines.append("")
+            lines.append(
+                "_Ratios are observational and do not rewrite the Guard decision for this run._"
+            )
         lines.append("")
 
     manifest = d.get("manifest") or {}
@@ -587,7 +631,28 @@ def _render_communication_evidence_markdown(comm: dict) -> list[str]:
     lines.append(f"| Inbound | {summary.get('inbound_paths', 0)} |")
     lines.append(f"| Outbound | {summary.get('outbound_paths', 0)} |")
     lines.append(f"| Boundaries | {summary.get('boundaries', 0)} |")
+    cov = summary.get("coverage") or comm.get("coverage") or {}
+    if cov:
+        lines.append(f"| Coverage complete | {cov.get('complete', 0)} |")
+        lines.append(f"| Coverage truncated | {cov.get('truncated', 0)} |")
+        lines.append(f"| Coverage boundary | {cov.get('boundary', 0)} |")
+        lines.append(f"| Coverage unresolved | {cov.get('unresolved', 0)} |")
+        lines.append(f"| Coverage no_continuation | {cov.get('no_continuation', 0)} |")
     lines.append("")
+    ret = comm.get("method_retention") or {}
+    if ret:
+        lines.append("### Method Retention")
+        lines.append("")
+        lines.append(f"- retained_methods: `{_md_escape(ret.get('retained_methods'))}`")
+        lines.append(f"- candidate_methods: `{_md_escape(ret.get('candidate_methods'))}`")
+        lines.append(f"- discarded_methods: `{_md_escape(ret.get('discarded_methods'))}`")
+        lines.append(f"- discard_reason: `{_md_escape(ret.get('discard_reason'))}`")
+        lines.append(f"- capped: `{_md_escape(ret.get('capped'))}`")
+        lines.append("")
+        lines.append(
+            "_METHOD_RETENTION_CAP is an analyzer limit, not an APK semantic boundary._"
+        )
+        lines.append("")
     lines.append(
         f"**Strongest:** `{_md_escape(summary.get('strongest_path_id'))}` — "
         f"`{_md_escape(summary.get('strongest_classification'))}` · "

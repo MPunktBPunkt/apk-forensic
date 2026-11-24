@@ -1,8 +1,8 @@
 # apk-forensics
 
-Local, static APK forensics toolkit (v1.0.0).
+Local, static APK forensics toolkit (v1.1.0).
 
-It turns Android APKs into reproducible static fingerprints: hashes, ZIP inventory, manifest metadata (when available), DEX/native inventories, readable strings, UUID/port/API candidates, optional profile correlations, optional DEX context / Bluetooth RFCOMM path analysis with **bounded caller reconstruction**, **cross-method socket/stream object-flow**, a **canonical Transport Evidence Graph**, and a **Communication Evidence Graph** (bytes/buffers → decoder/encoder → message/object — without protocol guessing), **ArtifactBundles**, controlled **workspace storage lifecycle**, a declarative **SearchPlan** layer, and an **AnalysisJob + Resource Guard** for deterministic preflight budgeting.
+It turns Android APKs into reproducible static fingerprints: hashes, ZIP inventory, manifest metadata (when available), DEX/native inventories, readable strings, UUID/port/API candidates, optional profile correlations, optional DEX context / Bluetooth RFCOMM path analysis with **bounded caller reconstruction**, **cross-method socket/stream object-flow**, a **canonical Transport Evidence Graph**, and a **Communication Evidence Graph** (bytes/buffers → decoder/encoder → message/object — without protocol guessing), plus **resource-estimate breakdown / estimate-vs-actual calibration** and **path coverage** (COMPLETE/TRUNCATED/BOUNDARY) kept separate from evidence classes, **ArtifactBundles**, controlled **workspace storage lifecycle**, a declarative **SearchPlan** layer, and an **AnalysisJob + Resource Guard** for deterministic preflight budgeting.
 
 ## Purpose
 
@@ -159,6 +159,23 @@ apk-forensics scan ./app.apk \
 - `REJECT` → never started (no override)  
 
 The guard **never** silently lowers `xref_depth`, disables modules, or rewrites the plan.
+
+### Resource Calibration & Coverage (v1.1)
+
+```bash
+apk-forensics calibrate \
+  --focus-report ./output/bmw-connected-600-v10/report.json \
+  --apk ./artifacts/de.bmw.connected-6.0.0.4962.apk \
+  --plan plans/communication_evidence.yaml \
+  --output ./output/v11-calibration
+```
+
+Produces `RESOURCE_ESTIMATE_REPORT.{json,md}` and `COVERAGE_REPORT.{json,md}`.
+
+- Estimate breakdown explains contributors; totals used by Guard are unchanged.
+- Historical actual/estimate ratios are observational — never applied as a single global scale factor.
+- Path coverage (`COMPLETE` / `TRUNCATED` / `BOUNDARY` / …) does not reclassify FACT evidence.
+- `METHOD_RETENTION_CAP` is an analyzer limit, not an APK semantic boundary.
 
 ### Bluetooth RFCOMM Dataflow (v0.7 / v0.8) + Evidence Graph (v0.9)
 

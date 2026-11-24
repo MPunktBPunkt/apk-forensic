@@ -1203,6 +1203,10 @@ def build_evidence_graph(
     for idx, p in enumerate(all_paths, start=1):
         p["display_id"] = f"PATH-{idx:06d}"
 
+    from apk_forensics.coverage_analysis import annotate_paths as _annotate_coverage_paths
+
+    all_paths, transport_coverage = _annotate_coverage_paths(all_paths)
+
     strongest = all_paths[0] if all_paths else None
     input_paths = [p for p in all_paths if p["kind"] == "INPUT_PATH"]
     output_paths = [p for p in all_paths if p["kind"] == "OUTPUT_PATH"]
@@ -1300,7 +1304,17 @@ def build_evidence_graph(
             "runtime_execution": "UNKNOWN",
             "wire_correlation": "UNKNOWN",
             "protocol_semantics": "UNKNOWN",
+            "coverage": {
+                "complete": transport_coverage.get("complete"),
+                "truncated": transport_coverage.get("truncated"),
+                "boundary": transport_coverage.get("boundary"),
+                "unresolved": transport_coverage.get("unresolved"),
+                "no_continuation": transport_coverage.get("no_continuation"),
+                "primary_truncation": transport_coverage.get("primary_truncation"),
+                "primary_boundary": transport_coverage.get("primary_boundary"),
+            },
         },
+        "coverage": transport_coverage,
         "cross_version_evidence": cross_version,
         "limitations": [
             "Raw graph counts are not communication-operation counts.",
@@ -1308,6 +1322,7 @@ def build_evidence_graph(
             "End-to-end paths are INFERENCE even when every step is FACT.",
             "No protocol semantics from method names.",
             "No runtime or wire proof.",
+            "Coverage status does not reclassify FACT/INFERENCE/UNKNOWN.",
         ],
     }
 

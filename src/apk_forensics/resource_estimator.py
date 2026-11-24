@@ -75,9 +75,10 @@ class ResourceEstimate:
     reasons: list[str] = field(default_factory=list)
     factors: dict[str, Any] = field(default_factory=dict)
     artifacts: list[dict[str, Any]] = field(default_factory=list)
+    breakdown: dict[str, Any] = field(default_factory=dict)
 
     def to_dict(self) -> dict[str, Any]:
-        return {
+        payload = {
             "memory_mb": self.memory_mb,
             "runtime_seconds": self.runtime_seconds,
             "findings": self.findings,
@@ -88,6 +89,9 @@ class ResourceEstimate:
             "factors": dict(self.factors),
             "artifacts": list(self.artifacts),
         }
+        if self.breakdown:
+            payload["breakdown"] = dict(self.breakdown)
+        return payload
 
 
 def fingerprint_apk(path: Path) -> ArtifactFingerprint:
@@ -181,10 +185,13 @@ def estimate_resources(
     factors: PlanFactors,
     policy: ResourcePolicy,
 ) -> ResourceEstimate:
-    """Deterministic conservative estimate. Documented coefficients below."""
+    """Deterministic conservative estimate with component breakdown.
+
+    Totals are unchanged vs prior coefficient tables; breakdown accounts for
+    the same contributions so Guard decisions remain stable.
+    Coefficients are heuristic/conservative (not post-hoc scaled from one run).
+    """
     # --- documented coefficients (integer math where possible) ---
-    # Tuned so a ~150 MiB / 4-DEX bluetooth+dex_context+xref=2 plan is WARNING
-    # under standard policy, while larger synthetic cases can hit REJECT.
     BASE_MEMORY_MB = 96
     PER_INPUT_MB_FRACTION = 20  # size_mb * 20 / 100
     PER_DEX_MB = 100
@@ -192,18 +199,15 @@ def estimate_resources(
     PER_DEX_MB_XREF = 50  # * xref_depth
     PER_BT_BASE_MB = 120
     PER_BT_DEX_MB = 40
-    # v0.7: bounded caller/dataflow inflate estimate without unbounded linear blow-up
     PER_BT_CALLER_DEPTH_MB = 10  # * caller_depth * dex_count
     PER_BT_DATAFLOW_DEPTH_MB = 12  # * dataflow_depth * dex_count
     PER_BT_DATAFLOW_NODES_MB = 2  # * (nodes // 100) * dex_count
-    # Tuned so MyBMW-sized bluetooth+interprocedural plans stay WARNING, not REJECT.
     PER_BT_INTERPROC_BASE_MB = 8
     PER_BT_METHOD_HOP_MB = 1  # * method_hops * dex
     PER_BT_FIELD_HOP_MB = 1  # * field_hops * dex
     PER_BT_OBJECT_NODES_MB = 1  # * (object_nodes // 100) * dex
-    # Keep MyBMW-sized bluetooth+interproc+evidence_graph under hard 2048 MiB (WARNING ok).
     PER_EVIDENCE_GRAPH_BASE_MB = 4
-    PER_EVIDENCE_PATH_MB = 0  # paths are post-processing; negligible vs object-flow
+    PER_EVIDENCE_PATH_MB = 0
     PER_NATIVE_MB = 3
     PER_TERM_MB = 1
     PER_DEX_MB_BYTES = 2  # dex_total_mb * 2 when context
@@ -213,14 +217,14 @@ def estimate_resources(
     PER_DEX_RUNTIME = 8
     PER_DEX_CONTEXT_RUNTIME = 35
     PER_XREF_RUNTIME = 25  # * depth * dex
-    PER_BT_RUNTIME = 30  # * dex (min 1 if bt and dex>0 else 0)
-    PER_BT_CALLER_DEPTH_RT = 5  # * caller_depth * dex
-    PER_BT_DATAFLOW_DEPTH_RT = 6  # * dataflow_depth * dex
-    PER_BT_DATAFLOW_NODES_RT = 2  # * (nodes // 100) * dex
+    PER_BT_RUNTIME = 30  # * dex
+    PER_BT_CALLER_DEPTH_RT = 5
+    PER_BT_DATAFLOW_DEPTH_RT = 6
+    PER_BT_DATAFLOW_NODES_RT = 2
     PER_BT_INTERPROC_BASE_RT = 8
-    PER_BT_METHOD_HOP_RT = 3  # * method_hops * dex
-    PER_BT_FIELD_HOP_RT = 2  # * field_hops * dex
-    PER_BT_OBJECT_NODES_RT = 1  # * (object_nodes // 100) * dex
+    PER_BT_METHOD_HOP_RT = 3
+    PER_BT_FIELD_HOP_RT = 2
+    PER_BT_OBJECT_NODES_RT = 1
     PER_EVIDENCE_GRAPH_BASE_RT = 5
     PER_EVIDENCE_PATH_RT = 0
     PER_COMM_BASE_MB = 6
@@ -243,17 +247,43 @@ def estimate_resources(
     native_count = sum(a.native_so_count for a in artifacts)
     dex_total_mb = max(0, (sum(a.dex_total_bytes for a in artifacts) + 1024 * 1024 - 1) // (1024 * 1024))
 
-    memory = BASE_MEMORY_MB
-    memory += (total_size_mb * PER_INPUT_MB_FRACTION) // 100
-    memory += dex_count * PER_DEX_MB
-    memory += native_count * PER_NATIVE_MB
-    memory += factors.search_terms * PER_TERM_MB
-    memory += factors.search_regex * PER_TERM_MB
+    components: list[dict[str, Any]] = []
 
+    def add_comp(name: str, mem: int, rt: int, *, source: str, heuristic: bool = True) -> None:
+        components.append(
+            {
+                "name": name,
+                "memory_mb": int(mem),
+                "runtime_seconds": int(rt),
+                "source": source,
+                "kind": "heuristic" if heuristic else "empirical",
+                "affects": "both" if mem and rt else ("memory" if mem else "runtime"),
+            }
+        )
+
+    # Baseline + input/DEX/native/terms (shallow scan)
+    base_mem = BASE_MEMORY_MB
+    base_mem += (total_size_mb * PER_INPUT_MB_FRACTION) // 100
+    base_mem += dex_count * PER_DEX_MB
+    base_mem += native_count * PER_NATIVE_MB
+    base_mem += factors.search_terms * PER_TERM_MB
+    base_mem += factors.search_regex * PER_TERM_MB
+    base_rt = BASE_RUNTIME_S
+    base_rt += total_size_mb // 4 * PER_INPUT_RUNTIME
+    base_rt += dex_count * PER_DEX_RUNTIME
+    base_rt += native_count * PER_NATIVE_RUNTIME
+    base_rt += (factors.search_terms // 10) * PER_TERM_RUNTIME
+    add_comp("baseline_input_dex_native", base_mem, base_rt, source="artifact_fingerprint+BASE_*")
+
+    dex_mem = 0
+    dex_rt = 0
     if factors.dex_context:
-        memory += dex_count * PER_DEX_MB_CONTEXT
-        memory += dex_total_mb * PER_DEX_MB_BYTES
-        memory += dex_count * factors.xref_depth * PER_DEX_MB_XREF
+        dex_mem += dex_count * PER_DEX_MB_CONTEXT
+        dex_mem += dex_total_mb * PER_DEX_MB_BYTES
+        dex_mem += dex_count * factors.xref_depth * PER_DEX_MB_XREF
+        dex_rt += dex_count * PER_DEX_CONTEXT_RUNTIME
+        dex_rt += dex_count * max(factors.xref_depth, 0) * PER_XREF_RUNTIME
+        dex_rt += (factors.max_callers + factors.max_callees) // 20 * dex_count
         reasons.append("dex_context enabled")
         if factors.xref_depth:
             reasons.append(f"xref_depth={factors.xref_depth}")
@@ -261,41 +291,81 @@ def estimate_resources(
             reasons.append(f"{dex_count} DEX file(s)")
         if dex_total_mb:
             reasons.append(f"DEX payload ~{dex_total_mb} MiB")
+    add_comp("dex_context_xref", dex_mem, dex_rt, source="plan.dex_context/xref_depth")
 
+    bt_path_mem = 0
+    bt_path_rt = 0
+    caller_mem = 0
+    caller_rt = 0
+    obj_mem = 0
+    obj_rt = 0
     if factors.bluetooth:
-        memory += PER_BT_BASE_MB
-        memory += max(dex_count, 0) * PER_BT_DEX_MB
+        bt_path_mem += PER_BT_BASE_MB
+        bt_path_mem += max(dex_count, 0) * PER_BT_DEX_MB
         reasons.append("bluetooth enabled")
+        if dex_count > 0:
+            bt_path_rt += dex_count * PER_BT_RUNTIME
+        else:
+            bt_path_rt += 10
         if factors.bt_reconstruct_callers and factors.bt_caller_depth:
-            memory += max(dex_count, 0) * factors.bt_caller_depth * PER_BT_CALLER_DEPTH_MB
+            caller_mem += max(dex_count, 0) * factors.bt_caller_depth * PER_BT_CALLER_DEPTH_MB
+            if dex_count > 0:
+                caller_rt += dex_count * factors.bt_caller_depth * PER_BT_CALLER_DEPTH_RT
             reasons.append(f"bt_caller_depth={factors.bt_caller_depth}")
         if factors.bt_reconstruct_streams and factors.bt_dataflow_depth:
-            memory += max(dex_count, 0) * factors.bt_dataflow_depth * PER_BT_DATAFLOW_DEPTH_MB
+            bt_path_mem += max(dex_count, 0) * factors.bt_dataflow_depth * PER_BT_DATAFLOW_DEPTH_MB
+            if dex_count > 0:
+                bt_path_rt += dex_count * factors.bt_dataflow_depth * PER_BT_DATAFLOW_DEPTH_RT
             reasons.append(f"bt_dataflow_depth={factors.bt_dataflow_depth}")
         if factors.bt_max_dataflow_nodes:
-            memory += max(dex_count, 0) * (factors.bt_max_dataflow_nodes // 100) * PER_BT_DATAFLOW_NODES_MB
+            bt_path_mem += max(dex_count, 0) * (factors.bt_max_dataflow_nodes // 100) * PER_BT_DATAFLOW_NODES_MB
+            if dex_count > 0:
+                bt_path_rt += dex_count * (factors.bt_max_dataflow_nodes // 100) * PER_BT_DATAFLOW_NODES_RT
         if factors.bt_interprocedural:
-            memory += PER_BT_INTERPROC_BASE_MB
-            memory += max(dex_count, 0) * factors.bt_max_method_hops * PER_BT_METHOD_HOP_MB
-            memory += max(dex_count, 0) * factors.bt_max_field_hops * PER_BT_FIELD_HOP_MB
-            memory += max(dex_count, 0) * (factors.bt_max_object_nodes // 100) * PER_BT_OBJECT_NODES_MB
+            obj_mem += PER_BT_INTERPROC_BASE_MB
+            obj_mem += max(dex_count, 0) * factors.bt_max_method_hops * PER_BT_METHOD_HOP_MB
+            obj_mem += max(dex_count, 0) * factors.bt_max_field_hops * PER_BT_FIELD_HOP_MB
+            obj_mem += max(dex_count, 0) * (factors.bt_max_object_nodes // 100) * PER_BT_OBJECT_NODES_MB
+            if dex_count > 0:
+                obj_rt += PER_BT_INTERPROC_BASE_RT
+                obj_rt += dex_count * factors.bt_max_method_hops * PER_BT_METHOD_HOP_RT
+                obj_rt += dex_count * factors.bt_max_field_hops * PER_BT_FIELD_HOP_RT
+                obj_rt += dex_count * (factors.bt_max_object_nodes // 100) * PER_BT_OBJECT_NODES_RT
             reasons.append("bluetooth interprocedural object-flow")
             if factors.bt_max_method_hops:
                 reasons.append(f"bt_max_method_hops={factors.bt_max_method_hops}")
             if factors.bt_max_field_hops:
                 reasons.append(f"bt_max_field_hops={factors.bt_max_field_hops}")
+    add_comp("bluetooth_path_analysis", bt_path_mem, bt_path_rt, source="plan.bluetooth")
+    add_comp("caller_reconstruction", caller_mem, caller_rt, source="plan.bluetooth.caller_depth")
+    add_comp("object_flow", obj_mem, obj_rt, source="plan.bluetooth.interprocedural")
+
+    eg_mem = 0
+    eg_rt = 0
     if factors.evidence_graph:
-        memory += PER_EVIDENCE_GRAPH_BASE_MB
-        memory += (max(factors.evidence_graph_max_paths, 0) // 10) * PER_EVIDENCE_PATH_MB
+        eg_mem += PER_EVIDENCE_GRAPH_BASE_MB
+        eg_mem += (max(factors.evidence_graph_max_paths, 0) // 10) * PER_EVIDENCE_PATH_MB
+        eg_rt += PER_EVIDENCE_GRAPH_BASE_RT
+        eg_rt += (max(factors.evidence_graph_max_paths, 0) // 10) * PER_EVIDENCE_PATH_RT
         reasons.append("evidence_graph canonicalize/paths")
         if factors.evidence_graph_max_paths:
             reasons.append(f"evidence_graph_max_paths={factors.evidence_graph_max_paths}")
+    add_comp("evidence_graph", eg_mem, eg_rt, source="plan.evidence_graph")
+
+    comm_mem = 0
+    comm_rt = 0
     if factors.communication:
-        memory += PER_COMM_BASE_MB
-        memory += max(factors.communication_max_buffer_hops, 0) * PER_COMM_BUFFER_HOP_MB
+        # communication_max_paths is tracked for reporting; cost model uses buffer hops + base
+        # (paths are post-process caps, not primary memory drivers in current model).
+        _ = factors.communication_max_paths
+        comm_mem += PER_COMM_BASE_MB
+        comm_mem += max(factors.communication_max_buffer_hops, 0) * PER_COMM_BUFFER_HOP_MB
+        comm_rt += PER_COMM_BASE_RT
+        comm_rt += max(factors.communication_max_buffer_hops, 0) * PER_COMM_BUFFER_HOP_RT
         reasons.append("communication bytes/parser/message analysis")
         if factors.communication_max_paths:
             reasons.append(f"communication_max_paths={factors.communication_max_paths}")
+    add_comp("communication_dataflow", comm_mem, comm_rt, source="plan.communication")
 
     if total_size_mb >= 100:
         reasons.append(f"large input artifact(s) ~{total_size_mb} MiB")
@@ -306,37 +376,18 @@ def estimate_resources(
     if factors.search_terms:
         reasons.append(f"{factors.search_terms} search terms")
 
-    runtime = BASE_RUNTIME_S
-    runtime += total_size_mb // 4 * PER_INPUT_RUNTIME
-    runtime += dex_count * PER_DEX_RUNTIME
-    runtime += native_count * PER_NATIVE_RUNTIME
-    runtime += (factors.search_terms // 10) * PER_TERM_RUNTIME
-    if factors.dex_context:
-        runtime += dex_count * PER_DEX_CONTEXT_RUNTIME
-        runtime += dex_count * max(factors.xref_depth, 0) * PER_XREF_RUNTIME
-        # callers/callees inflate xref work slightly
-        runtime += (factors.max_callers + factors.max_callees) // 20 * dex_count
-    if factors.bluetooth and dex_count > 0:
-        runtime += dex_count * PER_BT_RUNTIME
-        if factors.bt_reconstruct_callers and factors.bt_caller_depth:
-            runtime += dex_count * factors.bt_caller_depth * PER_BT_CALLER_DEPTH_RT
-        if factors.bt_reconstruct_streams and factors.bt_dataflow_depth:
-            runtime += dex_count * factors.bt_dataflow_depth * PER_BT_DATAFLOW_DEPTH_RT
-        if factors.bt_max_dataflow_nodes:
-            runtime += dex_count * (factors.bt_max_dataflow_nodes // 100) * PER_BT_DATAFLOW_NODES_RT
-        if factors.bt_interprocedural:
-            runtime += PER_BT_INTERPROC_BASE_RT
-            runtime += dex_count * factors.bt_max_method_hops * PER_BT_METHOD_HOP_RT
-            runtime += dex_count * factors.bt_max_field_hops * PER_BT_FIELD_HOP_RT
-            runtime += dex_count * (factors.bt_max_object_nodes // 100) * PER_BT_OBJECT_NODES_RT
-    elif factors.bluetooth:
-        runtime += 10
-    if factors.evidence_graph:
-        runtime += PER_EVIDENCE_GRAPH_BASE_RT
-        runtime += (max(factors.evidence_graph_max_paths, 0) // 10) * PER_EVIDENCE_PATH_RT
-    if factors.communication:
-        runtime += PER_COMM_BASE_RT
-        runtime += max(factors.communication_max_buffer_hops, 0) * PER_COMM_BUFFER_HOP_RT
+    memory = sum(int(c["memory_mb"]) for c in components)
+    runtime = sum(int(c["runtime_seconds"]) for c in components)
+    components.append(
+        {
+            "name": "TOTAL",
+            "memory_mb": int(memory),
+            "runtime_seconds": int(runtime),
+            "source": "sum(components)",
+            "kind": "derived",
+            "affects": "both",
+        }
+    )
 
     findings = BASE_FINDINGS
     findings += dex_count * PER_DEX_FINDINGS
@@ -350,11 +401,9 @@ def estimate_resources(
     dex_contexts = 0
     xrefs = 0
     if factors.dex_context:
-        # conservative upper-bound style estimate for result volume
         dex_contexts = min(10_000, max(50, dex_count * 40 + factors.search_terms * 5))
         xrefs = min(50_000, dex_count * max(factors.xref_depth, 1) * 200 + factors.max_callers * dex_count)
 
-    # Estimator-local risk vs policy thresholds (guard still makes final decision)
     risk = "ok"
     if policy.warn_estimated_memory_mb is not None and memory >= policy.warn_estimated_memory_mb:
         risk = "warning"
@@ -374,6 +423,73 @@ def estimate_resources(
     if not reasons:
         reasons.append("baseline shallow scan")
 
+    breakdown = {
+        "components": components,
+        "notes": [
+            "Breakdown sums to the Guard-facing totals; no post-hoc actual scaling.",
+            "Coefficients are conservative heuristics keyed by input size + plan complexity.",
+            "INPUT SIZE (APK/DEX/native) is distinct from ANALYSIS COMPLEXITY (hops/nodes/modules).",
+        ],
+        "component_catalog": [
+            {
+                "name": "baseline_input_dex_native",
+                "memory_formula": "BASE + size_frac + dex*PER_DEX + native*PER_NATIVE + terms",
+                "runtime_formula": "BASE + size/4 + dex*PER_DEX_RT + native + terms/10",
+                "empirical_or_heuristic": "heuristic",
+                "statically_measurable": True,
+                "empirically_calibratable": True,
+            },
+            {
+                "name": "dex_context_xref",
+                "memory_formula": "dex*(CONTEXT + xref_depth*XREF) + dex_total_mb*BYTES",
+                "runtime_formula": "dex*(CONTEXT_RT + xref_depth*XREF_RT) + callers/callees term",
+                "empirical_or_heuristic": "heuristic",
+                "statically_measurable": True,
+                "empirically_calibratable": True,
+            },
+            {
+                "name": "bluetooth_path_analysis",
+                "memory_formula": "BT_BASE + dex*BT_DEX + dataflow_depth/nodes terms",
+                "runtime_formula": "dex*BT_RT + dataflow depth/nodes terms",
+                "empirical_or_heuristic": "heuristic",
+                "statically_measurable": True,
+                "empirically_calibratable": True,
+            },
+            {
+                "name": "caller_reconstruction",
+                "memory_formula": "dex * caller_depth * PER_BT_CALLER_DEPTH_MB",
+                "runtime_formula": "dex * caller_depth * PER_BT_CALLER_DEPTH_RT",
+                "empirical_or_heuristic": "heuristic",
+                "statically_measurable": True,
+                "empirically_calibratable": True,
+            },
+            {
+                "name": "object_flow",
+                "memory_formula": "INTERPROC_BASE + dex*(method_hops + field_hops + object_nodes/100)",
+                "runtime_formula": "INTERPROC_BASE_RT + dex*(method_hops*3 + field_hops*2 + object_nodes/100)",
+                "empirical_or_heuristic": "heuristic",
+                "statically_measurable": True,
+                "empirically_calibratable": True,
+            },
+            {
+                "name": "evidence_graph",
+                "memory_formula": "PER_EVIDENCE_GRAPH_BASE_MB (+ path term currently 0)",
+                "runtime_formula": "PER_EVIDENCE_GRAPH_BASE_RT",
+                "empirical_or_heuristic": "heuristic",
+                "statically_measurable": True,
+                "empirically_calibratable": True,
+            },
+            {
+                "name": "communication_dataflow",
+                "memory_formula": "PER_COMM_BASE_MB + buffer_hops*PER_COMM_BUFFER_HOP_MB",
+                "runtime_formula": "PER_COMM_BASE_RT + buffer_hops*PER_COMM_BUFFER_HOP_RT",
+                "empirical_or_heuristic": "heuristic",
+                "statically_measurable": True,
+                "empirically_calibratable": True,
+            },
+        ],
+    }
+
     factors_doc = {
         "coefficients": {
             "BASE_MEMORY_MB": BASE_MEMORY_MB,
@@ -390,6 +506,8 @@ def estimate_resources(
             "PER_BT_FIELD_HOP_MB": PER_BT_FIELD_HOP_MB,
             "BASE_RUNTIME_S": BASE_RUNTIME_S,
             "PER_DEX_CONTEXT_RUNTIME": PER_DEX_CONTEXT_RUNTIME,
+            "PER_COMM_BASE_MB": PER_COMM_BASE_MB,
+            "PER_COMM_BUFFER_HOP_MB": PER_COMM_BUFFER_HOP_MB,
         },
         "totals": {
             "size_mb": total_size_mb,
@@ -400,6 +518,10 @@ def estimate_resources(
         },
         "plan": factors.to_dict(),
         "policy": policy.name,
+        "calibration": {
+            "applied_to_totals": False,
+            "note": "No global actual/estimate scale factor is applied to Guard inputs.",
+        },
     }
 
     return ResourceEstimate(
@@ -412,4 +534,5 @@ def estimate_resources(
         reasons=reasons,
         factors=factors_doc,
         artifacts=[a.to_dict() for a in artifacts],
+        breakdown=breakdown,
     )

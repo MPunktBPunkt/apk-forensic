@@ -9,6 +9,7 @@ from apk_forensics.communication_dataflow import (
     analyze_communication_methods,
     empty_communication_section,
 )
+from apk_forensics.coverage_analysis import annotate_paths
 from apk_forensics.dex_model_adapter import (
     MethodInfo,
     load_dex_entries_from_apk,
@@ -56,11 +57,24 @@ def load_methods_for_communication(
     *,
     max_methods: int = 200,
     also_same_class: bool = True,
-) -> tuple[list[MethodInfo], list[str]]:
-    """Load a bounded set of MethodInfo bodies relevant to communication analysis."""
+) -> tuple[list[MethodInfo], list[str], dict[str, Any]]:
+    """Load a bounded set of MethodInfo bodies relevant to communication analysis.
+
+    Retention stats distinguish analyzer METHOD_RETENTION_CAP from APK boundaries.
+    """
     warnings: list[str] = []
+    retention: dict[str, Any] = {
+        "candidate_methods": 0,
+        "retained_methods": 0,
+        "discarded_methods": 0,
+        "discard_reason": None,
+        "cap": max_methods,
+        "capped": False,
+        "limit_kind": "analyzer",
+        "note": "Retention cap is an analyzer bound, not a native/reflection APK boundary.",
+    }
     if not wanted_keys:
-        return [], ["No transport I/O method keys available for communication analysis."]
+        return [], ["No transport I/O method keys available for communication analysis."], retention
     wanted_classes = set()
     for k in wanted_keys:
         if "->" in k:
@@ -71,6 +85,7 @@ def load_methods_for_communication(
     warnings.extend(load_warnings)
     selected: list[MethodInfo] = []
     seen: set[str] = set()
+    candidates = 0
     for method in it:
         key = _method_key(method)
         take = key in wanted_keys
@@ -98,14 +113,34 @@ def load_methods_for_communication(
             if "[B" in desc or "ByteBuffer" in desc or "InputStream" in desc or "OutputStream" in desc:
                 take = True
         if take and key not in seen:
-            selected.append(method)
-            seen.add(key)
+            candidates += 1
             if len(selected) >= max_methods:
+                # Still count remaining candidates until stream ends would be expensive;
+                # mark capped and stop scanning further DEX bodies.
+                retention["capped"] = True
+                retention["discard_reason"] = "METHOD_RETENTION_CAP"
                 warnings.append(
                     f"Communication method retention capped at {max_methods}; analysis is bounded."
                 )
                 break
-    return selected, warnings
+            selected.append(method)
+            seen.add(key)
+    retention["candidate_methods"] = candidates if not retention["capped"] else max(candidates, len(selected))
+    # When capped, discarded is at least the unseen remainder unknown; report retained vs cap.
+    retention["retained_methods"] = len(selected)
+    if retention["capped"]:
+        retention["discarded_methods"] = max(0, retention["candidate_methods"] - len(selected))
+        # candidate_methods counted only until cap hit; mark undercount explicitly
+        retention["candidate_methods_undercount"] = True
+        retention["candidate_methods"] = len(selected)  # lower bound known at stop
+        retention["discarded_methods"] = "UNKNOWN"  # cannot know without full scan past cap
+        retention["note"] = (
+            "METHOD_RETENTION_CAP stopped DEX method streaming early; "
+            "discarded_methods beyond the cap are UNKNOWN without a full re-scan."
+        )
+    else:
+        retention["discarded_methods"] = 0
+    return selected, warnings, retention
 
 
 def build_communication_evidence(
@@ -150,10 +185,24 @@ def build_communication_evidence(
     }
     # Cap paths
     max_paths = int(cfg.get("max_dataflow_paths", 100))
-    result["paths"] = list(result.get("paths") or [])[:max_paths]
-    for i, p in enumerate(result["paths"], start=1):
+    paths = list(result.get("paths") or [])[:max_paths]
+    retention = (provenance or {}).get("method_retention") or cfg.get("method_retention") or {}
+    retention_capped = bool(retention.get("capped"))
+    annotated, coverage = annotate_paths(paths, retention_capped=retention_capped)
+    for i, p in enumerate(annotated, start=1):
         p["display_id"] = f"PATH-COMM-{i:06d}"
-    result["summary"]["communication_paths"] = len(result["paths"])
+    result["paths"] = annotated
+    result["coverage"] = coverage
+    result["method_retention"] = retention
+    result["summary"]["communication_paths"] = len(annotated)
+    result["summary"]["coverage"] = {
+        "complete": coverage.get("complete"),
+        "truncated": coverage.get("truncated"),
+        "boundary": coverage.get("boundary"),
+        "unresolved": coverage.get("unresolved"),
+        "no_continuation": coverage.get("no_continuation"),
+        "primary_truncation": coverage.get("primary_truncation"),
+    }
     return result
 
 
@@ -172,7 +221,7 @@ def run_communication_analysis(
 
     with timed_ms() as timing:
         keys = _collect_io_method_keys(bluetooth_section)
-        methods, warnings = load_methods_for_communication(
+        methods, warnings, retention = load_methods_for_communication(
             apk_path,
             keys,
             max_methods=min(int(config.get("max_object_nodes", 500)), 200),
@@ -185,11 +234,12 @@ def run_communication_analysis(
             "postprocessing_version": engine_version,
             "seed_method_keys": sorted(keys)[:50],
             "seed_method_key_count": len(keys),
+            "method_retention": retention,
         }
         result = build_communication_evidence(
             methods,
             bluetooth_section=bluetooth_section,
-            config=config,
+            config={**config, "method_retention": retention},
             provenance=provenance,
         )
         result["warnings"] = warnings
@@ -230,15 +280,16 @@ def postprocess_communication_from_report(
         return empty
 
     keys = _collect_io_method_keys(bt)
-    methods, warnings = load_methods_for_communication(
+    methods, warnings, retention = load_methods_for_communication(
         Path(apk_path),
         keys,
         max_methods=min(int(config.get("max_object_nodes", 500)), 200),
     )
+    provenance["method_retention"] = retention
     result = build_communication_evidence(
         methods,
         bluetooth_section=bt,
-        config=config,
+        config={**config, "method_retention": retention},
         provenance=provenance,
     )
     result["warnings"] = warnings

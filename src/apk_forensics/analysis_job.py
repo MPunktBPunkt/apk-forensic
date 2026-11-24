@@ -81,15 +81,35 @@ class ResourceActual:
     findings: int | None = None
     dex_contexts: int | None = None
     xrefs: int | None = None
+    # v1.1 optional graph/coverage counters (filled when available; else omitted/None)
+    raw_node_count: int | None = None
+    raw_edge_count: int | None = None
+    canonical_object_count: int | None = None
+    canonical_node_count: int | None = None
+    evidence_path_count: int | None = None
+    communication_path_count: int | None = None
+    boundary_count: int | None = None
+    truncation_count: int | None = None
+    cpu_time_seconds: float | None = None  # null if not measurable on host
 
     def to_dict(self) -> dict[str, Any]:
-        return {
+        payload = {
             "runtime_seconds": self.runtime_seconds,
             "peak_memory_mb": self.peak_memory_mb,
             "findings": self.findings,
             "dex_contexts": self.dex_contexts,
             "xrefs": self.xrefs,
+            "raw_node_count": self.raw_node_count,
+            "raw_edge_count": self.raw_edge_count,
+            "canonical_object_count": self.canonical_object_count,
+            "canonical_node_count": self.canonical_node_count,
+            "evidence_path_count": self.evidence_path_count,
+            "communication_path_count": self.communication_path_count,
+            "boundary_count": self.boundary_count,
+            "truncation_count": self.truncation_count,
+            "cpu_time_seconds": self.cpu_time_seconds,
         }
+        return payload
 
 
 @dataclass
@@ -288,7 +308,39 @@ def _fill_actual(
         findings=findings,
         dex_contexts=dex_contexts,
         xrefs=xrefs,
+        cpu_time_seconds=_optional_cpu_time_s(),
     )
+
+
+def enrich_actual_from_report(job: AnalysisJob, report: Any) -> None:
+    """Fill graph/coverage counters from a finished Report without touching the estimate."""
+    bt = getattr(report, "bluetooth_path", None) or {}
+    eg = (bt.get("evidence_graph") or {}) if isinstance(bt, dict) else {}
+    ce = getattr(report, "communication_evidence", None) or {}
+    act = job.resource_actual
+    raw = eg.get("raw") or {}
+    canon = eg.get("canonical") or {}
+    cov = (ce.get("coverage") or {}) if isinstance(ce, dict) else {}
+    act.raw_node_count = raw.get("nodes")
+    act.raw_edge_count = raw.get("edges")
+    act.canonical_object_count = canon.get("objects")
+    act.canonical_node_count = canon.get("nodes")
+    act.evidence_path_count = len(eg.get("evidence_paths") or []) if eg else None
+    act.communication_path_count = (ce.get("summary") or {}).get("communication_paths") if ce else None
+    act.boundary_count = len(eg.get("boundaries") or []) + len((ce.get("boundaries") or []) if ce else [])
+    act.truncation_count = (cov.get("truncated") if cov else None) or (
+        (eg.get("coverage") or {}).get("truncated") if eg else None
+    )
+
+
+def _optional_cpu_time_s() -> float | None:
+    try:
+        import resource as _res
+
+        usage = _res.getrusage(_res.RUSAGE_SELF)
+        return round(float(usage.ru_utime + usage.ru_stime), 3)
+    except Exception:
+        return None
 
 
 def check_runtime_limit(job: AnalysisJob) -> None:

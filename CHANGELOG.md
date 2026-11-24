@@ -1,5 +1,18 @@
 # Changelog
 
+## 1.1.0
+
+- **Resource estimator audit**: component breakdown (DEX / Bluetooth / callers / object-flow / evidence graph / communication) without changing Guard totals
+- Estimate vs actual comparison tables; historical run extraction (missing → UNKNOWN)
+- Estimate-only sensitivity sweeps for hops / object nodes / communication / evidence_graph
+- Calibration observations are informational — **no** global actual/estimate scale factor applied to Guard
+- **Coverage analysis** for PATH-* / PATH-COMM-*: COMPLETE / TRUNCATED / BOUNDARY / UNRESOLVED / NO_CONTINUATION
+- Truncation reasons separated from analysis boundaries (e.g. METHOD_RETENTION_CAP vs UNKNOWN_HELPER)
+- Method retention stats: retained / candidate / discarded / discard_reason
+- CLI: `apk-forensics calibrate` → `RESOURCE_ESTIMATE_REPORT` + `COVERAGE_REPORT`
+- ResourceActual enriched with graph/coverage counters + optional CPU time
+- Guard semantics documented: OK / WARNING / REJECT (REJECT still non-overridable)
+
 ## 1.0.0
 
 - **Communication Evidence Graph**: bounded static dataflow above Bluetooth transport
