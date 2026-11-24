@@ -1,0 +1,74 @@
+name: bmw_connected
+version: "0.1"
+
+description: "Non-authoritative BMW Connected vocabulary. Matches are candidates only."
+
+strings:
+  - value: "BMW"
+    category: "vehicle.bmw"
+    profile_confidence: "medium"
+    tags: ["vehicle"]
+
+  - value: "BCL"
+    category: "protocol.bcl"
+    profile_confidence: "medium"
+    tags: ["protocol"]
+
+  - value: "Etch"
+    category: "protocol.etch"
+    profile_confidence: "medium"
+    tags: ["protocol"]
+
+  - value: "RHMI"
+    category: "protocol.rhmi"
+    profile_confidence: "medium"
+    tags: ["protocol"]
+
+  - value: "SAS"
+    category: "protocol.sas"
+    profile_confidence: "low"
+    tags: ["protocol"]
+
+  - value: "CDS"
+    category: "protocol.cds"
+    profile_confidence: "low"
+    tags: ["protocol"]
+
+  - value: "AV"
+    category: "protocol.av"
+    profile_confidence: "low"
+    tags: ["protocol"]
+
+apis:
+  - value: "createRfcommSocketToServiceRecord"
+    category: "bluetooth.rfcomm"
+    profile_confidence: "high"
+    tags: ["bluetooth", "rfcomm"]
+
+  - value: "fetchUuidsWithSdp"
+    category: "bluetooth.sdp"
+    profile_confidence: "high"
+    tags: ["bluetooth", "sdp"]
+
+uuids:
+  - value: "00001101-0000-1000-8000-00805f9b34fb"
+    category: "bluetooth.spp"
+    profile_confidence: "medium"
+    tags: ["bluetooth", "spp"]
+
+ports:
+  - value: 4004
+    category: "protocol.port"
+    profile_confidence: "low"
+    tags: ["protocol"]
+
+  - value: 5001
+    category: "protocol.port"
+    profile_confidence: "low"
+    tags: ["protocol"]
+
+regexes:
+  - pattern: "(?i)rhmi"
+    category: "protocol.rhmi"
+    profile_confidence: "medium"
+    tags: ["protocol"]

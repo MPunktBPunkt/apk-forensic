@@ -1,0 +1,38 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+src/*.egg-info/
+.eggs/
+dist/
+build/
+.venv/
+venv/
+.env
+
+# Testing / coverage
+.pytest_cache/
+.coverage
+htmlcov/
+.mypy_cache/
+.ruff_cache/
+
+# Tool output / lifecycle areas
+output/*
+!output/.gitkeep
+work/
+cache/
+.apk-forensics-workspace.json
+
+# Real APK artifacts (never commit)
+artifacts/
+*.apk
+*.xapk
+*.apks
+
+# IDE / OS
+.idea/
+.vscode/
+*.swp
+.DS_Store

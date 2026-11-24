@@ -1,0 +1,29 @@
+name: sample_profile
+version: "0.1"
+description: "Synthetic profile for unit tests"
+
+strings:
+  - value: "BCL"
+    category: "protocol.bcl"
+    profile_confidence: "medium"
+    tags: ["protocol"]
+
+apis:
+  - value: "createRfcommSocketToServiceRecord"
+    category: "bluetooth.rfcomm"
+    profile_confidence: "high"
+
+uuids:
+  - value: "00001101-0000-1000-8000-00805f9b34fb"
+    category: "bluetooth.spp"
+    profile_confidence: "medium"
+
+ports:
+  - value: 4004
+    category: "protocol.port"
+    profile_confidence: "low"
+
+regexes:
+  - pattern: "(?i)rhmi"
+    category: "protocol.rhmi"
+    profile_confidence: "medium"

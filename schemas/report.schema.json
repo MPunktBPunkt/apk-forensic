@@ -1,0 +1,165 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://local/apk-forensics/report.schema.json",
+  "title": "APK Forensics Report",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "tool",
+    "input",
+    "analysis",
+    "findings"
+  ],
+  "properties": {
+    "schema_version": { "type": "string" },
+    "report_id": { "type": "string" },
+    "generated_at_utc": { "type": "string" },
+    "tool": {
+      "type": "object",
+      "required": ["name", "version", "python_version", "platform"],
+      "properties": {
+        "name": { "type": "string" },
+        "version": { "type": "string" },
+        "python_version": { "type": "string" },
+        "platform": { "type": "string" }
+      }
+    },
+    "input": {
+      "type": "object",
+      "required": ["path", "file_name", "size_bytes", "sha256", "is_readable", "is_zip"],
+      "properties": {
+        "path": { "type": "string" },
+        "file_name": { "type": "string" },
+        "size_bytes": { "type": "integer" },
+        "sha256": { "type": "string" },
+        "is_readable": { "type": "boolean" },
+        "is_zip": { "type": "boolean" }
+      }
+    },
+    "artifact": { "type": "object" },
+    "analysis": {
+      "type": "object",
+      "required": ["status", "started_at_utc", "finished_at_utc", "duration_ms"],
+      "properties": {
+        "status": {
+          "type": "string",
+          "enum": ["complete", "partial", "failed"]
+        },
+        "started_at_utc": { "type": "string" },
+        "finished_at_utc": { "type": "string" },
+        "duration_ms": { "type": "integer" },
+        "scanners": { "type": "array" },
+        "warnings": { "type": "array", "items": { "type": "string" } },
+        "errors": { "type": "array", "items": { "type": "string" } }
+      }
+    },
+    "manifest": { "type": "object" },
+    "zip_inventory": { "type": "object" },
+    "dex_inventory": { "type": "array" },
+    "native_inventory": { "type": "array" },
+    "findings": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/finding" }
+    },
+    "profile_matches": { "type": "array" },
+    "limitations": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "dex_context": {
+      "type": "object",
+      "properties": {
+        "enabled": { "type": "boolean" },
+        "status": {
+          "type": "string",
+          "enum": ["complete", "partial", "skipped", "failed"]
+        },
+        "parser": { "type": "object" },
+        "configuration": { "type": "object" },
+        "units": { "type": "array" },
+        "contexts": { "type": "array" },
+        "xref_candidates": { "type": "array" },
+        "candidate_chains": { "type": "array" },
+        "warnings": { "type": "array" },
+        "limitations": { "type": "array" }
+      }
+    },
+    "bluetooth_path": {
+      "type": "object",
+      "properties": {
+        "enabled": { "type": "boolean" },
+        "status": {
+          "type": "string",
+          "enum": ["complete", "partial", "skipped", "failed"]
+        },
+        "configuration": { "type": "object" },
+        "targets": { "type": "array" },
+        "uuid_resolutions": { "type": "array" },
+        "device_sources": { "type": "array" },
+        "socket_paths": { "type": "array" },
+        "io_paths": { "type": "array" },
+        "paths": { "type": "array" },
+        "warnings": { "type": "array" },
+        "limitations": { "type": "array" }
+      }
+    }
+  },
+  "$defs": {
+    "finding": {
+      "type": "object",
+      "required": [
+        "id",
+        "kind",
+        "category",
+        "classification",
+        "confidence",
+        "source"
+      ],
+      "properties": {
+        "id": { "type": "string" },
+        "display_id": { "type": "string" },
+        "kind": {
+          "type": "string",
+          "enum": [
+            "string",
+            "uuid",
+            "port",
+            "api",
+            "permission",
+            "native_library",
+            "profile_match"
+          ]
+        },
+        "category": { "type": "string" },
+        "subcategory": { "type": ["string", "null"] },
+        "value": { "type": "string" },
+        "normalized_value": { "type": "string" },
+        "classification": {
+          "type": "string",
+          "enum": ["FACT", "CORRELATION", "INFERENCE", "UNKNOWN", "REJECTED"]
+        },
+        "confidence": {
+          "type": "string",
+          "enum": ["high", "medium", "low", "unknown"]
+        },
+        "source": {
+          "type": "object",
+          "required": ["entry"],
+          "properties": {
+            "entry": { "type": "string" },
+            "file_type": { "type": ["string", "null"] },
+            "offset": { "type": ["integer", "null"] },
+            "length": { "type": ["integer", "null"] },
+            "section": { "type": ["string", "null"] },
+            "class_name": { "type": ["string", "null"] },
+            "method_name": { "type": ["string", "null"] }
+          }
+        },
+        "evidence": { "type": "object" },
+        "profile_matches": { "type": "array" },
+        "tags": { "type": "array" },
+        "notes": { "type": "array" }
+      }
+    }
+  }
+}
