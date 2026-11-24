@@ -1,5 +1,17 @@
 # Changelog
 
+## 1.2.0
+
+- **Field-hop semantics fix**: `field_hops` counts distinct nested field edges per object identity; same-field re-store/load is alias continuation (no hop burn)
+- New object identities (streams/wrappers) reset field depth to 0
+- Explicit **CYCLE_GUARD** when an earlier distinct field is re-entered
+- Register `move-result` overwrite ends local identity (`UNKNOWN_ALIAS` / no type-based merge)
+- Static field stores tagged (`static_field`); still field edges
+- CLI: `diagnose-field-coverage` → `FIELD_COVERAGE_REPORT.{json,md}`
+- Fixtures A–I + negatives (same type ≠ same object)
+- **Default `max_field_hops` unchanged (2)** — diagnosis showed artificial hop accounting, not insufficient depth
+- Resource estimator still scales with `bt_max_field_hops`; no silent Guard override
+
 ## 1.1.0
 
 - **Resource estimator audit**: component breakdown (DEX / Bluetooth / callers / object-flow / evidence graph / communication) without changing Guard totals

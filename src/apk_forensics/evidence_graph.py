@@ -29,6 +29,8 @@ BOUNDARY_REASONS = frozenset(
         "constructor_unresolved",
         "wrapper_unresolved",
         "cycle_detected",
+        "cycle",
+        "field_no_loaders",
         "instruction_context_unavailable",
         "unsupported_pattern",
         "return_no_callers",
@@ -40,6 +42,7 @@ _REASON_ALIASES = {
     "parameter_callee_unresolved": "parameter_unresolved",
     "return_no_callers": "return_no_move_result",
     "max_nodes": "max_object_nodes",
+    "cycle": "cycle_detected",
 }
 
 NODE_TYPES = frozenset(

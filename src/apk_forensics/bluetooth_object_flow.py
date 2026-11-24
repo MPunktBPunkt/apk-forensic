@@ -131,6 +131,9 @@ class _State:
     method_hops: int
     field_hops: int
     via: str  # local | return | parameter | field | constructor
+    # Distinct fields already traversed for this object identity (order preserved).
+    # Same-field re-store/load is alias continuation and does NOT consume a hop.
+    field_chain: tuple[str, ...] = ()
 
 
 @dataclass
@@ -196,6 +199,7 @@ class _Engine:
             st.method_hops,
             st.field_hops,
             st.via,
+            st.field_chain,
         )
 
 
@@ -288,10 +292,37 @@ def _scan_method(engine: _Engine, st: _State) -> None:
         regs = _regs(ins)
         opcode = ins.opcode
 
-        # Register aliases
+        # Register aliases (proven move-object only — same type ≠ alias)
         if active_reg and opcode.startswith("move-object") and len(regs) >= 2:
             if regs[1] == active_reg:
                 active_reg = regs[0]
+            continue
+
+        # Register overwrite by later move-result → local identity ends.
+        # Skip the entry move-result that defines this state's register (idx == start_index).
+        if (
+            active_reg
+            and opcode.startswith("move-result")
+            and regs
+            and regs[0] == active_reg
+            and idx > st.start_index
+        ):
+            engine.transfers.append(
+                {
+                    "kind": "register_overwrite",
+                    "object_id": st.object_id,
+                    "register": active_reg,
+                    "method": _method_key(method),
+                    "classification": "FACT",
+                    "confidence": "high",
+                    "instruction_index": idx,
+                    "notes": [
+                        "Tracked register overwritten; local alias ends "
+                        "(UNKNOWN_ALIAS for later same-typed values in this register)."
+                    ],
+                }
+            )
+            active_reg = None
             continue
 
         # Return flow
@@ -391,13 +422,16 @@ def _scan_method(engine: _Engine, st: _State) -> None:
                         method_hops=st.method_hops + 1,
                         field_hops=st.field_hops,
                         via="return",
+                        field_chain=st.field_chain,
                     )
                     _enqueue(engine, yield_state)
             continue
 
-        # Field store
+        # Field store (iput/sput). field_hops counts distinct nested field edges for this
+        # object identity — NOT every re-store of the same field (alias continuation).
         if active_reg and (opcode.startswith("iput") or opcode.startswith("sput")) and regs and regs[0] == active_reg:
             fkey = _field_key(ins.referenced_field)
+            is_static = opcode.startswith("sput")
             n_store = engine.add_node(
                 _make_node(
                     node_type="FIELD_WRITE",
@@ -417,15 +451,48 @@ def _scan_method(engine: _Engine, st: _State) -> None:
                     "kind": "field_store",
                     "object_id": st.object_id,
                     "field": fkey,
+                    "static_field": is_static,
                     "from_method": _method_key(method),
                     "classification": "FACT",
                     "confidence": "high",
                     "instruction_index": idx,
+                    "field_hops_before": st.field_hops,
+                    "field_chain_before": list(st.field_chain),
                 }
             )
             if not fkey:
                 continue
-            if st.field_hops >= engine.max_field_hops:
+
+            last_field = st.field_chain[-1] if st.field_chain else st.field_name
+            same_field_continuation = fkey == last_field or fkey == st.field_name
+            cycle = bool(st.field_chain) and fkey in st.field_chain and not same_field_continuation
+            if cycle:
+                engine.boundaries.append(
+                    {
+                        "reason": "cycle",
+                        "field": fkey,
+                        "method": _method_key(method),
+                        "object_id": st.object_id,
+                        "classification": "UNKNOWN",
+                        "notes": [
+                            BOUNDARY_NOTE,
+                            "Field re-entered earlier in the distinct-field chain (CYCLE_GUARD).",
+                        ],
+                        "field_chain": list(st.field_chain),
+                    }
+                )
+                continue
+
+            if same_field_continuation:
+                next_hops = st.field_hops
+                next_chain = st.field_chain if st.field_chain else ((fkey,) if fkey else ())
+                hop_kind = "same_field_alias"
+            else:
+                next_hops = st.field_hops + 1
+                next_chain = st.field_chain + (fkey,)
+                hop_kind = "new_field"
+
+            if next_hops > engine.max_field_hops:
                 engine.boundaries.append(
                     {
                         "reason": "max_field_hops",
@@ -434,6 +501,10 @@ def _scan_method(engine: _Engine, st: _State) -> None:
                         "object_id": st.object_id,
                         "classification": "UNKNOWN",
                         "notes": [BOUNDARY_NOTE],
+                        "field_hops": st.field_hops,
+                        "next_field_hops": next_hops,
+                        "field_chain": list(st.field_chain),
+                        "hop_kind": hop_kind,
                     }
                 )
                 continue
@@ -497,10 +568,14 @@ def _scan_method(engine: _Engine, st: _State) -> None:
                         "kind": "field_load",
                         "object_id": st.object_id,
                         "field": fkey,
+                        "static_field": is_static or loader_m.instructions[load_idx].opcode.startswith("sget"),
                         "to_method": _method_key(loader_m),
                         "classification": "FACT",
                         "confidence": "high",
                         "instruction_index": load_idx,
+                        "field_hops_after": next_hops,
+                        "hop_kind": hop_kind,
+                        "field_chain": list(next_chain),
                     }
                 )
                 if dest_reg:
@@ -513,8 +588,9 @@ def _scan_method(engine: _Engine, st: _State) -> None:
                             field_name=fkey,
                             start_index=load_idx + 1,
                             method_hops=st.method_hops,
-                            field_hops=st.field_hops + 1,
+                            field_hops=next_hops,
                             via="field",
+                            field_chain=next_chain,
                         ),
                     )
             continue
@@ -588,8 +664,10 @@ def _scan_method(engine: _Engine, st: _State) -> None:
                             field_name=None,
                             start_index=idx + 1,
                             method_hops=st.method_hops,
-                            field_hops=st.field_hops,
+                            # New object identity: field depth starts at 0 (not inherited).
+                            field_hops=0,
                             via="local",
+                            field_chain=(),
                         ),
                     )
                     # Dalvik may reuse the socket register for the stream result.
@@ -637,8 +715,9 @@ def _scan_method(engine: _Engine, st: _State) -> None:
                             field_name=None,
                             start_index=idx + 1,
                             method_hops=st.method_hops,
-                            field_hops=st.field_hops,
+                            field_hops=0,
                             via="local",
+                            field_chain=(),
                         ),
                     )
                     if result == active_reg:
@@ -774,8 +853,9 @@ def _scan_method(engine: _Engine, st: _State) -> None:
                                 field_name=None,
                                 start_index=idx + 1,
                                 method_hops=st.method_hops,
-                                field_hops=st.field_hops,
+                                field_hops=0,
                                 via="constructor",
+                                field_chain=(),
                             ),
                         )
                 continue
@@ -864,6 +944,7 @@ def _scan_method(engine: _Engine, st: _State) -> None:
                             method_hops=st.method_hops + 1,
                             field_hops=st.field_hops,
                             via="parameter",
+                            field_chain=st.field_chain,
                         ),
                     )
 
@@ -941,6 +1022,7 @@ def trace_object_flow(
         method_hops=0,
         field_hops=0,
         via="local",
+        field_chain=(),
     )
     _enqueue(engine, seed)
     while engine.queue:

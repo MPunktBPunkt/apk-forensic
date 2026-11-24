@@ -281,6 +281,18 @@ def build_parser() -> argparse.ArgumentParser:
     )
     plan_estimate.add_argument("--json", action="store_true", help="Emit JSON")
 
+    field_cmd = sub.add_parser(
+        "diagnose-field-coverage",
+        help="v1.2 field/alias coverage report from a persisted transport report (diagnostic).",
+    )
+    field_cmd.add_argument(
+        "--from-report",
+        type=Path,
+        required=True,
+        help="report.json with bluetooth evidence paths (e.g. bmw-connected-600-v10)",
+    )
+    field_cmd.add_argument("--output", type=Path, required=True, help="Output directory")
+
     calibrate_cmd = sub.add_parser(
         "calibrate",
         help="v1.1 resource estimate audit + coverage reports from persisted runs (no APK execution).",
@@ -906,6 +918,51 @@ def _cmd_scan(args: argparse.Namespace) -> int:
     return ExitCode.SUCCESS
 
 
+def _cmd_diagnose_field_coverage(args: argparse.Namespace) -> int:
+    import json
+    from apk_forensics.field_coverage import (
+        build_field_coverage_report,
+        classify_root_cause,
+        path_matrix_from_report,
+        write_field_coverage_reports,
+    )
+
+    report_path = Path(args.from_report).resolve()
+    out_dir = Path(args.output).resolve()
+    report = json.loads(report_path.read_text(encoding="utf-8"))
+    matrix = path_matrix_from_report(report)
+    cause = classify_root_cause(matrix)
+    payload = build_field_coverage_report(
+        baseline_report=report,
+        root_cause=cause,
+        path_matrix=matrix,
+        provenance={
+            "source_report": str(report_path),
+            "source_engine_version": (report.get("tool") or {}).get("version"),
+            "source_plan_sha256": (report.get("analysis") or {}).get("plan_sha256"),
+            "source_artifact_sha256": (report.get("input") or {}).get("sha256"),
+            "postprocessing_version": __version__,
+            "default_max_field_hops_changed": False,
+        },
+        resource_delta={
+            "default_max_field_hops": 2,
+            "default_changed": False,
+            "note": (
+                "Root cause is same-field re-entry / hop accounting, not insufficient depth. "
+                "Default max_field_hops stays 2; estimator still scales with bt_max_field_hops."
+            ),
+        },
+    )
+    jp, mp = write_field_coverage_reports(out_dir, payload)
+    print(f"APK Forensics {__version__} diagnose-field-coverage")
+    print(f"Source: {report_path}")
+    print(f"Case: {cause.get('case')}")
+    print(f"MFH paths: {cause.get('mfh_path_count')}")
+    print(f"JSON: {jp}")
+    print(f"Markdown: {mp}")
+    return ExitCode.SUCCESS
+
+
 def _cmd_calibrate(args: argparse.Namespace) -> int:
     import json
     from apk_forensics.coverage_analysis import annotate_paths
@@ -1154,6 +1211,8 @@ def main(argv: list[str] | None = None) -> int:
         return _cmd_plan(args)
     if args.command == "estimate":
         return _cmd_estimate(args)
+    if args.command == "diagnose-field-coverage":
+        return _cmd_diagnose_field_coverage(args)
     if args.command == "calibrate":
         return _cmd_calibrate(args)
     if args.command == "postprocess-communication":

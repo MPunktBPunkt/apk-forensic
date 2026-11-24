@@ -1,6 +1,6 @@
 # apk-forensics
 
-Local, static APK forensics toolkit (v1.1.0).
+Local, static APK forensics toolkit (v1.2.0).
 
 It turns Android APKs into reproducible static fingerprints: hashes, ZIP inventory, manifest metadata (when available), DEX/native inventories, readable strings, UUID/port/API candidates, optional profile correlations, optional DEX context / Bluetooth RFCOMM path analysis with **bounded caller reconstruction**, **cross-method socket/stream object-flow**, a **canonical Transport Evidence Graph**, and a **Communication Evidence Graph** (bytes/buffers → decoder/encoder → message/object — without protocol guessing), plus **resource-estimate breakdown / estimate-vs-actual calibration** and **path coverage** (COMPLETE/TRUNCATED/BOUNDARY) kept separate from evidence classes, **ArtifactBundles**, controlled **workspace storage lifecycle**, a declarative **SearchPlan** layer, and an **AnalysisJob + Resource Guard** for deterministic preflight budgeting.
 
@@ -159,6 +159,18 @@ apk-forensics scan ./app.apk \
 - `REJECT` → never started (no override)  
 
 The guard **never** silently lowers `xref_depth`, disables modules, or rewrites the plan.
+
+### Field / Alias Coverage (v1.2)
+
+```bash
+apk-forensics diagnose-field-coverage \
+  --from-report ./output/bmw-connected-600-v10/report.json \
+  --output ./output/v12-field-coverage
+```
+
+`field_hops` counts **distinct** nested fields per object identity. Same-field re-store is
+alias continuation (does not burn hops). Default `max_field_hops` stays **2** unless a
+hop-sweep proves otherwise. Same Java type never implies same object.
 
 ### Resource Calibration & Coverage (v1.1)
 
