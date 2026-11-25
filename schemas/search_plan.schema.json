@@ -146,6 +146,21 @@
         "max_message_hops": { "type": "integer", "minimum": 0, "maximum": 5 }
       }
     },
+    "correlation": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "v1.6 offline static ↔ runtime/wire evidence correlation. Does not invent protocol semantics.",
+      "properties": {
+        "enabled": { "type": "boolean" },
+        "timestamp_window_ms": { "type": "integer", "minimum": 0, "maximum": 60000 },
+        "max_runtime_events": { "type": "integer", "minimum": 0, "maximum": 1000000 },
+        "max_wire_packets": { "type": "integer", "minimum": 0, "maximum": 1000000 },
+        "max_correlations": { "type": "integer", "minimum": 0, "maximum": 50000 },
+        "require_direction_match": { "type": "boolean" },
+        "allow_fragmentation": { "type": "boolean" },
+        "allow_aggregation": { "type": "boolean" }
+      }
+    },
     "evidence": {
       "type": "object",
       "additionalProperties": false,

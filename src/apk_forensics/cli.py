@@ -311,6 +311,53 @@ def build_parser() -> argparse.ArgumentParser:
         help="Optional BASELINE_META.json from a frozen v1.2 snapshot",
     )
 
+    corr_cmd = sub.add_parser(
+        "diagnose-runtime-correlation",
+        help="v1.6 static ↔ runtime/wire evidence correlation (offline; no protocol invention).",
+    )
+    corr_cmd.add_argument(
+        "--from-application-flow",
+        type=Path,
+        required=True,
+        help="APPLICATION_FLOW_EVIDENCE_REPORT.json (or structured_value_flow.json with value_catalog)",
+    )
+    corr_cmd.add_argument("--output", type=Path, required=True, help="Output directory")
+    corr_cmd.add_argument(
+        "--runtime-evidence",
+        type=Path,
+        default=None,
+        help="Optional runtime evidence JSON (apk_forensics.runtime_evidence.v1)",
+    )
+    corr_cmd.add_argument(
+        "--wire-evidence",
+        type=Path,
+        default=None,
+        help="Optional wire/capture evidence JSON (apk_forensics.wire_evidence.v1)",
+    )
+    corr_cmd.add_argument(
+        "--baseline-meta",
+        type=Path,
+        default=None,
+        help="Optional frozen v1.5/v1.6 BASELINE_META.json",
+    )
+    corr_cmd.add_argument(
+        "--plan",
+        type=Path,
+        default=None,
+        help="Optional SearchPlan with correlation: section (limits only)",
+    )
+    corr_cmd.add_argument(
+        "--timestamp-window-ms",
+        type=int,
+        default=None,
+        help="Override correlation timestamp window (ms)",
+    )
+    corr_cmd.add_argument(
+        "--allow-resource-warning",
+        action="store_true",
+        help="Allow correlation when preflight estimate is WARNING",
+    )
+
     app_cmd = sub.add_parser(
         "diagnose-application-flow",
         help="v1.5 structured-value & application-flow closure (field consumers / branches).",
@@ -1086,6 +1133,78 @@ def _cmd_diagnose_transport_closure(args: argparse.Namespace) -> int:
     return ExitCode.SUCCESS
 
 
+def _cmd_diagnose_runtime_correlation(args: argparse.Namespace) -> int:
+    import json
+
+    from apk_forensics.search_plan import load_search_plan
+    from apk_forensics.static_runtime_correlation import run_correlation, write_correlation_reports
+
+    flow_path = Path(args.from_application_flow).resolve()
+    out_dir = Path(args.output).resolve()
+    flow = json.loads(flow_path.read_text(encoding="utf-8"))
+    # Accept either application-flow report or raw structured_value_flow
+    if "value_catalog" not in flow and isinstance(flow.get("answers"), dict):
+        pass
+    baseline: dict = {}
+    if args.baseline_meta and Path(args.baseline_meta).is_file():
+        baseline = json.loads(Path(args.baseline_meta).resolve().read_text(encoding="utf-8"))
+
+    timestamp_window_ms = 50
+    max_runtime_events = 10_000
+    max_wire_packets = 10_000
+    max_correlations = 500
+    if args.plan and Path(args.plan).is_file():
+        plan = load_search_plan(Path(args.plan).resolve())
+        timestamp_window_ms = int(plan.correlation_timestamp_window_ms)
+        max_runtime_events = int(plan.correlation_max_runtime_events)
+        max_wire_packets = int(plan.correlation_max_wire_packets)
+        max_correlations = int(plan.correlation_max_correlations)
+    if args.timestamp_window_ms is not None:
+        timestamp_window_ms = int(args.timestamp_window_ms)
+
+    run = run_correlation(
+        static_flow=flow,
+        runtime_path=Path(args.runtime_evidence).resolve() if args.runtime_evidence else None,
+        wire_path=Path(args.wire_evidence).resolve() if args.wire_evidence else None,
+        baseline=baseline,
+        static_source=str(flow_path),
+        timestamp_window_ms=timestamp_window_ms,
+        max_runtime_events=max_runtime_events,
+        max_wire_packets=max_wire_packets,
+        max_correlations=max_correlations,
+        allow_resource_warning=bool(args.allow_resource_warning),
+    )
+    if not run.get("executed"):
+        print(f"APK Forensics {__version__} diagnose-runtime-correlation")
+        print(f"Guard decision: {(run.get('guard') or {}).get('decision')}")
+        print(f"Error: {run.get('error')}")
+        return (
+            ExitCode.RESOURCE_REJECTED
+            if run.get("error") == "resource_guard_reject"
+            else ExitCode.RESOURCE_WARNING_BLOCKED
+        )
+
+    written = write_correlation_reports(out_dir, run)
+    counts = run.get("counts") or {}
+    print(f"APK Forensics {__version__} diagnose-runtime-correlation")
+    print(f"Static evidence: {counts.get('static_values')}")
+    print(f"Runtime evidence: {counts.get('runtime_events')} ({(run.get('runtime') or {}).get('status')})")
+    print(f"Wire evidence: {counts.get('wire_packets')} ({(run.get('wire') or {}).get('status')})")
+    print(f"Static↔Runtime: {counts.get('static_runtime')}")
+    print(f"Runtime↔Wire: {counts.get('runtime_wire')}")
+    print(f"Static↔Runtime↔Wire: {counts.get('end_to_end')}")
+    print(
+        "Strength: "
+        f"exact={counts.get('exact')} strong={counts.get('strong')} "
+        f"ambiguous={counts.get('ambiguous')} rejected={counts.get('rejected')} "
+        f"unknown={counts.get('unknown')}"
+    )
+    print(f"Protocol semantics: UNKNOWN")
+    for k, p in written.items():
+        print(f"{k}: {p}")
+    return ExitCode.SUCCESS
+
+
 def _cmd_diagnose_application_flow(args: argparse.Namespace) -> int:
     import json
     from apk_forensics.application_flow_closure import (
@@ -1509,6 +1628,8 @@ def main(argv: list[str] | None = None) -> int:
         return _cmd_diagnose_buffer_semantics(args)
     if args.command == "diagnose-application-flow":
         return _cmd_diagnose_application_flow(args)
+    if args.command == "diagnose-runtime-correlation":
+        return _cmd_diagnose_runtime_correlation(args)
     if args.command == "calibrate":
         return _cmd_calibrate(args)
     if args.command == "postprocess-communication":

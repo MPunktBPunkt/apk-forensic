@@ -1,0 +1,305 @@
+"""Minimal Runtime / Wire evidence interface (v1.6).
+
+External artefacts are optional. Missing input → UNKNOWN / INPUT-MISSING.
+Never invent traces or captures. Neutral evidence types only — no protocol names.
+"""
+
+from __future__ import annotations
+
+import json
+import re
+from pathlib import Path
+from typing import Any
+
+RUNTIME_SCHEMA = "apk_forensics.runtime_evidence.v1"
+WIRE_SCHEMA = "apk_forensics.wire_evidence.v1"
+
+RUNTIME_TYPES = frozenset(
+    {
+        "RUNTIME_METHOD",
+        "RUNTIME_READ",
+        "RUNTIME_WRITE",
+        "RUNTIME_BUFFER",
+        "RUNTIME_VALUE",
+        "RUNTIME_EVENT",
+    }
+)
+WIRE_TYPES = frozenset(
+    {
+        "WIRE_PACKET",
+        "WIRE_BYTES",
+        "WIRE_READ",
+        "WIRE_WRITE",
+        "WIRE_DIRECTION",
+        "WIRE_TIMESTAMP",
+    }
+)
+
+# App-relative I/O direction only. Peer labels require explicit peer evidence.
+DIRECTION_IN = "IN"  # bytes enter the application (read)
+DIRECTION_OUT = "OUT"  # bytes leave the application (write)
+DIRECTION_UNKNOWN = "UNKNOWN"
+
+# Optional peer-facing labels — only when source artefact provides them.
+PEER_PHONE_TO_HU = "PHONE_TO_HU"
+PEER_HU_TO_PHONE = "HU_TO_PHONE"
+
+_HEX_RE = re.compile(r"^[0-9a-fA-F]*$")
+
+
+def normalize_hex(value: str | None) -> str | None:
+    if value is None:
+        return None
+    s = re.sub(r"[\s:_-]", "", str(value).strip())
+    if not s:
+        return None
+    if not _HEX_RE.match(s) or len(s) % 2 != 0:
+        return None
+    return s.lower()
+
+
+def normalize_direction(value: Any) -> str:
+    if value is None:
+        return DIRECTION_UNKNOWN
+    s = str(value).strip().upper().replace("-", "_")
+    aliases = {
+        "IN": DIRECTION_IN,
+        "INBOUND": DIRECTION_IN,
+        "READ": DIRECTION_IN,
+        "RX": DIRECTION_IN,
+        "OUT": DIRECTION_OUT,
+        "OUTBOUND": DIRECTION_OUT,
+        "WRITE": DIRECTION_OUT,
+        "TX": DIRECTION_OUT,
+        "PHONE_TO_HU": PEER_PHONE_TO_HU,
+        "HU_TO_PHONE": PEER_HU_TO_PHONE,
+        "UNKNOWN": DIRECTION_UNKNOWN,
+    }
+    return aliases.get(s, DIRECTION_UNKNOWN)
+
+
+def app_direction(value: Any) -> str:
+    """Collapse peer labels to app-relative IN/OUT when possible."""
+    d = normalize_direction(value)
+    if d in {DIRECTION_IN, DIRECTION_OUT, DIRECTION_UNKNOWN}:
+        return d
+    if d == PEER_HU_TO_PHONE:
+        return DIRECTION_IN
+    if d == PEER_PHONE_TO_HU:
+        return DIRECTION_OUT
+    return DIRECTION_UNKNOWN
+
+
+def _norm_event(raw: dict[str, Any], *, default_prefix: str, index: int) -> dict[str, Any]:
+    eid = str(raw.get("id") or f"{default_prefix}-{index:04d}")
+    etype = str(raw.get("type") or raw.get("evidence_type") or "RUNTIME_EVENT")
+    bytes_hex = normalize_hex(raw.get("bytes_hex") or raw.get("bytes") or raw.get("hex"))
+    length = raw.get("length")
+    if length is None and bytes_hex is not None:
+        length = len(bytes_hex) // 2
+    ts = raw.get("timestamp_ms")
+    if ts is None:
+        ts = raw.get("t_ms")
+    if ts is None:
+        ts = raw.get("timestamp")
+    try:
+        timestamp_ms = int(ts) if ts is not None else None
+    except (TypeError, ValueError):
+        timestamp_ms = None
+    try:
+        length_i = int(length) if length is not None else None
+    except (TypeError, ValueError):
+        length_i = None
+    method = raw.get("method") or raw.get("method_identity")
+    if method is not None:
+        method = str(method).strip() or None
+    return {
+        "id": eid,
+        "type": etype,
+        "method": method,
+        "method_name": (raw.get("method_name") or None),
+        "timestamp_ms": timestamp_ms,
+        "direction": normalize_direction(raw.get("direction")),
+        "app_direction": app_direction(raw.get("direction")),
+        "length": length_i,
+        "bytes_hex": bytes_hex,
+        "socket_id": raw.get("socket_id"),
+        "stream_id": raw.get("stream_id"),
+        "sequence": raw.get("sequence"),
+        "offset": raw.get("offset"),
+        "value_id": raw.get("value_id"),
+        "field": raw.get("field"),
+        "branch": raw.get("branch"),
+        "peer": raw.get("peer"),
+        "fragment_of": raw.get("fragment_of"),
+        "aggregate_of": raw.get("aggregate_of"),
+        "source_artifact": raw.get("source_artifact"),
+        "classification": "FACT",
+        "protocol_semantics": "UNKNOWN",
+        "raw_keys": sorted(raw.keys()),
+    }
+
+
+def load_runtime_evidence(path: Path | None) -> dict[str, Any]:
+    if path is None or not Path(path).is_file():
+        return {
+            "schema": RUNTIME_SCHEMA,
+            "status": "INPUT_MISSING",
+            "events": [],
+            "counts": {"events": 0},
+            "source": None,
+            "note": "No runtime evidence artefact provided.",
+        }
+    path = Path(path).resolve()
+    raw = json.loads(path.read_text(encoding="utf-8"))
+    events_in = raw.get("events") or raw.get("runtime_events") or []
+    events = [_norm_event(e, default_prefix="R", index=i + 1) for i, e in enumerate(events_in) if isinstance(e, dict)]
+    unknown_types = sorted({e["type"] for e in events if e["type"] not in RUNTIME_TYPES})
+    return {
+        "schema": raw.get("schema") or RUNTIME_SCHEMA,
+        "status": "OK" if events else "EMPTY",
+        "events": events,
+        "counts": {
+            "events": len(events),
+            "by_type": _count_by(events, "type"),
+            "unknown_types": unknown_types,
+        },
+        "source": str(path),
+        "provenance": raw.get("provenance") or {},
+        "note": raw.get("note"),
+    }
+
+
+def load_wire_evidence(path: Path | None) -> dict[str, Any]:
+    if path is None or not Path(path).is_file():
+        return {
+            "schema": WIRE_SCHEMA,
+            "status": "INPUT_MISSING",
+            "packets": [],
+            "counts": {"packets": 0},
+            "source": None,
+            "note": "No wire/capture evidence artefact provided.",
+        }
+    path = Path(path).resolve()
+    raw = json.loads(path.read_text(encoding="utf-8"))
+    packets_in = raw.get("packets") or raw.get("wire_packets") or raw.get("events") or []
+    packets = [_norm_event(e, default_prefix="W", index=i + 1) for i, e in enumerate(packets_in) if isinstance(e, dict)]
+    for p in packets:
+        if p["type"] not in WIRE_TYPES:
+            # allow generic packet label
+            if p["type"] in RUNTIME_TYPES:
+                p["type"] = "WIRE_PACKET"
+    unknown_types = sorted({p["type"] for p in packets if p["type"] not in WIRE_TYPES})
+    return {
+        "schema": raw.get("schema") or WIRE_SCHEMA,
+        "status": "OK" if packets else "EMPTY",
+        "packets": packets,
+        "counts": {
+            "packets": len(packets),
+            "by_type": _count_by(packets, "type"),
+            "unknown_types": unknown_types,
+        },
+        "source": str(path),
+        "provenance": raw.get("provenance") or {},
+        "note": raw.get("note"),
+    }
+
+
+def load_static_evidence_from_application_flow(
+    flow_report: dict[str, Any] | None,
+    *,
+    source: str | None = None,
+) -> dict[str, Any]:
+    """Project v1.5 application-flow / structured-value artefacts into neutral static evidence."""
+    flow_report = flow_report or {}
+    catalog = list(flow_report.get("value_catalog") or [])
+    stored = list(flow_report.get("stored_fields") or [])
+    counts = dict(flow_report.get("flow_counts") or {})
+    answers = flow_report.get("answers") or {}
+
+    static_values = []
+    for v in catalog:
+        static_values.append(
+            {
+                "id": v.get("value_id"),
+                "type": "STATIC_VALUE",
+                "method": v.get("source_method"),
+                "source_api": v.get("source_api"),
+                "source_kind": v.get("source_kind"),
+                "field": v.get("stored_field"),
+                "value_class": v.get("value_class"),
+                "classification": v.get("classification") or "FACT",
+                "protocol_semantics": "UNKNOWN",
+                "consumers": v.get("consumers") or [],
+                "lineage": v.get("lineage") or [],
+            }
+        )
+
+    methods = sorted(
+        {
+            m
+            for m in (
+                [v.get("source_method") for v in catalog]
+                + [v.get("source_api") for v in catalog]
+                + [c.get("method") for v in catalog for c in (v.get("consumers") or [])]
+            )
+            if m
+        }
+    )
+    fields = sorted({f for f in ([v.get("stored_field") for v in catalog] + [s.get("field") for s in stored if isinstance(s, dict)]) if f})
+
+    return {
+        "schema": "apk_forensics.static_correlation_evidence.v1",
+        "status": "OK" if catalog else "EMPTY",
+        "values": static_values,
+        "methods": [{"id": f"SM-{i:04d}", "type": "STATIC_METHOD", "method": m} for i, m in enumerate(methods, 1)],
+        "fields": [{"id": f"SF-{i:04d}", "type": "STATIC_FIELD", "field": f} for i, f in enumerate(fields, 1)],
+        "counts": {
+            "values": len(static_values),
+            "methods": len(methods),
+            "fields": len(fields),
+            "field_stores": int(counts.get("field_stores") or answers.get("2_written_to_fields") or 0),
+            "field_loads": int(counts.get("field_loads") or answers.get("3_later_loaded") or 0),
+            "branches": int(counts.get("branches") or answers.get("6_influence_branches") or 0),
+            "state_mutations": int(counts.get("state_mutations") or answers.get("7_application_state_mutations") or 0),
+            "roundtrip_candidates": int(counts.get("roundtrip_candidates") or answers.get("10_output_dataflow") or 0),
+            "catalog_values": int(counts.get("catalog_values") or len(catalog)),
+        },
+        "source": source,
+        "baseline_frozen": True,
+        "protocol_semantics": "UNKNOWN",
+    }
+
+
+def inventory_external_artefacts(roots: list[Path] | None = None) -> dict[str, Any]:
+    """Repo audit helper: look for runtime/wire-like files (no parsing)."""
+    roots = roots or [Path("artifacts"), Path("output"), Path("tests/fixtures")]
+    patterns = ("*trace*", "*capture*", "*pcap*", "*wire*", "*runtime*", "*hci*")
+    found: list[str] = []
+    for root in roots:
+        root = Path(root)
+        if not root.exists():
+            continue
+        for pat in patterns:
+            for p in root.rglob(pat):
+                if any(x in p.parts for x in (".git", "__pycache__", ".venv", "node_modules")):
+                    continue
+                if p.is_file():
+                    found.append(str(p))
+    found = sorted(set(found))[:200]
+    return {
+        "status": "NONE_IN_REPO" if not found else "CANDIDATES_FOUND",
+        "candidates": found,
+        "note": (
+            "Filename inventory only — not evidence. Structured runtime/wire JSON must be supplied "
+            "explicitly to diagnose-runtime-correlation."
+        ),
+    }
+
+
+def _count_by(items: list[dict[str, Any]], key: str) -> dict[str, int]:
+    out: dict[str, int] = {}
+    for it in items:
+        k = str(it.get(key) or "UNKNOWN")
+        out[k] = out.get(k, 0) + 1
+    return dict(sorted(out.items()))

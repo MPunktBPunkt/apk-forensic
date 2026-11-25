@@ -200,6 +200,15 @@ class SearchPlan:
     communication_max_buffer_hops: int = 5
     communication_max_parser_hops: int = 3
     communication_max_message_hops: int = 3
+    # v1.6 static ↔ runtime/wire correlation (offline; default off)
+    correlation_enabled: bool = False
+    correlation_timestamp_window_ms: int = 50
+    correlation_max_runtime_events: int = 10_000
+    correlation_max_wire_packets: int = 10_000
+    correlation_max_correlations: int = 500
+    correlation_require_direction_match: bool = True
+    correlation_allow_fragmentation: bool = True
+    correlation_allow_aggregation: bool = True
     evidence_classifications: list[str] = field(
         default_factory=lambda: ["FACT", "CORRELATION", "INFERENCE", "UNKNOWN"]
     )
@@ -274,6 +283,16 @@ class SearchPlan:
                 "max_buffer_hops": self.communication_max_buffer_hops,
                 "max_parser_hops": self.communication_max_parser_hops,
                 "max_message_hops": self.communication_max_message_hops,
+            },
+            "correlation": {
+                "enabled": self.correlation_enabled,
+                "timestamp_window_ms": self.correlation_timestamp_window_ms,
+                "max_runtime_events": self.correlation_max_runtime_events,
+                "max_wire_packets": self.correlation_max_wire_packets,
+                "max_correlations": self.correlation_max_correlations,
+                "require_direction_match": self.correlation_require_direction_match,
+                "allow_fragmentation": self.correlation_allow_fragmentation,
+                "allow_aggregation": self.correlation_allow_aggregation,
             },
             "evidence": {
                 "classifications": list(self.evidence_classifications),
@@ -413,6 +432,7 @@ def validate_and_normalize(raw: dict[str, Any]) -> SearchPlan:
         "bluetooth",
         "evidence_graph",
         "communication",
+        "correlation",
         "evidence",
         "limits",
         "output",
@@ -761,6 +781,53 @@ def validate_and_normalize(raw: dict[str, Any]) -> SearchPlan:
         comm_sec.get("max_message_hops"), "communication.max_message_hops", (0, 5), errors, 3
     )
 
+    corr_sec = _require_mapping(raw.get("correlation"), "correlation", errors)
+    for key in corr_sec:
+        if key not in {
+            "enabled",
+            "timestamp_window_ms",
+            "max_runtime_events",
+            "max_wire_packets",
+            "max_correlations",
+            "require_direction_match",
+            "allow_fragmentation",
+            "allow_aggregation",
+        }:
+            errors.append(f"unknown field: correlation.{key}")
+    corr_enabled = _as_bool(corr_sec.get("enabled"), "correlation.enabled", errors, default=False)
+    corr_timestamp_window_ms = _as_int_in_bounds(
+        corr_sec.get("timestamp_window_ms"), "correlation.timestamp_window_ms", (0, 60_000), errors, 50
+    )
+    corr_max_runtime_events = _as_int_in_bounds(
+        corr_sec.get("max_runtime_events"),
+        "correlation.max_runtime_events",
+        (0, 1_000_000),
+        errors,
+        10_000,
+    )
+    corr_max_wire_packets = _as_int_in_bounds(
+        corr_sec.get("max_wire_packets"),
+        "correlation.max_wire_packets",
+        (0, 1_000_000),
+        errors,
+        10_000,
+    )
+    corr_max_correlations = _as_int_in_bounds(
+        corr_sec.get("max_correlations"), "correlation.max_correlations", (0, 50_000), errors, 500
+    )
+    corr_require_direction_match = _as_bool(
+        corr_sec.get("require_direction_match"),
+        "correlation.require_direction_match",
+        errors,
+        default=True,
+    )
+    corr_allow_fragmentation = _as_bool(
+        corr_sec.get("allow_fragmentation"), "correlation.allow_fragmentation", errors, default=True
+    )
+    corr_allow_aggregation = _as_bool(
+        corr_sec.get("allow_aggregation"), "correlation.allow_aggregation", errors, default=True
+    )
+
     evidence_sec = _require_mapping(raw.get("evidence"), "evidence", errors)
     for key in evidence_sec:
         if key not in {"classifications"}:
@@ -900,6 +967,14 @@ def validate_and_normalize(raw: dict[str, Any]) -> SearchPlan:
         communication_max_buffer_hops=comm_max_buffer_hops,
         communication_max_parser_hops=comm_max_parser_hops,
         communication_max_message_hops=comm_max_message_hops,
+        correlation_enabled=corr_enabled,
+        correlation_timestamp_window_ms=corr_timestamp_window_ms,
+        correlation_max_runtime_events=corr_max_runtime_events,
+        correlation_max_wire_packets=corr_max_wire_packets,
+        correlation_max_correlations=corr_max_correlations,
+        correlation_require_direction_match=corr_require_direction_match,
+        correlation_allow_fragmentation=corr_allow_fragmentation,
+        correlation_allow_aggregation=corr_allow_aggregation,
         evidence_classifications=class_norm,
         max_results=max_results,
         max_contexts=max_contexts,

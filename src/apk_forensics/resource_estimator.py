@@ -59,6 +59,10 @@ class PlanFactors:
     communication: bool = False
     communication_max_paths: int = 0
     communication_max_buffer_hops: int = 0
+    correlation: bool = False
+    correlation_max_runtime_events: int = 0
+    correlation_max_wire_packets: int = 0
+    correlation_max_correlations: int = 0
 
     def to_dict(self) -> dict[str, Any]:
         return asdict(self)
@@ -177,6 +181,16 @@ def plan_factors_from_search_plan(plan: SearchPlan | None, *, cli_dex: bool = Fa
         communication=bool(plan.communication_enabled),
         communication_max_paths=int(plan.communication_max_dataflow_paths) if plan.communication_enabled else 0,
         communication_max_buffer_hops=int(plan.communication_max_buffer_hops) if plan.communication_enabled else 0,
+        correlation=bool(plan.correlation_enabled),
+        correlation_max_runtime_events=int(plan.correlation_max_runtime_events)
+        if plan.correlation_enabled
+        else 0,
+        correlation_max_wire_packets=int(plan.correlation_max_wire_packets)
+        if plan.correlation_enabled
+        else 0,
+        correlation_max_correlations=int(plan.correlation_max_correlations)
+        if plan.correlation_enabled
+        else 0,
     )
 
 
@@ -231,6 +245,10 @@ def estimate_resources(
     PER_COMM_BUFFER_HOP_MB = 1
     PER_COMM_BASE_RT = 8
     PER_COMM_BUFFER_HOP_RT = 1
+    PER_CORR_BASE_MB = 4
+    PER_CORR_EVENT_K_MB = 1  # per 1000 runtime+wire events
+    PER_CORR_BASE_RT = 3
+    PER_CORR_EVENT_K_RT = 1
     PER_NATIVE_RUNTIME = 1
     PER_TERM_RUNTIME = 1  # per 10 terms
 
@@ -366,6 +384,21 @@ def estimate_resources(
         if factors.communication_max_paths:
             reasons.append(f"communication_max_paths={factors.communication_max_paths}")
     add_comp("communication_dataflow", comm_mem, comm_rt, source="plan.communication")
+
+    corr_mem = 0
+    corr_rt = 0
+    if factors.correlation:
+        events = max(factors.correlation_max_runtime_events, 0) + max(
+            factors.correlation_max_wire_packets, 0
+        )
+        corr_mem += PER_CORR_BASE_MB
+        corr_mem += (events // 1000) * PER_CORR_EVENT_K_MB
+        corr_rt += PER_CORR_BASE_RT
+        corr_rt += (events // 1000) * PER_CORR_EVENT_K_RT
+        reasons.append("correlation static/runtime/wire (indexed, capped)")
+        if factors.correlation_max_correlations:
+            reasons.append(f"correlation_max_correlations={factors.correlation_max_correlations}")
+    add_comp("static_runtime_correlation", corr_mem, corr_rt, source="plan.correlation")
 
     if total_size_mb >= 100:
         reasons.append(f"large input artifact(s) ~{total_size_mb} MiB")

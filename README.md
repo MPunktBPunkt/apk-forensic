@@ -1,8 +1,8 @@
 # apk-forensics
 
-Local, static APK forensics toolkit (v1.5.0).
+Local, static APK forensics toolkit (v1.6.0).
 
-It turns Android APKs into reproducible static fingerprints: hashes, ZIP inventory, manifest metadata (when available), DEX/native inventories, readable strings, UUID/port/API candidates, optional profile correlations, optional DEX context / Bluetooth RFCOMM path analysis with **bounded caller reconstruction**, **cross-method socket/stream object-flow**, a **canonical Transport Evidence Graph**, and a **Communication Evidence Graph** (bytes/buffers → decoder/encoder → message/object — without protocol guessing), plus **transport-to-byte evidence closure** and **buffer-to-semantics closure** (T5 byte processing / S0–S4 — without protocol guessing), **resource-estimate breakdown / estimate-vs-actual calibration** and **path coverage** (COMPLETE/TRUNCATED/BOUNDARY) kept separate from evidence classes, **ArtifactBundles**, controlled **workspace storage lifecycle**, a declarative **SearchPlan** layer, and an **AnalysisJob + Resource Guard** for deterministic preflight budgeting.
+It turns Android APKs into reproducible static fingerprints: hashes, ZIP inventory, manifest metadata (when available), DEX/native inventories, readable strings, UUID/port/API candidates, optional profile correlations, optional DEX context / Bluetooth RFCOMM path analysis with **bounded caller reconstruction**, **cross-method socket/stream object-flow**, a **canonical Transport Evidence Graph**, and a **Communication Evidence Graph** (bytes/buffers → decoder/encoder → message/object — without protocol guessing), plus **transport-to-byte evidence closure** and **buffer-to-semantics closure** (T5 byte processing / S0–S4 — without protocol guessing), **structured-value / application-flow closure**, and **static ↔ runtime/wire evidence correlation** (optional external traces/captures — without protocol guessing), **resource-estimate breakdown / estimate-vs-actual calibration** and **path coverage** (COMPLETE/TRUNCATED/BOUNDARY) kept separate from evidence classes, **ArtifactBundles**, controlled **workspace storage lifecycle**, a declarative **SearchPlan** layer, and an **AnalysisJob + Resource Guard** for deterministic preflight budgeting.
 
 ## Purpose
 
@@ -27,7 +27,7 @@ User-provided original APKs are never auto-deleted. Cleanup only touches paths t
 - No credential or secret hunting
 - No full DEX decompilation or unbounded call graph
 - No native disassembly or JNI correlation
-- No protocol reconstruction or wire-capture correlation
+- No protocol reconstruction (optional wire/runtime *correlation* only — never invents message meaning)
 - No automatic vehicle/head-unit identification
 - No automatic deletion of original APKs
 - No cloud storage
@@ -159,6 +159,20 @@ apk-forensics scan ./app.apk \
 - `REJECT` → never started (no override)  
 
 The guard **never** silently lowers `xref_depth`, disables modules, or rewrites the plan.
+
+### Static ↔ Runtime/Wire Correlation (v1.6)
+
+```bash
+apk-forensics diagnose-runtime-correlation \
+  --from-application-flow ./output/v15-application-flow/APPLICATION_FLOW_EVIDENCE_REPORT.json \
+  --baseline-meta ./output/v16-baseline/BASELINE_META.json \
+  --plan ./plans/static_runtime_correlation.yaml \
+  --runtime-evidence ./path/to/runtime.json \
+  --wire-evidence ./path/to/wire.json \
+  --output ./output/v16-correlation
+```
+
+Optional runtime/wire JSON only. Missing external artefacts → `INPUT_MISSING` / `NO_EXTERNAL_EVIDENCE` (never simulated). Correlates static `VALUE-V###` with observed execution and on-wire bytes — protocol semantics stay **UNKNOWN**.
 
 ### Structured-Value & Application-Flow Closure (v1.5)
 

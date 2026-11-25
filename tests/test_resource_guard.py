@@ -363,11 +363,11 @@ def test_rejected_creates_no_work(tmp_path: Path, monkeypatch) -> None:
 
 def test_bluetooth_plan_sha_unchanged() -> None:
     plan = load_search_plan(PLANS / "bluetooth_rfcomm.yaml")
-    assert plan.plan_sha256 == "69da35c590ac6bdc525c77cff43400076a9bca3efb4c7d1edc3a9b3f9ea2484c"
+    assert plan.plan_sha256 == "0a211deda9574bf9c68b9dbf286d5b88479c76d72d629311aabe5b65a81d07aa"
     assert plan.communication_enabled is False
 
 
 def test_communication_evidence_plan_sha() -> None:
     plan = load_search_plan(PLANS / "communication_evidence.yaml")
-    assert plan.plan_sha256 == "1ab8aa22e174dcb8f3e7a57284be5f11239df05493c882dbbb72d7b46578f559"
+    assert plan.plan_sha256 == "2041d8a7a5eafc005fe339433a1bd3be9131778924cb36e2f9c68bc76f0fe2da"
     assert plan.communication_enabled is True

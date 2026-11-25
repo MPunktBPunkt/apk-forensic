@@ -1,0 +1,84 @@
+# SearchPlan — Static ↔ Runtime/Wire Correlation (v1.6)
+# Offline correlation over persisted static application-flow + optional external evidence.
+# Does not invent protocol semantics. Missing runtime/wire → UNKNOWN / INPUT-MISSING.
+schema_version: "1.0"
+
+plan:
+  name: static_runtime_correlation
+  description: >
+    Correlate static VALUE/FIELD/APPLICATION-FLOW evidence with optional runtime
+    traces and wire captures. Evidence layers stay separate. Protocol semantics
+    remain UNKNOWN unless independently evidenced.
+  modules:
+    - manifest
+    - zip_inventory
+    - dex
+    - strings
+    - uuid
+    - candidate
+    - dex_context
+    - xref
+    - bluetooth
+    - native
+
+input:
+  description: >
+    APK path owned by CLI/workspace. Runtime/wire JSON paths are CLI arguments
+    to diagnose-runtime-correlation (not plan-owned paths).
+
+search:
+  terms:
+    - BluetoothSocket
+    - InputStream
+    - OutputStream
+    - ByteBuffer
+  regex: []
+  uuids: []
+  api_patterns:
+    - bluetooth
+    - rfcomm
+
+dex_context:
+  enabled: false
+
+bluetooth:
+  enabled: false
+
+evidence_graph:
+  enabled: false
+
+communication:
+  enabled: false
+
+correlation:
+  enabled: true
+  timestamp_window_ms: 50
+  max_runtime_events: 10000
+  max_wire_packets: 10000
+  max_correlations: 500
+  require_direction_match: true
+  allow_fragmentation: true
+  allow_aggregation: true
+
+evidence:
+  classifications:
+    - FACT
+    - CORRELATION
+    - INFERENCE
+    - UNKNOWN
+    - REJECTED
+
+limits:
+  max_results: 100
+  max_contexts: 100
+  max_xrefs: 1000
+  max_chains: 20
+
+output:
+  format:
+    - json
+    - markdown
+  include_raw: false
+
+profile:
+  name: bmw_connected

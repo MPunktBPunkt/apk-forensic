@@ -1,5 +1,16 @@
 # Changelog
 
+## 1.6.0
+
+- **Static ↔ Runtime/Wire evidence correlation**: offline join of v1.5 application-flow with optional runtime traces and wire captures
+- Neutral evidence types (`STATIC_*` / `RUNTIME_*` / `WIRE_*`); strength `EXACT|STRONG|MODERATE|WEAK|AMBIGUOUS|NONE|UNKNOWN`
+- Length-only / method-name-only / timestamp-only never become end-to-end FACT; direction mismatch and byte conflicts → `REJECTED`
+- Fragmentation (1 read ↔ N wire) and aggregation (N reads ↔ 1 wire) supported when exact bytes concatenate
+- Missing external artefacts → `INPUT_MISSING` / `NO_EXTERNAL_EVIDENCE` (never simulated)
+- SearchPlan `correlation:` + `plans/static_runtime_correlation.yaml`; Resource Guard estimates indexed (non-cartesian) work
+- CLI: `diagnose-runtime-correlation` → static/runtime/wire/e2e/coverage/forensic reports + `CORRELATION_TABLE.json`
+- Fixtures V0–V7; v1.5 BMW metrics referenced unchanged; protocol semantics remain **UNKNOWN**
+
 ## 1.5.0
 
 - **Structured-value & application-flow closure**: byte-derived values → field store/load → branch/param/state/roundtrip

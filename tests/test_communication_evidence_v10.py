@@ -363,7 +363,7 @@ def test_communication_plan_loads() -> None:
     plan = load_search_plan(PLANS / "communication_evidence.yaml")
     assert plan.communication_enabled is True
     assert plan.communication_max_buffer_hops == 5
-    assert plan.plan_sha256 == "1ab8aa22e174dcb8f3e7a57284be5f11239df05493c882dbbb72d7b46578f559"
+    assert plan.plan_sha256 == "2041d8a7a5eafc005fe339433a1bd3be9131778924cb36e2f9c68bc76f0fe2da"
 
 
 def test_resource_estimator_accounts_for_communication() -> None:

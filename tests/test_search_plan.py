@@ -47,6 +47,7 @@ def test_valid_example_plans() -> None:
         "native_static.yaml",
         "communication_stack.yaml",
         "communication_evidence.yaml",
+        "static_runtime_correlation.yaml",
     ):
         plan = load_search_plan(PLANS / name)
         assert plan.schema_version == "1.0"
