@@ -1,0 +1,164 @@
+{
+  "schema": "apk_forensics.correlation_forensic_report.v1",
+  "A_apk_proves": {
+    "note": "Static FACT only — unchanged by correlation layer",
+    "baseline": {
+      "catalog_values": null,
+      "field_stores": null,
+      "field_loads": null,
+      "parameters": null,
+      "returns": null,
+      "branches": null,
+      "state_mutations": null,
+      "collections": null,
+      "roundtrip_candidates": null,
+      "path_comm": null,
+      "max_field_hops": 2,
+      "note": "v1.6 references baseline; does not rewrite application-flow counts"
+    },
+    "static_counts": {
+      "values": 12,
+      "methods": 3,
+      "fields": 4,
+      "field_stores": 8,
+      "field_loads": 14,
+      "branches": 249,
+      "state_mutations": 13,
+      "roundtrip_candidates": 0,
+      "catalog_values": 12
+    }
+  },
+  "B_apk_plus_external_correlate": {
+    "static_runtime": [],
+    "runtime_wire": [],
+    "end_to_end": []
+  },
+  "C_still_unknown": [
+    "protocol_semantics",
+    "peer/HU identity (unless peer field present)",
+    "request/response semantics",
+    "message meaning"
+  ],
+  "answers": {
+    "1_static_methods_correlated": [],
+    "2_values_with_runtime": [],
+    "3_strength_counts": {
+      "UNKNOWN": 12,
+      "class:UNKNOWN": 12,
+      "result:UNKNOWN": 12
+    },
+    "4_unknown_static_values": [
+      "VALUE-V001",
+      "VALUE-V002",
+      "VALUE-V003",
+      "VALUE-V004",
+      "VALUE-V005",
+      "VALUE-V006",
+      "VALUE-V007",
+      "VALUE-V008",
+      "VALUE-V009",
+      "VALUE-V010",
+      "VALUE-V011",
+      "VALUE-V012"
+    ],
+    "5_runtime_wire_reads_writes": [],
+    "6_fragmentation": false,
+    "6_fragmentation_count": 0,
+    "7_aggregation": false,
+    "7_aggregation_count": 0,
+    "8_directions_clear": 0,
+    "9_end_to_end_values": [],
+    "10_byte_ranges_to_values": [],
+    "11_field_runtime": [],
+    "12_branch_runtime": "see runtime events with branch field",
+    "13_state_runtime": "see runtime events with state markers",
+    "14_unknowns_promoted_to_correlation": [
+      null,
+      null,
+      null
+    ],
+    "15_remain_unknown": [
+      "protocol_semantics",
+      "peer/HU identity (unless peer field present)",
+      "request/response semantics",
+      "message meaning"
+    ],
+    "16_semantic_evidence": false,
+    "17_semantic_source": null,
+    "18_correlation_ends": [
+      "join boundaries / caps",
+      "WEAK keys alone (length/name/time)",
+      "direction conflicts",
+      "ambiguous equal-strength candidates"
+    ],
+    "19_analyzer_limits": [
+      "max_runtime_events / max_wire_packets / max_correlations",
+      "indexed bucket strategy (no full cartesian)",
+      "timestamp_window_ms"
+    ],
+    "20_missing_external_only": false,
+    "21_false_positive_classes": [
+      "length_only",
+      "method_name_only",
+      "timestamp_window_only",
+      "byte_mismatch_same_length_time",
+      "direction_mismatch"
+    ],
+    "22_new_limits": true,
+    "baseline_v15_unchanged": {
+      "catalog_values": null,
+      "field_stores": null,
+      "field_loads": null,
+      "parameters": null,
+      "returns": null,
+      "branches": null,
+      "state_mutations": null,
+      "collections": null,
+      "roundtrip_candidates": null,
+      "path_comm": null,
+      "max_field_hops": 2,
+      "note": "v1.6 references baseline; does not rewrite application-flow counts"
+    },
+    "protocol_semantics": "UNKNOWN",
+    "external_status": {
+      "runtime": "INPUT_MISSING",
+      "wire": "OK",
+      "no_external_evidence": false
+    }
+  },
+  "counts": {
+    "static_values": 12,
+    "runtime_events": 0,
+    "wire_packets": 10,
+    "static_runtime": 12,
+    "runtime_wire": 0,
+    "end_to_end": 0,
+    "exact": 0,
+    "strong": 0,
+    "ambiguous": 0,
+    "rejected": 0,
+    "unknown": 12
+  },
+  "guard": {
+    "estimate": {
+      "memory_mb": 8,
+      "runtime_seconds": 6,
+      "probes": 42,
+      "risk": "ok",
+      "reasons": [
+        "static=12",
+        "runtime_capped=0/0",
+        "wire_capped=10/10",
+        "timestamp_window_ms=50",
+        "strategy=indexed_buckets_not_cartesian"
+      ],
+      "max_correlations": 500
+    },
+    "decision": "OK",
+    "allow_resource_warning": false
+  },
+  "protocol_semantics": "UNKNOWN",
+  "peer_hu_identity": "UNKNOWN",
+  "request_response_semantics": "UNKNOWN",
+  "message_meaning": "UNKNOWN"
+}

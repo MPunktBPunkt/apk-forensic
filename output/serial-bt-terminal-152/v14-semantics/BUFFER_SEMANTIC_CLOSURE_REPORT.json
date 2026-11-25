@@ -1,0 +1,296 @@
+{
+  "schema": "apk_forensics.buffer_semantic_closure_report.v1",
+  "provenance": {
+    "source_report": "/home/martin/projects/apk-forensics/output/serial-bt-terminal-152/report.json",
+    "apk": "artifacts/de.kai_morich.serial_bluetooth_terminal-1.52.apk",
+    "expand_interface_consumers": true,
+    "postprocessing_version": "1.6.0",
+    "max_field_hops": 2,
+    "limits_raised": false
+  },
+  "t5_audit": {
+    "schema": "apk_forensics.t5_decoder_audit.v1",
+    "t5_definition_v14": {
+      "requires": "Tracked byte[]/ByteBuffer identity has a FACT edge into at least one of: aget-byte/aget; ByteBuffer.wrap/get*/put*; String([B); or a parse/decode-named invoke that also receives the tracked buffer (dataflow_role).",
+      "excludes": "InputStream/AccessorySocket read()I or read([B)I *length* move-result (READ_LENGTH); method/class names alone; copy-only without further processing; protocol/message meaning claims.",
+      "sees_v13": "Transport wrapper read/write; BYTE_ARRAY arg; mis-tagged PRIMITIVE_DECODE from read length; PATH-COMM INBOUND_PRIMITIVE without real byte ops.",
+      "cannot_see_v13": "Interface consumers (AccessorySocket;->read in BclConnection); Packet.decode* ByteBuffer.getShort/getInt; aget-byte loops; state mutation onto Packet fields after decode."
+    },
+    "t5_candidate_requires": "Tracked byte[]/ByteBuffer identity has a FACT edge into at least one of: aget-byte/aget; ByteBuffer.wrap/get*/put*; String([B); or a parse/decode-named invoke that also receives the tracked buffer (dataflow_role).",
+    "t5_candidate_excludes": "InputStream/AccessorySocket read()I or read([B)I *length* move-result (READ_LENGTH); method/class names alone; copy-only without further processing; protocol/message meaning claims.",
+    "t5_candidate_currently_sees_v13": "Transport wrapper read/write; BYTE_ARRAY arg; mis-tagged PRIMITIVE_DECODE from read length; PATH-COMM INBOUND_PRIMITIVE without real byte ops.",
+    "t5_candidate_currently_cannot_see_v13": "Interface consumers (AccessorySocket;->read in BclConnection); Packet.decode* ByteBuffer.getShort/getInt; aget-byte loops; state mutation onto Packet fields after decode.",
+    "v13_observation": {
+      "transport_paths_reaching_T5": 0,
+      "communication_decoder_candidates": 0,
+      "communication_primitive_decoding": 0,
+      "communication_buffer_operations": 0,
+      "note": "v1.3 T5 required DECODER/ENCODER nodes or decoder_candidates>0. PRIMITIVE_DECODE on PATH-COMM was largely READ_LENGTH mis-tags, correctly refused as T5."
+    },
+    "v14_after_expansion": {
+      "byte_processing": 0,
+      "state_mutations": 0,
+      "decoder_candidates": 0,
+      "primitive_decoding": 0,
+      "read_lengths": 1,
+      "path_comm": 2
+    },
+    "root_cause_v13_t5_zero": {
+      "primary": "B_ANALYZER_MODELING_GAP",
+      "details": [
+        "Transport wrappers (BtAccessorySocket.read) only forward to InputStream; no aget/ByteBuffer in retained set.",
+        "Real consumers call AccessorySocket;->read via BclConnection.internalread / readPacket — not in v1.3 seed set.",
+        "Packet.decode* performs ByteBuffer.wrap + getShort/getInt (FACT byte processing) outside retention.",
+        "v1.3 T5 gate required named DECODER nodes; READ_LENGTH was wrongly counted as primitive_decoding but not T5."
+      ],
+      "not_primary": "A_TRUE_APK_END — byte processing exists statically above the interface."
+    },
+    "protocol_semantics": "UNKNOWN"
+  },
+  "hypotheses": [
+    {
+      "hypothesis": "A_TRUE_APK_END",
+      "status": "REJECTED",
+      "evidence": "BclConnection.readPacket + Packet.decode* ByteBuffer.get* exist in APK; not absent processing."
+    },
+    {
+      "hypothesis": "B_ANALYZER_MODELING_GAP",
+      "status": "CONFIRMED",
+      "evidence": "v1.3 seeds stopped at BtAccessorySocket wrappers; interface consumers and Packet.decode* were outside retention. After expansion, 0/8 CASE-C paths classify above S0 via shared consumer evidence."
+    },
+    {
+      "hypothesis": "C_IDENTITY_BOUNDARY",
+      "status": "PARTIAL",
+      "evidence": "Interface dispatch AccessorySocket→BtAccessorySocket is a static call-graph hop; buffer identity across invoke-interface is CORRELATION when expanded. PATH-000011 remains identity-bound (separate)."
+    },
+    {
+      "hypothesis": "D_ALTERNATIVE_BYTE_MODEL",
+      "status": "CONFIRMED",
+      "evidence": "Processing uses ByteBuffer.wrap/getShort/getInt and Packet field stores — not a method literally named only 'decode' on the transport wrapper. Named Packet.decode* are search indicators plus FACT ByteBuffer ops."
+    }
+  ],
+  "path_semantic_table": [
+    {
+      "PATH": "PATH-000001",
+      "T0": true,
+      "T1": true,
+      "T2": true,
+      "T3": true,
+      "T4": false,
+      "T5": false,
+      "T6": false,
+      "Semantic": "S0_BUFFER_ONLY",
+      "Termination": "F_BUFFER_IDENTITY_BOUNDARY",
+      "Protocol": "UNKNOWN"
+    },
+    {
+      "PATH": "PATH-000002",
+      "T0": true,
+      "T1": true,
+      "T2": true,
+      "T3": true,
+      "T4": false,
+      "T5": false,
+      "T6": false,
+      "Semantic": "S0_BUFFER_ONLY",
+      "Termination": "F_BUFFER_IDENTITY_BOUNDARY",
+      "Protocol": "UNKNOWN"
+    },
+    {
+      "PATH": "PATH-000003",
+      "T0": true,
+      "T1": true,
+      "T2": true,
+      "T3": true,
+      "T4": false,
+      "T5": false,
+      "T6": false,
+      "Semantic": "S0_BUFFER_ONLY",
+      "Termination": "F_BUFFER_IDENTITY_BOUNDARY",
+      "Protocol": "UNKNOWN"
+    },
+    {
+      "PATH": "PATH-000004",
+      "T0": null,
+      "T1": null,
+      "T2": null,
+      "T3": null,
+      "T4": null,
+      "T5": null,
+      "T6": null,
+      "Semantic": "S0_BUFFER_ONLY",
+      "Termination": null,
+      "Protocol": "UNKNOWN"
+    }
+  ],
+  "paths": [
+    {
+      "path_id": "PATH-000001",
+      "kind": "COMBINED_COMMUNICATION_PATH",
+      "case_v13": "CASE_C_BUFFER_CLOSED_SEMANTICS_OPEN",
+      "stages": {
+        "T0": true,
+        "T1": true,
+        "T2": true,
+        "T3": true,
+        "T4": false,
+        "T5_byte_processing": false,
+        "T6_object_state": false
+      },
+      "semantic_class": "S0_BUFFER_ONLY",
+      "semantic_description": "Buffer proven; no byte processing beyond consumer/producer.",
+      "linked_path_comm_v13": [],
+      "evidence_sample": [],
+      "protocol_semantics": "UNKNOWN",
+      "termination": "F_BUFFER_IDENTITY_BOUNDARY"
+    },
+    {
+      "path_id": "PATH-000002",
+      "kind": "INPUT_PATH",
+      "case_v13": "CASE_C_BUFFER_CLOSED_SEMANTICS_OPEN",
+      "stages": {
+        "T0": true,
+        "T1": true,
+        "T2": true,
+        "T3": true,
+        "T4": false,
+        "T5_byte_processing": false,
+        "T6_object_state": false
+      },
+      "semantic_class": "S0_BUFFER_ONLY",
+      "semantic_description": "Buffer proven; no byte processing beyond consumer/producer.",
+      "linked_path_comm_v13": [],
+      "evidence_sample": [],
+      "protocol_semantics": "UNKNOWN",
+      "termination": "F_BUFFER_IDENTITY_BOUNDARY"
+    },
+    {
+      "path_id": "PATH-000003",
+      "kind": "OUTPUT_PATH",
+      "case_v13": "CASE_C_BUFFER_CLOSED_SEMANTICS_OPEN",
+      "stages": {
+        "T0": true,
+        "T1": true,
+        "T2": true,
+        "T3": true,
+        "T4": false,
+        "T5_byte_processing": false,
+        "T6_object_state": false
+      },
+      "semantic_class": "S0_BUFFER_ONLY",
+      "semantic_description": "Buffer proven; no byte processing beyond consumer/producer.",
+      "linked_path_comm_v13": [],
+      "evidence_sample": [],
+      "protocol_semantics": "UNKNOWN",
+      "termination": "F_BUFFER_IDENTITY_BOUNDARY"
+    },
+    {
+      "path_id": "PATH-000004",
+      "semantic_class": "S0_BUFFER_ONLY",
+      "T5_byte_processing": false,
+      "T6_object_state": false
+    }
+  ],
+  "answers": {
+    "1_why_t5_was_zero": [
+      "Transport wrappers (BtAccessorySocket.read) only forward to InputStream; no aget/ByteBuffer in retained set.",
+      "Real consumers call AccessorySocket;->read via BclConnection.internalread / readPacket — not in v1.3 seed set.",
+      "Packet.decode* performs ByteBuffer.wrap + getShort/getInt (FACT byte processing) outside retention.",
+      "v1.3 T5 gate required named DECODER nodes; READ_LENGTH was wrongly counted as primitive_decoding but not T5."
+    ],
+    "2_apk_or_analyzer": "ANALYZER_MODELING_GAP (Hypothesis B) + alternative modeling (D); not true APK end (A rejected)",
+    "3_byte_ops_after_t4": [
+      "AccessorySocket.read via BclConnection.internalread",
+      "new-array [B] → internalread → Packet.decode*( [B] )",
+      "ByteBuffer.wrap([B,I,I]) → getShort/getInt",
+      "iput-object/iput-short onto Packet fields",
+      "outbound: ByteBuffer.put*/array → Packet.encode → write"
+    ],
+    "4_paths_reaching_byte_processing": {
+      "case_c": 0,
+      "of": 8
+    },
+    "5_paths_reaching_structured_value": {
+      "case_c": 0,
+      "of": 8
+    },
+    "6_paths_reaching_object_construction": {
+      "case_c": 0,
+      "of": 8
+    },
+    "7_paths_reaching_state_mutation": {
+      "case_c": 0,
+      "of": 8
+    },
+    "8_new_evidence_nodes": [
+      "BYTE_PROCESSING",
+      "STATE_MUTATION",
+      "READ_LENGTH"
+    ],
+    "9_existing_nodes_sufficient_partially": [
+      "BYTE_ARRAY",
+      "PRIMITIVE_DECODE (ByteBuffer.get*)",
+      "DECODER (name+buffer dataflow)",
+      "WRAP"
+    ],
+    "10_identity_losses": [
+      "v1.3: buffer identity lost at wrapper return / interface boundary",
+      "PATH-000011: stream field without I/O"
+    ],
+    "11_analysis_bounds": [
+      "METHOD_RETENTION without interface expansion (v1.3)",
+      "max_field_hops=2 unchanged — not the T5 cause"
+    ],
+    "12_new_facts": [
+      "READ_LENGTH vs buffer decode separation",
+      "aget-byte / ByteBuffer.get* as BYTE_PROCESSING FACT when buffer-tracked",
+      "Packet.decode* ByteBuffer.wrap+getShort FACT on [B parameter"
+    ],
+    "13_new_correlations": [
+      "Transport CASE-C paths ↔ BclConnection/Packet consumers via AccessorySocket",
+      "decode result → Packet field STATE_MUTATION"
+    ],
+    "14_new_inferences": [
+      "End-to-end S4 semantic candidate chain (still not protocol)",
+      "DECODER dataflow_role when name matches and buffer present"
+    ],
+    "15_unknowns": [
+      "protocol_semantics / wire meaning",
+      "peer/HU identity",
+      "runtime session",
+      "meaning of magic constants (e.g. getInt compare) without independent evidence"
+    ],
+    "16_decoder_encoder_candidate_exists": false,
+    "17_why_candidate_or_not": "No named decoder with buffer dataflow after expansion.",
+    "18_if_t5_still_zero": "N/A if expansion yields BYTE_PROCESSING; v1.3 zero was analyzer gap",
+    "19_communication_baseline_changed": true,
+    "19b_justification": "PATH-COMM count changes because (1) READ_LENGTH no longer forged INBOUND_PRIMITIVE, (2) optional interface-consumer expansion adds real byte-processing paths. Documented; not a silent baseline rewrite.",
+    "20_protocol_semantics_still_unknown": true,
+    "negative_controls_pass": true,
+    "s4_count_case_c": 0,
+    "baseline_path_comm": 0,
+    "expanded_path_comm": 2,
+    "limits_unchanged": {
+      "max_field_hops": 2,
+      "raised": false
+    }
+  },
+  "semantic_classes": {
+    "S0_BUFFER_ONLY": "Buffer proven; no byte processing beyond consumer/producer.",
+    "S1_BYTE_PROCESSING": "Concrete byte/primitive processing on tracked buffer (FACT).",
+    "S2_STRUCTURED_VALUE": "Bytes → structured primitive/value (e.g. getInt/getShort).",
+    "S3_OBJECT_STATE": "Value enters object construction or state mutation.",
+    "S4_SEMANTIC_CANDIDATE": "Connected static processing chain; meaning remains UNKNOWN (not protocol proof)."
+  },
+  "summary": {
+    "case_c": 8,
+    "above_S0": {
+      "case_c": 0,
+      "of": 8
+    },
+    "protocol_semantics": "UNKNOWN",
+    "negative_controls_pass": true,
+    "communication_baseline_changed": true
+  },
+  "interpretation": "v1.4 shows T5=0 in v1.3 was an analyzer/modeling gap (interface consumers + ByteBuffer processing outside seeds), not proof that the APK lacks byte processing. Protocol semantics remain UNKNOWN."
+}

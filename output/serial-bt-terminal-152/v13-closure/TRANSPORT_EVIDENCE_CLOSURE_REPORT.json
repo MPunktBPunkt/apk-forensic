@@ -1,0 +1,632 @@
+{
+  "schema": "apk_forensics.transport_evidence_closure_report.v1",
+  "provenance": {
+    "source_report": "/home/martin/projects/apk-forensics/output/serial-bt-terminal-152/report.json",
+    "source_engine_version": "1.6.0",
+    "source_plan_sha256": "0a211deda9574bf9c68b9dbf286d5b88479c76d72d629311aabe5b65a81d07aa",
+    "source_artifact_sha256": "e44ab3b93e1701fcca67869169ba49ef2e918416d28928a56a135e8bff343192",
+    "postprocessing_version": "1.6.0",
+    "limits_raised": false,
+    "max_field_hops": 2
+  },
+  "baseline": {},
+  "stage_definitions": {
+    "T0": "Socket",
+    "T1": "Stream",
+    "T2": "read/write/flush",
+    "T3": "Buffer/byte[]/ByteBuffer argument identity",
+    "T4": "Buffer consumer/producer",
+    "T5": "Decoder/encoder candidate (not protocol)",
+    "T6": "Communication Evidence (PATH-COMM); protocol still UNKNOWN"
+  },
+  "termination_taxonomy": {
+    "A_TRUE_GRAPH_END": "Dataflow ends in analyzed code with no further static continuation.",
+    "B_RETURN_BOUNDARY": "Relevant value leaves via return.",
+    "C_PARAMETER_BOUNDARY": "Value passed as parameter; next consumer outside this path.",
+    "D_WRAPPER_BOUNDARY": "Wrapper abstracts further transport/buffer access.",
+    "E_OBJECT_IDENTITY_BOUNDARY": "Object identity cannot be followed safely.",
+    "F_BUFFER_IDENTITY_BOUNDARY": "Socket/stream known; concrete buffer/array identity lost.",
+    "G_METHOD_CALL_GRAPH_BOUNDARY": "Call/method outside allowed analysis bounds.",
+    "H_CYCLE_GUARD": "Stopped on a real object/field cycle.",
+    "I_AMBIGUOUS_ALIAS": "Multiple objects cannot be distinguished statically.",
+    "J_UNKNOWN_UNRESOLVED": "Evidence insufficient for a reliable assignment."
+  },
+  "case_classes": {
+    "CASE_A_CLOSED": "Socket→Stream→I/O→Buffer→Consumer/Producer statically closed.",
+    "CASE_B_TRANSPORT_CLOSED_BUFFER_OPEN": "Socket/Stream/I/O closed; buffer identity open.",
+    "CASE_C_BUFFER_CLOSED_SEMANTICS_OPEN": "Byte/buffer flow closed; meaning/decoder semantics UNKNOWN.",
+    "CASE_D_IDENTITY_BOUND": "Flow exists but object/buffer identity cannot continue safely.",
+    "CASE_E_GRAPH_BOUND": "Analysis bound prevents further tracking.",
+    "CASE_F_TRUE_END": "Dataflow truly ends in statically analyzed code.",
+    "CASE_G_UNKNOWN": "Evidence insufficient for a reliable classification."
+  },
+  "inventory_table": [
+    {
+      "PATH": "PATH-000001",
+      "Transport": "COMBINED_COMMUNICATION_PATH",
+      "ObjectFlow": "socket:S1,input:I1,output:O1",
+      "Stream": "Y",
+      "IO": "Y",
+      "Buffer": "Y",
+      "ConsumerProducer": "N",
+      "Ende": "Ljava/io/OutputStream;->write([B)V",
+      "Reason": "F_BUFFER_IDENTITY_BOUNDARY",
+      "Evidence": "CASE_C_BUFFER_CLOSED_SEMANTICS_OPEN"
+    },
+    {
+      "PATH": "PATH-000002",
+      "Transport": "INPUT_PATH",
+      "ObjectFlow": "socket:S1,input:I1,output:O1",
+      "Stream": "Y",
+      "IO": "Y",
+      "Buffer": "Y",
+      "ConsumerProducer": "N",
+      "Ende": "Ljava/io/InputStream;->read([B)I",
+      "Reason": "F_BUFFER_IDENTITY_BOUNDARY",
+      "Evidence": "CASE_C_BUFFER_CLOSED_SEMANTICS_OPEN"
+    },
+    {
+      "PATH": "PATH-000003",
+      "Transport": "OUTPUT_PATH",
+      "ObjectFlow": "socket:S1,input:I1,output:O1",
+      "Stream": "Y",
+      "IO": "Y",
+      "Buffer": "Y",
+      "ConsumerProducer": "N",
+      "Ende": "Ljava/io/OutputStream;->write([B)V",
+      "Reason": "F_BUFFER_IDENTITY_BOUNDARY",
+      "Evidence": "CASE_C_BUFFER_CLOSED_SEMANTICS_OPEN"
+    },
+    {
+      "PATH": "PATH-000004",
+      "Transport": "SOCKET_PATH",
+      "ObjectFlow": "socket:S1,input:I1,output:O1",
+      "Stream": "N",
+      "IO": "N",
+      "Buffer": "N",
+      "ConsumerProducer": "N",
+      "Ende": "BluetoothSocket.connect",
+      "Reason": "A_TRUE_GRAPH_END",
+      "Evidence": "CASE_F_TRUE_END"
+    }
+  ],
+  "paths": [
+    {
+      "path_id": "PATH-000001",
+      "kind": "COMBINED_COMMUNICATION_PATH",
+      "evidence_class": "INFERENCE",
+      "start": "createRfcommSocketToServiceRecord",
+      "end": "Ljava/io/OutputStream;->write([B)V",
+      "objects": {
+        "socket": "socket:S1",
+        "input": "input:I1",
+        "output": "output:O1"
+      },
+      "steps": [
+        {
+          "node_type": "SOCKET",
+          "label": "createRfcommSocketToServiceRecord",
+          "object_id": "socket:S1",
+          "classification": "FACT"
+        },
+        {
+          "node_type": "CONNECT",
+          "label": "BluetoothSocket.connect",
+          "object_id": "socket:S1",
+          "classification": "FACT"
+        },
+        {
+          "node_type": "GET_INPUT_STREAM",
+          "label": "BluetoothSocket.getInputStream",
+          "object_id": "input:I1",
+          "classification": "FACT"
+        },
+        {
+          "node_type": "READ",
+          "label": "Ljava/io/InputStream;->read([B)I",
+          "object_id": "input:I1",
+          "classification": "FACT"
+        },
+        {
+          "node_type": "GET_OUTPUT_STREAM",
+          "label": "BluetoothSocket.getOutputStream",
+          "object_id": "output:O1",
+          "classification": "FACT"
+        },
+        {
+          "node_type": "WRITE",
+          "label": "Ljava/io/OutputStream;->write([B)V",
+          "object_id": "output:O1",
+          "classification": "FACT"
+        }
+      ],
+      "field_transfers": [],
+      "io": {
+        "read": true,
+        "write": true,
+        "flush": false
+      },
+      "stages_reached": {
+        "T0_SOCKET": true,
+        "T1_STREAM": true,
+        "T2_IO": true,
+        "T3_BUFFER": true,
+        "T4_CONSUMER_PRODUCER": false,
+        "T5_DECODER_ENCODER": false,
+        "T6_COMMUNICATION": false
+      },
+      "highest_stage": "T3_BUFFER",
+      "edge_chain": [
+        {
+          "from": null,
+          "to": "T0_SOCKET",
+          "classification": "FACT",
+          "evidence": "SOCKET node / createRfcomm* in path steps"
+        },
+        {
+          "from": "T0_SOCKET",
+          "to": "T1_STREAM",
+          "classification": "FACT",
+          "evidence": "getInputStream/getOutputStream or stream field on path"
+        },
+        {
+          "from": "T1_STREAM",
+          "to": "T2_IO",
+          "classification": "FACT",
+          "evidence": "I/O on path: read=True write=True flush=False"
+        },
+        {
+          "from": "T2_IO",
+          "to": "T3_BUFFER",
+          "classification": "FACT",
+          "evidence": "read/write signature with [B or ByteBuffer on path step"
+        },
+        {
+          "from": "T4_CONSUMER_PRODUCER",
+          "to": "T5_DECODER_ENCODER",
+          "classification": "UNKNOWN",
+          "evidence": "No FACT byte-processing edge from tracked buffer on this path linkage",
+          "reached": false
+        }
+      ],
+      "edge_class_by_stage": {
+        "T0_SOCKET": "FACT",
+        "T1_STREAM": "FACT",
+        "T2_IO": "FACT",
+        "T3_BUFFER": "FACT"
+      },
+      "linked_buffer_ops": [
+        {
+          "method": "La00;->run()V",
+          "raw": "Ljava/io/InputStream;->read([B)I",
+          "object_id": "input:I1",
+          "buffer_identity": "REGISTER",
+          "classification": "FACT"
+        },
+        {
+          "method": "La00;->run()V",
+          "raw": "Ljava/io/InputStream;->read([B)I",
+          "object_id": "input:I1",
+          "buffer_identity": "REGISTER",
+          "classification": "FACT"
+        },
+        {
+          "method": "La00;->e([B)V",
+          "raw": "Ljava/io/OutputStream;->write([B)V",
+          "object_id": "output:O1",
+          "buffer_identity": "REGISTER",
+          "classification": "FACT"
+        },
+        {
+          "method": "La00;->e([B)V",
+          "raw": "Ljava/io/OutputStream;->write([B)V",
+          "object_id": "output:O1",
+          "buffer_identity": "REGISTER",
+          "classification": "FACT"
+        }
+      ],
+      "linked_path_comm": [],
+      "termination": {
+        "primary": "F_BUFFER_IDENTITY_BOUNDARY",
+        "all": [
+          "J_UNKNOWN_UNRESOLVED"
+        ],
+        "raw_reasons": [
+          "parameter_callee_unresolved"
+        ],
+        "description": "Socket/stream known; concrete buffer/array identity lost."
+      },
+      "case": "CASE_C_BUFFER_CLOSED_SEMANTICS_OPEN",
+      "case_description": "Byte/buffer flow closed; meaning/decoder semantics UNKNOWN.",
+      "coverage_note": "Coverage = how far the analyzer followed the graph; Evidence = what the found data proves. Not interchangeable.",
+      "protocol_semantics": "UNKNOWN"
+    },
+    {
+      "path_id": "PATH-000002",
+      "kind": "INPUT_PATH",
+      "evidence_class": "INFERENCE",
+      "start": "createRfcommSocketToServiceRecord",
+      "end": "Ljava/io/InputStream;->read([B)I",
+      "objects": {
+        "socket": "socket:S1",
+        "input": "input:I1",
+        "output": "output:O1"
+      },
+      "steps": [
+        {
+          "node_type": "SOCKET",
+          "label": "createRfcommSocketToServiceRecord",
+          "object_id": "socket:S1",
+          "classification": "FACT"
+        },
+        {
+          "node_type": "CONNECT",
+          "label": "BluetoothSocket.connect",
+          "object_id": "socket:S1",
+          "classification": "FACT"
+        },
+        {
+          "node_type": "GET_INPUT_STREAM",
+          "label": "BluetoothSocket.getInputStream",
+          "object_id": "input:I1",
+          "classification": "FACT"
+        },
+        {
+          "node_type": "READ",
+          "label": "Ljava/io/InputStream;->read([B)I",
+          "object_id": "input:I1",
+          "classification": "FACT"
+        }
+      ],
+      "field_transfers": [],
+      "io": {
+        "read": true,
+        "write": false,
+        "flush": false
+      },
+      "stages_reached": {
+        "T0_SOCKET": true,
+        "T1_STREAM": true,
+        "T2_IO": true,
+        "T3_BUFFER": true,
+        "T4_CONSUMER_PRODUCER": false,
+        "T5_DECODER_ENCODER": false,
+        "T6_COMMUNICATION": false
+      },
+      "highest_stage": "T3_BUFFER",
+      "edge_chain": [
+        {
+          "from": null,
+          "to": "T0_SOCKET",
+          "classification": "FACT",
+          "evidence": "SOCKET node / createRfcomm* in path steps"
+        },
+        {
+          "from": "T0_SOCKET",
+          "to": "T1_STREAM",
+          "classification": "FACT",
+          "evidence": "getInputStream/getOutputStream or stream field on path"
+        },
+        {
+          "from": "T1_STREAM",
+          "to": "T2_IO",
+          "classification": "FACT",
+          "evidence": "I/O on path: read=True write=False flush=False"
+        },
+        {
+          "from": "T2_IO",
+          "to": "T3_BUFFER",
+          "classification": "FACT",
+          "evidence": "read/write signature with [B or ByteBuffer on path step"
+        },
+        {
+          "from": "T4_CONSUMER_PRODUCER",
+          "to": "T5_DECODER_ENCODER",
+          "classification": "UNKNOWN",
+          "evidence": "No FACT byte-processing edge from tracked buffer on this path linkage",
+          "reached": false
+        }
+      ],
+      "edge_class_by_stage": {
+        "T0_SOCKET": "FACT",
+        "T1_STREAM": "FACT",
+        "T2_IO": "FACT",
+        "T3_BUFFER": "FACT"
+      },
+      "linked_buffer_ops": [
+        {
+          "method": "La00;->run()V",
+          "raw": "Ljava/io/InputStream;->read([B)I",
+          "object_id": "input:I1",
+          "buffer_identity": "REGISTER",
+          "classification": "FACT"
+        },
+        {
+          "method": "La00;->run()V",
+          "raw": "Ljava/io/InputStream;->read([B)I",
+          "object_id": "input:I1",
+          "buffer_identity": "REGISTER",
+          "classification": "FACT"
+        }
+      ],
+      "linked_path_comm": [],
+      "termination": {
+        "primary": "F_BUFFER_IDENTITY_BOUNDARY",
+        "all": [],
+        "raw_reasons": [],
+        "description": "Socket/stream known; concrete buffer/array identity lost."
+      },
+      "case": "CASE_C_BUFFER_CLOSED_SEMANTICS_OPEN",
+      "case_description": "Byte/buffer flow closed; meaning/decoder semantics UNKNOWN.",
+      "coverage_note": "Coverage = how far the analyzer followed the graph; Evidence = what the found data proves. Not interchangeable.",
+      "protocol_semantics": "UNKNOWN"
+    },
+    {
+      "path_id": "PATH-000003",
+      "kind": "OUTPUT_PATH",
+      "evidence_class": "INFERENCE",
+      "start": "createRfcommSocketToServiceRecord",
+      "end": "Ljava/io/OutputStream;->write([B)V",
+      "objects": {
+        "socket": "socket:S1",
+        "input": "input:I1",
+        "output": "output:O1"
+      },
+      "steps": [
+        {
+          "node_type": "SOCKET",
+          "label": "createRfcommSocketToServiceRecord",
+          "object_id": "socket:S1",
+          "classification": "FACT"
+        },
+        {
+          "node_type": "CONNECT",
+          "label": "BluetoothSocket.connect",
+          "object_id": "socket:S1",
+          "classification": "FACT"
+        },
+        {
+          "node_type": "GET_OUTPUT_STREAM",
+          "label": "BluetoothSocket.getOutputStream",
+          "object_id": "output:O1",
+          "classification": "FACT"
+        },
+        {
+          "node_type": "WRITE",
+          "label": "Ljava/io/OutputStream;->write([B)V",
+          "object_id": "output:O1",
+          "classification": "FACT"
+        }
+      ],
+      "field_transfers": [],
+      "io": {
+        "read": false,
+        "write": true,
+        "flush": false
+      },
+      "stages_reached": {
+        "T0_SOCKET": true,
+        "T1_STREAM": true,
+        "T2_IO": true,
+        "T3_BUFFER": true,
+        "T4_CONSUMER_PRODUCER": false,
+        "T5_DECODER_ENCODER": false,
+        "T6_COMMUNICATION": false
+      },
+      "highest_stage": "T3_BUFFER",
+      "edge_chain": [
+        {
+          "from": null,
+          "to": "T0_SOCKET",
+          "classification": "FACT",
+          "evidence": "SOCKET node / createRfcomm* in path steps"
+        },
+        {
+          "from": "T0_SOCKET",
+          "to": "T1_STREAM",
+          "classification": "FACT",
+          "evidence": "getInputStream/getOutputStream or stream field on path"
+        },
+        {
+          "from": "T1_STREAM",
+          "to": "T2_IO",
+          "classification": "FACT",
+          "evidence": "I/O on path: read=False write=True flush=False"
+        },
+        {
+          "from": "T2_IO",
+          "to": "T3_BUFFER",
+          "classification": "FACT",
+          "evidence": "read/write signature with [B or ByteBuffer on path step"
+        },
+        {
+          "from": "T4_CONSUMER_PRODUCER",
+          "to": "T5_DECODER_ENCODER",
+          "classification": "UNKNOWN",
+          "evidence": "No FACT byte-processing edge from tracked buffer on this path linkage",
+          "reached": false
+        }
+      ],
+      "edge_class_by_stage": {
+        "T0_SOCKET": "FACT",
+        "T1_STREAM": "FACT",
+        "T2_IO": "FACT",
+        "T3_BUFFER": "FACT"
+      },
+      "linked_buffer_ops": [
+        {
+          "method": "La00;->e([B)V",
+          "raw": "Ljava/io/OutputStream;->write([B)V",
+          "object_id": "output:O1",
+          "buffer_identity": "REGISTER",
+          "classification": "FACT"
+        },
+        {
+          "method": "La00;->e([B)V",
+          "raw": "Ljava/io/OutputStream;->write([B)V",
+          "object_id": "output:O1",
+          "buffer_identity": "REGISTER",
+          "classification": "FACT"
+        }
+      ],
+      "linked_path_comm": [],
+      "termination": {
+        "primary": "F_BUFFER_IDENTITY_BOUNDARY",
+        "all": [],
+        "raw_reasons": [],
+        "description": "Socket/stream known; concrete buffer/array identity lost."
+      },
+      "case": "CASE_C_BUFFER_CLOSED_SEMANTICS_OPEN",
+      "case_description": "Byte/buffer flow closed; meaning/decoder semantics UNKNOWN.",
+      "coverage_note": "Coverage = how far the analyzer followed the graph; Evidence = what the found data proves. Not interchangeable.",
+      "protocol_semantics": "UNKNOWN"
+    },
+    {
+      "path_id": "PATH-000004",
+      "kind": "SOCKET_PATH",
+      "evidence_class": "INFERENCE",
+      "start": "createRfcommSocketToServiceRecord",
+      "end": "BluetoothSocket.connect",
+      "objects": {
+        "socket": "socket:S1",
+        "input": "input:I1",
+        "output": "output:O1"
+      },
+      "steps": [
+        {
+          "node_type": "SOCKET",
+          "label": "createRfcommSocketToServiceRecord",
+          "object_id": "socket:S1",
+          "classification": "FACT"
+        },
+        {
+          "node_type": "CONNECT",
+          "label": "BluetoothSocket.connect",
+          "object_id": "socket:S1",
+          "classification": "FACT"
+        }
+      ],
+      "field_transfers": [],
+      "io": {
+        "read": false,
+        "write": false,
+        "flush": false
+      },
+      "stages_reached": {
+        "T0_SOCKET": true,
+        "T1_STREAM": false,
+        "T2_IO": false,
+        "T3_BUFFER": false,
+        "T4_CONSUMER_PRODUCER": false,
+        "T5_DECODER_ENCODER": false,
+        "T6_COMMUNICATION": false
+      },
+      "highest_stage": "T0_SOCKET",
+      "edge_chain": [
+        {
+          "from": null,
+          "to": "T0_SOCKET",
+          "classification": "FACT",
+          "evidence": "SOCKET node / createRfcomm* in path steps"
+        }
+      ],
+      "edge_class_by_stage": {
+        "T0_SOCKET": "FACT"
+      },
+      "linked_buffer_ops": [],
+      "linked_path_comm": [],
+      "termination": {
+        "primary": "A_TRUE_GRAPH_END",
+        "all": [],
+        "raw_reasons": [],
+        "description": "Dataflow ends in analyzed code with no further static continuation."
+      },
+      "case": "CASE_F_TRUE_END",
+      "case_description": "Dataflow truly ends in statically analyzed code.",
+      "coverage_note": "Coverage = how far the analyzer followed the graph; Evidence = what the found data proves. Not interchangeable.",
+      "protocol_semantics": "UNKNOWN"
+    }
+  ],
+  "path_comm": [],
+  "answers": {
+    "1_paths_reaching_read_write": {
+      "count": 3,
+      "of": 4
+    },
+    "2_paths_reaching_buffer": {
+      "count": 3,
+      "of": 4
+    },
+    "3_paths_reaching_buffer_consumer_producer": {
+      "count": 0,
+      "of": 4
+    },
+    "4_paths_reaching_decoder_encoder_candidate": {
+      "count": 0,
+      "of": 4
+    },
+    "5_break_object_identity": [],
+    "6_break_buffer_identity": [
+      "PATH-000001",
+      "PATH-000002",
+      "PATH-000003"
+    ],
+    "7_break_return_parameter_wrapper": [],
+    "8_true_graph_ends": [
+      "PATH-000004"
+    ],
+    "9_remaining_analyzer_limits": [],
+    "10_new_facts_vs_v12": [
+      "Explicit T0–T6 stage closure per PATH-*",
+      "read([B)/write([B) buffer_arg_present / buffer_register FACT on object-flow (when re-scanned)",
+      "BUFFER_ARG nodes + read_into_buffer / write_from_buffer transfers",
+      "Offline CORRELATION of transport object identity to dataflow buffer ops and PATH-COMM"
+    ],
+    "11_new_correlations": [
+      "Transport stream object ↔ dataflow read([B) buffer argument",
+      "Transport PATH-* ↔ PATH-COMM via source_method / object identity"
+    ],
+    "12_inferences_remaining": [
+      "End-to-end PATH / PATH-COMM composition remains INFERENCE",
+      "PRIMITIVE_DECODE as byte-handling candidate (not protocol)"
+    ],
+    "13_unknowns_unchanged": [
+      "protocol_semantics",
+      "wire format / message meaning",
+      "peer/HU identity",
+      "runtime session behavior"
+    ],
+    "14_communication_baseline_changed": false,
+    "15_justification_if_changed": null,
+    "16_protocol_semantics_statically_provable": false,
+    "17_why_protocol_remains_unknown": "Static DEX shows transport I/O and some byte[] arguments / PATH-COMM FACT steps, but no statically proven decoder that assigns wire/message meaning. Method/class names are not protocol evidence.",
+    "case_counts": {
+      "CASE_C_BUFFER_CLOSED_SEMANTICS_OPEN": 3,
+      "CASE_F_TRUE_END": 1
+    },
+    "termination_counts": {
+      "F_BUFFER_IDENTITY_BOUNDARY": 3,
+      "A_TRUE_GRAPH_END": 1
+    },
+    "path_comm_count": 0,
+    "protocol_semantics": "UNKNOWN",
+    "limits_unchanged": {
+      "max_field_hops": 2,
+      "max_method_hops": 3,
+      "max_object_nodes": 500,
+      "dataflow_depth": 3,
+      "raised": false
+    }
+  },
+  "summary": {
+    "transport_paths": 4,
+    "path_comm": 0,
+    "reaching_T2_IO": 3,
+    "reaching_T3_BUFFER": 3,
+    "reaching_T4": 0,
+    "reaching_T5": 0,
+    "protocol_semantics": "UNKNOWN",
+    "limits_raised": false
+  },
+  "interpretation": "v1.3 answers how far static evidence closes Bluetooth transport to bytes. It does not claim protocol discovery. Coverage ≠ evidence."
+}

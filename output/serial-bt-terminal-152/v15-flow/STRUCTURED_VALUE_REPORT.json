@@ -1,0 +1,1364 @@
+{
+  "schema": "apk_forensics.structured_value_report.v1",
+  "definition": {
+    "definition": "A STRUCTURED_VALUE is a FACT when a tracked byte[]/ByteBuffer identity is transformed by a concrete DEX instruction into a typed register value (primitive, String, or object ref) that is distinct from READ_LENGTH.",
+    "examples": [
+      "ByteBuffer.getInt/getShort → register",
+      "aget-byte → register",
+      "decode*([B) → move-result / move-result-object",
+      "String.<init>([B) → object register"
+    ],
+    "excludes": [
+      "InputStream.read length move-result (READ_LENGTH)",
+      "Field/method/class names as semantic labels",
+      "Protocol/command/message claims"
+    ]
+  },
+  "counts": {
+    "methods_analyzed": 5,
+    "structured_values": 6,
+    "field_stores": 8,
+    "field_loads": 14,
+    "branches": 249,
+    "parameters": 1000,
+    "returns": 29,
+    "state_mutations": 13,
+    "collections": 55,
+    "roundtrip_candidates": 0,
+    "catalog_values": 12
+  },
+  "value_class_counts": {
+    "V3_CONTROL_FLOW": 8,
+    "V4_APPLICATION_ACTION": 4
+  },
+  "stored_fields": [
+    "Llf0;->zzc Llg0;",
+    "Lmf0;->b [I",
+    "Lve0;->c Ljava/lang/Object;",
+    "Lxf0;->a Z"
+  ],
+  "value_catalog": [
+    {
+      "value_id": "VALUE-V001",
+      "source_method": "Lbg0;->t(Ljava/lang/Object; [B I I I Lve0;)I",
+      "source_kind": "STRING_FROM_BYTES",
+      "source_api": "Ljava/lang/String;-><init>([B I I Ljava/nio/charset/Charset;)V",
+      "primitive_type": "string",
+      "stored_field": "Lve0;->c Ljava/lang/Object;",
+      "store_instruction_index": 547,
+      "classification": "FACT",
+      "protocol_semantics": "UNKNOWN",
+      "semantic_label": null,
+      "value_class": "V3_CONTROL_FLOW",
+      "t6_stage": "T6.3_CONTROL_FLOW",
+      "consumers": [
+        {
+          "kind": "FIELD_LOAD",
+          "method": "Lbg0;->t(Ljava/lang/Object; [B I I I Lve0;)I",
+          "instruction_index": 258,
+          "classification": "CORRELATION"
+        },
+        {
+          "kind": "VALUE_PARAMETER_FROM_FIELD",
+          "method": "Lbg0;->t(Ljava/lang/Object; [B I I I Lve0;)I",
+          "instruction_index": 259,
+          "classification": "CORRELATION"
+        },
+        {
+          "kind": "VALUE_PARAMETER_FROM_FIELD",
+          "method": "Lbg0;->t(Ljava/lang/Object; [B I I I Lve0;)I",
+          "instruction_index": 273,
+          "classification": "CORRELATION"
+        },
+        {
+          "kind": "VALUE_PARAMETER_FROM_FIELD",
+          "method": "Lbg0;->t(Ljava/lang/Object; [B I I I Lve0;)I",
+          "instruction_index": 276,
+          "classification": "CORRELATION"
+        },
+        {
+          "kind": "VALUE_PARAMETER_FROM_FIELD",
+          "method": "Lbg0;->t(Ljava/lang/Object; [B I I I Lve0;)I",
+          "instruction_index": 285,
+          "classification": "CORRELATION"
+        },
+        {
+          "kind": "VALUE_PARAMETER_FROM_FIELD",
+          "method": "Lbg0;->t(Ljava/lang/Object; [B I I I Lve0;)I",
+          "instruction_index": 285,
+          "classification": "CORRELATION"
+        },
+        {
+          "kind": "VALUE_PARAMETER_FROM_FIELD",
+          "method": "Lbg0;->t(Ljava/lang/Object; [B I I I Lve0;)I",
+          "instruction_index": 291,
+          "classification": "CORRELATION"
+        },
+        {
+          "kind": "BRANCH_ON_FIELD_VALUE",
+          "method": "Lbg0;->t(Ljava/lang/Object; [B I I I Lve0;)I",
+          "instruction_index": 326,
+          "classification": "CORRELATION"
+        },
+        {
+          "kind": "BRANCH_ON_FIELD_VALUE",
+          "method": "Lbg0;->t(Ljava/lang/Object; [B I I I Lve0;)I",
+          "instruction_index": 349,
+          "classification": "CORRELATION"
+        },
+        {
+          "kind": "BRANCH_ON_FIELD_VALUE",
+          "method": "Lbg0;->t(Ljava/lang/Object; [B I I I Lve0;)I",
+          "instruction_index": 366,
+          "classification": "CORRELATION"
+        },
+        {
+          "kind": "BRANCH_ON_FIELD_VALUE",
+          "method": "Lbg0;->t(Ljava/lang/Object; [B I I I Lve0;)I",
+          "instruction_index": 368,
+          "classification": "CORRELATION"
+        },
+        {
+          "kind": "BRANCH_ON_FIELD_VALUE",
+          "method": "Lbg0;->t(Ljava/lang/Object; [B I I I Lve0;)I",
+          "instruction_index": 376,
+          "classification": "CORRELATION"
+        },
+        {
+          "kind": "BRANCH_ON_FIELD_VALUE",
+          "method": "Lbg0;->t(Ljava/lang/Object; [B I I I Lve0;)I",
+          "instruction_index": 376,
+          "classification": "CORRELATION"
+        },
+        {
+          "kind": "BRANCH_ON_FIELD_VALUE",
+          "method": "Lbg0;->t(Ljava/lang/Object; [B I I I Lve0;)I",
+          "instruction_index": 377,
+          "classification": "CORRELATION"
+        },
+        {
+          "kind": "BRANCH_ON_FIELD_VALUE",
+          "method": "Lbg0;->t(Ljava/lang/Object; [B I I I Lve0;)I",
+          "instruction_index": 383,
+          "classification": "CORRELATION"
+        },
+        {
+          "kind": "BRANCH_ON_FIELD_VALUE",
+          "method": "Lbg0;->t(Ljava/lang/Object; [B I I I Lve0;)I",
+          "instruction_index": 383,
+          "classification": "CORRELATION"
+        },
+        {
+          "kind": "VALUE_PARAMETER_FROM_FIELD",
+          "method": "Lbg0;->t(Ljava/lang/Object; [B I I I Lve0;)I",
+          "instruction_index": 384,
+          "classification": "CORRELATION"
+        },
+        {
+          "kind": "BRANCH_ON_FIELD_VALUE",
+          "method": "Lbg0;->t(Ljava/lang/Object; [B I I I Lve0;)I",
+          "instruction_index": 386,
+          "classification": "CORRELATION"
+        },
+        {
+          "kind": "BRANCH_ON_FIELD_VALUE",
+          "method": "Lbg0;->t(Ljava/lang/Object; [B I I I Lve0;)I",
+          "instruction_index": 404,
+          "classification": "CORRELATION"
+        },
+        {
+          "kind": "BRANCH_ON_FIELD_VALUE",
+          "method": "Lbg0;->t(Ljava/lang/Object; [B I I I Lve0;)I",
+          "instruction_index": 406,
+          "classification": "CORRELATION"
+        }
+      ],
+      "consumer_kinds": [
+        "BRANCH_ON_FIELD_VALUE",
+        "FIELD_LOAD",
+        "VALUE_PARAMETER_FROM_FIELD",
+        "VALUE_RETURN_FROM_FIELD"
+      ],
+      "lineage": [
+        "BYTES → Ljava/lang/String;-><init>([B I I Ljava/nio/charset/Charset;)V",
+        "REGISTER → FIELD_STORE c Ljava/lang/Object;",
+        "CONSUMER FIELD_LOAD @ Lbg0;->t(Ljava/lang/Object; [B I I I Lve0;)I",
+        "CONSUMER VALUE_PARAMETER_FROM_FIELD @ Lbg0;->t(Ljava/lang/Object; [B I I I Lve0;)I",
+        "CONSUMER VALUE_PARAMETER_FROM_FIELD @ Lbg0;->t(Ljava/lang/Object; [B I I I Lve0;)I",
+        "CONSUMER VALUE_PARAMETER_FROM_FIELD @ Lbg0;->t(Ljava/lang/Object; [B I I I Lve0;)I",
+        "CONSUMER VALUE_PARAMETER_FROM_FIELD @ Lbg0;->t(Ljava/lang/Object; [B I I I Lve0;)I",
+        "CONSUMER VALUE_PARAMETER_FROM_FIELD @ Lbg0;->t(Ljava/lang/Object; [B I I I Lve0;)I",
+        "CONSUMER VALUE_PARAMETER_FROM_FIELD @ Lbg0;->t(Ljava/lang/Object; [B I I I Lve0;)I",
+        "CONSUMER BRANCH_ON_FIELD_VALUE @ Lbg0;->t(Ljava/lang/Object; [B I I I Lve0;)I"
+      ]
+    },
+    {
+      "value_id": "VALUE-V002",
+      "source_method": "Lbg0;->t(Ljava/lang/Object; [B I I I Lve0;)I",
+      "source_kind": "STRING_FROM_BYTES",
+      "source_api": "Ljava/lang/String;-><init>([B I I Ljava/nio/charset/Charset;)V",
+      "primitive_type": "string",
+      "stored_field": "Lve0;->c Ljava/lang/Object;",
+      "store_instruction_index": 877,
+      "classification": "FACT",
+      "protocol_semantics": "UNKNOWN",
+      "semantic_label": null,
+      "value_class": "V3_CONTROL_FLOW",
+      "t6_stage": "T6.3_CONTROL_FLOW",
+      "consumers": [
+        {
+          "kind": "FIELD_LOAD",
+          "method": "Lbg0;->t(Ljava/lang/Object; [B I I I Lve0;)I",
+          "instruction_index": 258,
+          "classification": "CORRELATION"
+        },
+        {
+          "kind": "VALUE_PARAMETER_FROM_FIELD",
+          "method": "Lbg0;->t(Ljava/lang/Object; [B I I I Lve0;)I",
+          "instruction_index": 259,
+          "classification": "CORRELATION"
+        },
+        {
+          "kind": "VALUE_PARAMETER_FROM_FIELD",
+          "method": "Lbg0;->t(Ljava/lang/Object; [B I I I Lve0;)I",
+          "instruction_index": 273,
+          "classification": "CORRELATION"
+        },
+        {
+          "kind": "VALUE_PARAMETER_FROM_FIELD",
+          "method": "Lbg0;->t(Ljava/lang/Object; [B I I I Lve0;)I",
+          "instruction_index": 276,
+          "classification": "CORRELATION"
+        },
+        {
+          "kind": "VALUE_PARAMETER_FROM_FIELD",
+          "method": "Lbg0;->t(Ljava/lang/Object; [B I I I Lve0;)I",
+          "instruction_index": 285,
+          "classification": "CORRELATION"
+        },
+        {
+          "kind": "VALUE_PARAMETER_FROM_FIELD",
+          "method": "Lbg0;->t(Ljava/lang/Object; [B I I I Lve0;)I",
+          "instruction_index": 285,
+          "classification": "CORRELATION"
+        },
+        {
+          "kind": "VALUE_PARAMETER_FROM_FIELD",
+          "method": "Lbg0;->t(Ljava/lang/Object; [B I I I Lve0;)I",
+          "instruction_index": 291,
+          "classification": "CORRELATION"
+        },
+        {
+          "kind": "BRANCH_ON_FIELD_VALUE",
+          "method": "Lbg0;->t(Ljava/lang/Object; [B I I I Lve0;)I",
+          "instruction_index": 326,
+          "classification": "CORRELATION"
+        },
+        {
+          "kind": "BRANCH_ON_FIELD_VALUE",
+          "method": "Lbg0;->t(Ljava/lang/Object; [B I I I Lve0;)I",
+          "instruction_index": 349,
+          "classification": "CORRELATION"
+        },
+        {
+          "kind": "BRANCH_ON_FIELD_VALUE",
+          "method": "Lbg0;->t(Ljava/lang/Object; [B I I I Lve0;)I",
+          "instruction_index": 366,
+          "classification": "CORRELATION"
+        },
+        {
+          "kind": "BRANCH_ON_FIELD_VALUE",
+          "method": "Lbg0;->t(Ljava/lang/Object; [B I I I Lve0;)I",
+          "instruction_index": 368,
+          "classification": "CORRELATION"
+        },
+        {
+          "kind": "BRANCH_ON_FIELD_VALUE",
+          "method": "Lbg0;->t(Ljava/lang/Object; [B I I I Lve0;)I",
+          "instruction_index": 376,
+          "classification": "CORRELATION"
+        },
+        {
+          "kind": "BRANCH_ON_FIELD_VALUE",
+          "method": "Lbg0;->t(Ljava/lang/Object; [B I I I Lve0;)I",
+          "instruction_index": 376,
+          "classification": "CORRELATION"
+        },
+        {
+          "kind": "BRANCH_ON_FIELD_VALUE",
+          "method": "Lbg0;->t(Ljava/lang/Object; [B I I I Lve0;)I",
+          "instruction_index": 377,
+          "classification": "CORRELATION"
+        },
+        {
+          "kind": "BRANCH_ON_FIELD_VALUE",
+          "method": "Lbg0;->t(Ljava/lang/Object; [B I I I Lve0;)I",
+          "instruction_index": 383,
+          "classification": "CORRELATION"
+        },
+        {
+          "kind": "BRANCH_ON_FIELD_VALUE",
+          "method": "Lbg0;->t(Ljava/lang/Object; [B I I I Lve0;)I",
+          "instruction_index": 383,
+          "classification": "CORRELATION"
+        },
+        {
+          "kind": "VALUE_PARAMETER_FROM_FIELD",
+          "method": "Lbg0;->t(Ljava/lang/Object; [B I I I Lve0;)I",
+          "instruction_index": 384,
+          "classification": "CORRELATION"
+        },
+        {
+          "kind": "BRANCH_ON_FIELD_VALUE",
+          "method": "Lbg0;->t(Ljava/lang/Object; [B I I I Lve0;)I",
+          "instruction_index": 386,
+          "classification": "CORRELATION"
+        },
+        {
+          "kind": "BRANCH_ON_FIELD_VALUE",
+          "method": "Lbg0;->t(Ljava/lang/Object; [B I I I Lve0;)I",
+          "instruction_index": 404,
+          "classification": "CORRELATION"
+        },
+        {
+          "kind": "BRANCH_ON_FIELD_VALUE",
+          "method": "Lbg0;->t(Ljava/lang/Object; [B I I I Lve0;)I",
+          "instruction_index": 406,
+          "classification": "CORRELATION"
+        }
+      ],
+      "consumer_kinds": [
+        "BRANCH_ON_FIELD_VALUE",
+        "FIELD_LOAD",
+        "VALUE_PARAMETER_FROM_FIELD",
+        "VALUE_RETURN_FROM_FIELD"
+      ],
+      "lineage": [
+        "BYTES → Ljava/lang/String;-><init>([B I I Ljava/nio/charset/Charset;)V",
+        "REGISTER → FIELD_STORE c Ljava/lang/Object;",
+        "CONSUMER FIELD_LOAD @ Lbg0;->t(Ljava/lang/Object; [B I I I Lve0;)I",
+        "CONSUMER VALUE_PARAMETER_FROM_FIELD @ Lbg0;->t(Ljava/lang/Object; [B I I I Lve0;)I",
+        "CONSUMER VALUE_PARAMETER_FROM_FIELD @ Lbg0;->t(Ljava/lang/Object; [B I I I Lve0;)I",
+        "CONSUMER VALUE_PARAMETER_FROM_FIELD @ Lbg0;->t(Ljava/lang/Object; [B I I I Lve0;)I",
+        "CONSUMER VALUE_PARAMETER_FROM_FIELD @ Lbg0;->t(Ljava/lang/Object; [B I I I Lve0;)I",
+        "CONSUMER VALUE_PARAMETER_FROM_FIELD @ Lbg0;->t(Ljava/lang/Object; [B I I I Lve0;)I",
+        "CONSUMER VALUE_PARAMETER_FROM_FIELD @ Lbg0;->t(Ljava/lang/Object; [B I I I Lve0;)I",
+        "CONSUMER BRANCH_ON_FIELD_VALUE @ Lbg0;->t(Ljava/lang/Object; [B I I I Lve0;)I"
+      ]
+    },
+    {
+      "value_id": "VALUE-V003",
+      "source_method": "Lbg0;->t(Ljava/lang/Object; [B I I I Lve0;)I",
+      "source_kind": "STRING_FROM_BYTES",
+      "source_api": "Ljava/lang/String;-><init>([B I I Ljava/nio/charset/Charset;)V",
+      "primitive_type": "string",
+      "stored_field": "Llf0;->zzc Llg0;",
+      "store_instruction_index": 1043,
+      "classification": "FACT",
+      "protocol_semantics": "UNKNOWN",
+      "semantic_label": null,
+      "value_class": "V4_APPLICATION_ACTION",
+      "t6_stage": "T6.4_APPLICATION_ACTION",
+      "consumers": [
+        {
+          "kind": "FIELD_LOAD",
+          "method": "Lbg0;->t(Ljava/lang/Object; [B I I I Lve0;)I",
+          "instruction_index": 227,
+          "classification": "CORRELATION"
+        },
+        {
+          "kind": "BRANCH_ON_FIELD_VALUE",
+          "method": "Lbg0;->t(Ljava/lang/Object; [B I I I Lve0;)I",
+          "instruction_index": 228,
+          "classification": "CORRELATION"
+        },
+        {
+          "kind": "VALUE_PARAMETER_FROM_FIELD",
+          "method": "Lbg0;->t(Ljava/lang/Object; [B I I I Lve0;)I",
+          "instruction_index": 235,
+          "classification": "CORRELATION"
+        },
+        {
+          "kind": "BRANCH_ON_FIELD_VALUE",
+          "method": "Lbg0;->t(Ljava/lang/Object; [B I I I Lve0;)I",
+          "instruction_index": 254,
+          "classification": "CORRELATION"
+        },
+        {
+          "kind": "VALUE_PARAMETER_FROM_FIELD",
+          "method": "Lbg0;->t(Ljava/lang/Object; [B I I I Lve0;)I",
+          "instruction_index": 259,
+          "classification": "CORRELATION"
+        },
+        {
+          "kind": "BRANCH_ON_FIELD_VALUE",
+          "method": "Lbg0;->t(Ljava/lang/Object; [B I I I Lve0;)I",
+          "instruction_index": 270,
+          "classification": "CORRELATION"
+        },
+        {
+          "kind": "VALUE_PARAMETER_FROM_FIELD",
+          "method": "Lbg0;->t(Ljava/lang/Object; [B I I I Lve0;)I",
+          "instruction_index": 273,
+          "classification": "CORRELATION"
+        },
+        {
+          "kind": "VALUE_PARAMETER_FROM_FIELD",
+          "method": "Lbg0;->t(Ljava/lang/Object; [B I I I Lve0;)I",
+          "instruction_index": 285,
+          "classification": "CORRELATION"
+        },
+        {
+          "kind": "VALUE_PARAMETER_FROM_FIELD",
+          "method": "Lbg0;->t(Ljava/lang/Object; [B I I I Lve0;)I",
+          "instruction_index": 285,
+          "classification": "CORRELATION"
+        },
+        {
+          "kind": "VALUE_PARAMETER_FROM_FIELD",
+          "method": "Lbg0;->t(Ljava/lang/Object; [B I I I Lve0;)I",
+          "instruction_index": 285,
+          "classification": "CORRELATION"
+        },
+        {
+          "kind": "VALUE_PARAMETER_FROM_FIELD",
+          "method": "Lbg0;->t(Ljava/lang/Object; [B I I I Lve0;)I",
+          "instruction_index": 285,
+          "classification": "CORRELATION"
+        },
+        {
+          "kind": "VALUE_PARAMETER_FROM_FIELD",
+          "method": "Lbg0;->t(Ljava/lang/Object; [B I I I Lve0;)I",
+          "instruction_index": 291,
+          "classification": "CORRELATION"
+        },
+        {
+          "kind": "VALUE_PARAMETER_FROM_FIELD",
+          "method": "Lbg0;->t(Ljava/lang/Object; [B I I I Lve0;)I",
+          "instruction_index": 291,
+          "classification": "CORRELATION"
+        },
+        {
+          "kind": "BRANCH_ON_FIELD_VALUE",
+          "method": "Lbg0;->t(Ljava/lang/Object; [B I I I Lve0;)I",
+          "instruction_index": 324,
+          "classification": "CORRELATION"
+        },
+        {
+          "kind": "VALUE_PARAMETER_FROM_FIELD",
+          "method": "Lbg0;->t(Ljava/lang/Object; [B I I I Lve0;)I",
+          "instruction_index": 328,
+          "classification": "CORRELATION"
+        },
+        {
+          "kind": "VALUE_PARAMETER_FROM_FIELD",
+          "method": "Lbg0;->t(Ljava/lang/Object; [B I I I Lve0;)I",
+          "instruction_index": 328,
+          "classification": "CORRELATION"
+        },
+        {
+          "kind": "VALUE_PARAMETER_FROM_FIELD",
+          "method": "Lbg0;->t(Ljava/lang/Object; [B I I I Lve0;)I",
+          "instruction_index": 328,
+          "classification": "CORRELATION"
+        },
+        {
+          "kind": "BRANCH_ON_FIELD_VALUE",
+          "method": "Lbg0;->t(Ljava/lang/Object; [B I I I Lve0;)I",
+          "instruction_index": 331,
+          "classification": "CORRELATION"
+        },
+        {
+          "kind": "BRANCH_ON_FIELD_VALUE",
+          "method": "Lbg0;->t(Ljava/lang/Object; [B I I I Lve0;)I",
+          "instruction_index": 332,
+          "classification": "CORRELATION"
+        },
+        {
+          "kind": "BRANCH_ON_FIELD_VALUE",
+          "method": "Lbg0;->t(Ljava/lang/Object; [B I I I Lve0;)I",
+          "instruction_index": 347,
+          "classification": "CORRELATION"
+        }
+      ],
+      "consumer_kinds": [
+        "BRANCH_ON_FIELD_VALUE",
+        "COLLECTION_INSERT_FROM_FIELD",
+        "FIELD_LOAD",
+        "VALUE_PARAMETER_FROM_FIELD",
+        "VALUE_RETURN_FROM_FIELD"
+      ],
+      "lineage": [
+        "BYTES → Ljava/lang/String;-><init>([B I I Ljava/nio/charset/Charset;)V",
+        "REGISTER → FIELD_STORE zzc Llg0;",
+        "CONSUMER FIELD_LOAD @ Lbg0;->t(Ljava/lang/Object; [B I I I Lve0;)I",
+        "CONSUMER BRANCH_ON_FIELD_VALUE @ Lbg0;->t(Ljava/lang/Object; [B I I I Lve0;)I",
+        "CONSUMER VALUE_PARAMETER_FROM_FIELD @ Lbg0;->t(Ljava/lang/Object; [B I I I Lve0;)I",
+        "CONSUMER BRANCH_ON_FIELD_VALUE @ Lbg0;->t(Ljava/lang/Object; [B I I I Lve0;)I",
+        "CONSUMER VALUE_PARAMETER_FROM_FIELD @ Lbg0;->t(Ljava/lang/Object; [B I I I Lve0;)I",
+        "CONSUMER BRANCH_ON_FIELD_VALUE @ Lbg0;->t(Ljava/lang/Object; [B I I I Lve0;)I",
+        "CONSUMER VALUE_PARAMETER_FROM_FIELD @ Lbg0;->t(Ljava/lang/Object; [B I I I Lve0;)I",
+        "CONSUMER VALUE_PARAMETER_FROM_FIELD @ Lbg0;->t(Ljava/lang/Object; [B I I I Lve0;)I"
+      ]
+    },
+    {
+      "value_id": "VALUE-V004",
+      "source_method": "Lbg0;->t(Ljava/lang/Object; [B I I I Lve0;)I",
+      "source_kind": "STRING_FROM_BYTES",
+      "source_api": "Ljava/lang/String;-><init>([B I I Ljava/nio/charset/Charset;)V",
+      "primitive_type": "string",
+      "stored_field": "Lmf0;->b [I",
+      "store_instruction_index": 1328,
+      "classification": "FACT",
+      "protocol_semantics": "UNKNOWN",
+      "semantic_label": null,
+      "value_class": "V3_CONTROL_FLOW",
+      "t6_stage": "T6.3_CONTROL_FLOW",
+      "consumers": [
+        {
+          "kind": "FIELD_LOAD",
+          "method": "Lbg0;->t(Ljava/lang/Object; [B I I I Lve0;)I",
+          "instruction_index": 1310,
+          "classification": "CORRELATION"
+        },
+        {
+          "kind": "BRANCH_ON_FIELD_VALUE",
+          "method": "Lbg0;->t(Ljava/lang/Object; [B I I I Lve0;)I",
+          "instruction_index": 1312,
+          "classification": "CORRELATION"
+        },
+        {
+          "kind": "BRANCH_ON_FIELD_VALUE",
+          "method": "Lbg0;->t(Ljava/lang/Object; [B I I I Lve0;)I",
+          "instruction_index": 1314,
+          "classification": "CORRELATION"
+        },
+        {
+          "kind": "BRANCH_ON_FIELD_VALUE",
+          "method": "Lbg0;->t(Ljava/lang/Object; [B I I I Lve0;)I",
+          "instruction_index": 1315,
+          "classification": "CORRELATION"
+        },
+        {
+          "kind": "VALUE_PARAMETER_FROM_FIELD",
+          "method": "Lbg0;->t(Ljava/lang/Object; [B I I I Lve0;)I",
+          "instruction_index": 1322,
+          "classification": "CORRELATION"
+        },
+        {
+          "kind": "FIELD_LOAD",
+          "method": "Lbg0;->t(Ljava/lang/Object; [B I I I Lve0;)I",
+          "instruction_index": 1325,
+          "classification": "CORRELATION"
+        },
+        {
+          "kind": "VALUE_PARAMETER_FROM_FIELD",
+          "method": "Lbg0;->t(Ljava/lang/Object; [B I I I Lve0;)I",
+          "instruction_index": 1326,
+          "classification": "CORRELATION"
+        },
+        {
+          "kind": "VALUE_PARAMETER_FROM_FIELD",
+          "method": "Lbg0;->t(Ljava/lang/Object; [B I I I Lve0;)I",
+          "instruction_index": 1326,
+          "classification": "CORRELATION"
+        },
+        {
+          "kind": "VALUE_PARAMETER_FROM_FIELD",
+          "method": "Lbg0;->t(Ljava/lang/Object; [B I I I Lve0;)I",
+          "instruction_index": 1331,
+          "classification": "CORRELATION"
+        },
+        {
+          "kind": "VALUE_PARAMETER_FROM_FIELD",
+          "method": "Lbg0;->t(Ljava/lang/Object; [B I I I Lve0;)I",
+          "instruction_index": 1338,
+          "classification": "CORRELATION"
+        },
+        {
+          "kind": "VALUE_PARAMETER_FROM_FIELD",
+          "method": "Lbg0;->t(Ljava/lang/Object; [B I I I Lve0;)I",
+          "instruction_index": 1357,
+          "classification": "CORRELATION"
+        },
+        {
+          "kind": "VALUE_PARAMETER_FROM_FIELD",
+          "method": "Lbg0;->t(Ljava/lang/Object; [B I I I Lve0;)I",
+          "instruction_index": 1363,
+          "classification": "CORRELATION"
+        },
+        {
+          "kind": "BRANCH_ON_FIELD_VALUE",
+          "method": "Lbg0;->t(Ljava/lang/Object; [B I I I Lve0;)I",
+          "instruction_index": 1447,
+          "classification": "CORRELATION"
+        },
+        {
+          "kind": "BRANCH_ON_FIELD_VALUE",
+          "method": "Lbg0;->t(Ljava/lang/Object; [B I I I Lve0;)I",
+          "instruction_index": 1447,
+          "classification": "CORRELATION"
+        },
+        {
+          "kind": "BRANCH_ON_FIELD_VALUE",
+          "method": "Lbg0;->t(Ljava/lang/Object; [B I I I Lve0;)I",
+          "instruction_index": 1474,
+          "classification": "CORRELATION"
+        },
+        {
+          "kind": "BRANCH_ON_FIELD_VALUE",
+          "method": "Lbg0;->t(Ljava/lang/Object; [B I I I Lve0;)I",
+          "instruction_index": 1476,
+          "classification": "CORRELATION"
+        },
+        {
+          "kind": "VALUE_PARAMETER_FROM_FIELD",
+          "method": "Lbg0;->t(Ljava/lang/Object; [B I I I Lve0;)I",
+          "instruction_index": 1482,
+          "classification": "CORRELATION"
+        },
+        {
+          "kind": "VALUE_PARAMETER_FROM_FIELD",
+          "method": "Lbg0;->t(Ljava/lang/Object; [B I I I Lve0;)I",
+          "instruction_index": 1500,
+          "classification": "CORRELATION"
+        },
+        {
+          "kind": "VALUE_PARAMETER_FROM_FIELD",
+          "method": "Lbg0;->t(Ljava/lang/Object; [B I I I Lve0;)I",
+          "instruction_index": 1501,
+          "classification": "CORRELATION"
+        },
+        {
+          "kind": "VALUE_PARAMETER_FROM_FIELD",
+          "method": "Lbg0;->t(Ljava/lang/Object; [B I I I Lve0;)I",
+          "instruction_index": 1502,
+          "classification": "CORRELATION"
+        }
+      ],
+      "consumer_kinds": [
+        "BRANCH_ON_FIELD_VALUE",
+        "FIELD_LOAD",
+        "VALUE_PARAMETER_FROM_FIELD"
+      ],
+      "lineage": [
+        "BYTES → Ljava/lang/String;-><init>([B I I Ljava/nio/charset/Charset;)V",
+        "REGISTER → FIELD_STORE b [I",
+        "CONSUMER FIELD_LOAD @ Lbg0;->t(Ljava/lang/Object; [B I I I Lve0;)I",
+        "CONSUMER BRANCH_ON_FIELD_VALUE @ Lbg0;->t(Ljava/lang/Object; [B I I I Lve0;)I",
+        "CONSUMER BRANCH_ON_FIELD_VALUE @ Lbg0;->t(Ljava/lang/Object; [B I I I Lve0;)I",
+        "CONSUMER BRANCH_ON_FIELD_VALUE @ Lbg0;->t(Ljava/lang/Object; [B I I I Lve0;)I",
+        "CONSUMER VALUE_PARAMETER_FROM_FIELD @ Lbg0;->t(Ljava/lang/Object; [B I I I Lve0;)I",
+        "CONSUMER FIELD_LOAD @ Lbg0;->t(Ljava/lang/Object; [B I I I Lve0;)I",
+        "CONSUMER VALUE_PARAMETER_FROM_FIELD @ Lbg0;->t(Ljava/lang/Object; [B I I I Lve0;)I",
+        "CONSUMER VALUE_PARAMETER_FROM_FIELD @ Lbg0;->t(Ljava/lang/Object; [B I I I Lve0;)I"
+      ]
+    },
+    {
+      "value_id": "VALUE-V005",
+      "source_method": "Lbg0;->t(Ljava/lang/Object; [B I I I Lve0;)I",
+      "source_kind": "STRING_FROM_BYTES",
+      "source_api": "Ljava/lang/String;-><init>([B I I Ljava/nio/charset/Charset;)V",
+      "primitive_type": "string",
+      "stored_field": "Lmf0;->b [I",
+      "store_instruction_index": 1334,
+      "classification": "FACT",
+      "protocol_semantics": "UNKNOWN",
+      "semantic_label": null,
+      "value_class": "V3_CONTROL_FLOW",
+      "t6_stage": "T6.3_CONTROL_FLOW",
+      "consumers": [
+        {
+          "kind": "FIELD_LOAD",
+          "method": "Lbg0;->t(Ljava/lang/Object; [B I I I Lve0;)I",
+          "instruction_index": 1310,
+          "classification": "CORRELATION"
+        },
+        {
+          "kind": "BRANCH_ON_FIELD_VALUE",
+          "method": "Lbg0;->t(Ljava/lang/Object; [B I I I Lve0;)I",
+          "instruction_index": 1312,
+          "classification": "CORRELATION"
+        },
+        {
+          "kind": "BRANCH_ON_FIELD_VALUE",
+          "method": "Lbg0;->t(Ljava/lang/Object; [B I I I Lve0;)I",
+          "instruction_index": 1314,
+          "classification": "CORRELATION"
+        },
+        {
+          "kind": "BRANCH_ON_FIELD_VALUE",
+          "method": "Lbg0;->t(Ljava/lang/Object; [B I I I Lve0;)I",
+          "instruction_index": 1315,
+          "classification": "CORRELATION"
+        },
+        {
+          "kind": "VALUE_PARAMETER_FROM_FIELD",
+          "method": "Lbg0;->t(Ljava/lang/Object; [B I I I Lve0;)I",
+          "instruction_index": 1322,
+          "classification": "CORRELATION"
+        },
+        {
+          "kind": "FIELD_LOAD",
+          "method": "Lbg0;->t(Ljava/lang/Object; [B I I I Lve0;)I",
+          "instruction_index": 1325,
+          "classification": "CORRELATION"
+        },
+        {
+          "kind": "VALUE_PARAMETER_FROM_FIELD",
+          "method": "Lbg0;->t(Ljava/lang/Object; [B I I I Lve0;)I",
+          "instruction_index": 1326,
+          "classification": "CORRELATION"
+        },
+        {
+          "kind": "VALUE_PARAMETER_FROM_FIELD",
+          "method": "Lbg0;->t(Ljava/lang/Object; [B I I I Lve0;)I",
+          "instruction_index": 1326,
+          "classification": "CORRELATION"
+        },
+        {
+          "kind": "VALUE_PARAMETER_FROM_FIELD",
+          "method": "Lbg0;->t(Ljava/lang/Object; [B I I I Lve0;)I",
+          "instruction_index": 1331,
+          "classification": "CORRELATION"
+        },
+        {
+          "kind": "VALUE_PARAMETER_FROM_FIELD",
+          "method": "Lbg0;->t(Ljava/lang/Object; [B I I I Lve0;)I",
+          "instruction_index": 1338,
+          "classification": "CORRELATION"
+        },
+        {
+          "kind": "VALUE_PARAMETER_FROM_FIELD",
+          "method": "Lbg0;->t(Ljava/lang/Object; [B I I I Lve0;)I",
+          "instruction_index": 1357,
+          "classification": "CORRELATION"
+        },
+        {
+          "kind": "VALUE_PARAMETER_FROM_FIELD",
+          "method": "Lbg0;->t(Ljava/lang/Object; [B I I I Lve0;)I",
+          "instruction_index": 1363,
+          "classification": "CORRELATION"
+        },
+        {
+          "kind": "BRANCH_ON_FIELD_VALUE",
+          "method": "Lbg0;->t(Ljava/lang/Object; [B I I I Lve0;)I",
+          "instruction_index": 1447,
+          "classification": "CORRELATION"
+        },
+        {
+          "kind": "BRANCH_ON_FIELD_VALUE",
+          "method": "Lbg0;->t(Ljava/lang/Object; [B I I I Lve0;)I",
+          "instruction_index": 1447,
+          "classification": "CORRELATION"
+        },
+        {
+          "kind": "BRANCH_ON_FIELD_VALUE",
+          "method": "Lbg0;->t(Ljava/lang/Object; [B I I I Lve0;)I",
+          "instruction_index": 1474,
+          "classification": "CORRELATION"
+        },
+        {
+          "kind": "BRANCH_ON_FIELD_VALUE",
+          "method": "Lbg0;->t(Ljava/lang/Object; [B I I I Lve0;)I",
+          "instruction_index": 1476,
+          "classification": "CORRELATION"
+        },
+        {
+          "kind": "VALUE_PARAMETER_FROM_FIELD",
+          "method": "Lbg0;->t(Ljava/lang/Object; [B I I I Lve0;)I",
+          "instruction_index": 1482,
+          "classification": "CORRELATION"
+        },
+        {
+          "kind": "VALUE_PARAMETER_FROM_FIELD",
+          "method": "Lbg0;->t(Ljava/lang/Object; [B I I I Lve0;)I",
+          "instruction_index": 1500,
+          "classification": "CORRELATION"
+        },
+        {
+          "kind": "VALUE_PARAMETER_FROM_FIELD",
+          "method": "Lbg0;->t(Ljava/lang/Object; [B I I I Lve0;)I",
+          "instruction_index": 1501,
+          "classification": "CORRELATION"
+        },
+        {
+          "kind": "VALUE_PARAMETER_FROM_FIELD",
+          "method": "Lbg0;->t(Ljava/lang/Object; [B I I I Lve0;)I",
+          "instruction_index": 1502,
+          "classification": "CORRELATION"
+        }
+      ],
+      "consumer_kinds": [
+        "BRANCH_ON_FIELD_VALUE",
+        "FIELD_LOAD",
+        "VALUE_PARAMETER_FROM_FIELD"
+      ],
+      "lineage": [
+        "BYTES → Ljava/lang/String;-><init>([B I I Ljava/nio/charset/Charset;)V",
+        "REGISTER → FIELD_STORE b [I",
+        "CONSUMER FIELD_LOAD @ Lbg0;->t(Ljava/lang/Object; [B I I I Lve0;)I",
+        "CONSUMER BRANCH_ON_FIELD_VALUE @ Lbg0;->t(Ljava/lang/Object; [B I I I Lve0;)I",
+        "CONSUMER BRANCH_ON_FIELD_VALUE @ Lbg0;->t(Ljava/lang/Object; [B I I I Lve0;)I",
+        "CONSUMER BRANCH_ON_FIELD_VALUE @ Lbg0;->t(Ljava/lang/Object; [B I I I Lve0;)I",
+        "CONSUMER VALUE_PARAMETER_FROM_FIELD @ Lbg0;->t(Ljava/lang/Object; [B I I I Lve0;)I",
+        "CONSUMER FIELD_LOAD @ Lbg0;->t(Ljava/lang/Object; [B I I I Lve0;)I",
+        "CONSUMER VALUE_PARAMETER_FROM_FIELD @ Lbg0;->t(Ljava/lang/Object; [B I I I Lve0;)I",
+        "CONSUMER VALUE_PARAMETER_FROM_FIELD @ Lbg0;->t(Ljava/lang/Object; [B I I I Lve0;)I"
+      ]
+    },
+    {
+      "value_id": "VALUE-V006",
+      "source_method": "Lbg0;->t(Ljava/lang/Object; [B I I I Lve0;)I",
+      "source_kind": "STRING_FROM_BYTES",
+      "source_api": "Ljava/lang/String;-><init>([B I I Ljava/nio/charset/Charset;)V",
+      "primitive_type": "string",
+      "stored_field": "Lxf0;->a Z",
+      "store_instruction_index": 1498,
+      "classification": "FACT",
+      "protocol_semantics": "UNKNOWN",
+      "semantic_label": null,
+      "value_class": "V4_APPLICATION_ACTION",
+      "t6_stage": "T6.4_APPLICATION_ACTION",
+      "consumers": [
+        {
+          "kind": "FIELD_LOAD",
+          "method": "Landroidx/activity/b;->b()V",
+          "instruction_index": 12,
+          "classification": "CORRELATION"
+        },
+        {
+          "kind": "BRANCH_ON_FIELD_VALUE",
+          "method": "Landroidx/activity/b;->b()V",
+          "instruction_index": 13,
+          "classification": "CORRELATION"
+        },
+        {
+          "kind": "FIELD_LOAD",
+          "method": "Landroidx/activity/b;->b()V",
+          "instruction_index": 23,
+          "classification": "CORRELATION"
+        },
+        {
+          "kind": "BRANCH_ON_FIELD_VALUE",
+          "method": "Landroidx/activity/b;->b()V",
+          "instruction_index": 24,
+          "classification": "CORRELATION"
+        },
+        {
+          "kind": "FIELD_LOAD",
+          "method": "Lbg0;->t(Ljava/lang/Object; [B I I I Lve0;)I",
+          "instruction_index": 781,
+          "classification": "CORRELATION"
+        },
+        {
+          "kind": "BRANCH_ON_FIELD_VALUE",
+          "method": "Lbg0;->t(Ljava/lang/Object; [B I I I Lve0;)I",
+          "instruction_index": 782,
+          "classification": "CORRELATION"
+        },
+        {
+          "kind": "BRANCH_ON_FIELD_VALUE",
+          "method": "Lbg0;->t(Ljava/lang/Object; [B I I I Lve0;)I",
+          "instruction_index": 785,
+          "classification": "CORRELATION"
+        },
+        {
+          "kind": "VALUE_PARAMETER_FROM_FIELD",
+          "method": "Lbg0;->t(Ljava/lang/Object; [B I I I Lve0;)I",
+          "instruction_index": 801,
+          "classification": "CORRELATION"
+        },
+        {
+          "kind": "BRANCH_ON_FIELD_VALUE",
+          "method": "Lbg0;->t(Ljava/lang/Object; [B I I I Lve0;)I",
+          "instruction_index": 821,
+          "classification": "CORRELATION"
+        },
+        {
+          "kind": "FIELD_LOAD",
+          "method": "Lbg0;->t(Ljava/lang/Object; [B I I I Lve0;)I",
+          "instruction_index": 829,
+          "classification": "CORRELATION"
+        },
+        {
+          "kind": "BRANCH_ON_FIELD_VALUE",
+          "method": "Lbg0;->t(Ljava/lang/Object; [B I I I Lve0;)I",
+          "instruction_index": 830,
+          "classification": "CORRELATION"
+        },
+        {
+          "kind": "VALUE_PARAMETER_FROM_FIELD",
+          "method": "Lbg0;->t(Ljava/lang/Object; [B I I I Lve0;)I",
+          "instruction_index": 834,
+          "classification": "CORRELATION"
+        },
+        {
+          "kind": "BRANCH_ON_FIELD_VALUE",
+          "method": "Lbg0;->t(Ljava/lang/Object; [B I I I Lve0;)I",
+          "instruction_index": 838,
+          "classification": "CORRELATION"
+        },
+        {
+          "kind": "BRANCH_ON_FIELD_VALUE",
+          "method": "Lbg0;->t(Ljava/lang/Object; [B I I I Lve0;)I",
+          "instruction_index": 840,
+          "classification": "CORRELATION"
+        },
+        {
+          "kind": "VALUE_PARAMETER_FROM_FIELD",
+          "method": "Lbg0;->t(Ljava/lang/Object; [B I I I Lve0;)I",
+          "instruction_index": 852,
+          "classification": "CORRELATION"
+        },
+        {
+          "kind": "VALUE_PARAMETER_FROM_FIELD",
+          "method": "Lbg0;->t(Ljava/lang/Object; [B I I I Lve0;)I",
+          "instruction_index": 852,
+          "classification": "CORRELATION"
+        },
+        {
+          "kind": "VALUE_PARAMETER_FROM_FIELD",
+          "method": "Lbg0;->t(Ljava/lang/Object; [B I I I Lve0;)I",
+          "instruction_index": 858,
+          "classification": "CORRELATION"
+        },
+        {
+          "kind": "VALUE_PARAMETER_FROM_FIELD",
+          "method": "Lbg0;->t(Ljava/lang/Object; [B I I I Lve0;)I",
+          "instruction_index": 860,
+          "classification": "CORRELATION"
+        },
+        {
+          "kind": "COLLECTION_INSERT_FROM_FIELD",
+          "method": "Lbg0;->t(Ljava/lang/Object; [B I I I Lve0;)I",
+          "instruction_index": 860,
+          "classification": "CORRELATION"
+        },
+        {
+          "kind": "BRANCH_ON_FIELD_VALUE",
+          "method": "Lbg0;->t(Ljava/lang/Object; [B I I I Lve0;)I",
+          "instruction_index": 861,
+          "classification": "CORRELATION"
+        }
+      ],
+      "consumer_kinds": [
+        "BRANCH_ON_FIELD_VALUE",
+        "COLLECTION_INSERT_FROM_FIELD",
+        "FIELD_LOAD",
+        "VALUE_PARAMETER_FROM_FIELD"
+      ],
+      "lineage": [
+        "BYTES → Ljava/lang/String;-><init>([B I I Ljava/nio/charset/Charset;)V",
+        "REGISTER → FIELD_STORE a Z",
+        "CONSUMER FIELD_LOAD @ Landroidx/activity/b;->b()V",
+        "CONSUMER BRANCH_ON_FIELD_VALUE @ Landroidx/activity/b;->b()V",
+        "CONSUMER FIELD_LOAD @ Landroidx/activity/b;->b()V",
+        "CONSUMER BRANCH_ON_FIELD_VALUE @ Landroidx/activity/b;->b()V",
+        "CONSUMER FIELD_LOAD @ Lbg0;->t(Ljava/lang/Object; [B I I I Lve0;)I",
+        "CONSUMER BRANCH_ON_FIELD_VALUE @ Lbg0;->t(Ljava/lang/Object; [B I I I Lve0;)I",
+        "CONSUMER BRANCH_ON_FIELD_VALUE @ Lbg0;->t(Ljava/lang/Object; [B I I I Lve0;)I",
+        "CONSUMER VALUE_PARAMETER_FROM_FIELD @ Lbg0;->t(Ljava/lang/Object; [B I I I Lve0;)I"
+      ]
+    },
+    {
+      "value_id": "VALUE-V007",
+      "source_method": "Lbg0;->t(Ljava/lang/Object; [B I I I Lve0;)I",
+      "source_kind": "STRING_FROM_BYTES",
+      "source_api": "Ljava/lang/String;-><init>([B I I Ljava/nio/charset/Charset;)V",
+      "primitive_type": "string",
+      "stored_field": "Llf0;->zzc Llg0;",
+      "store_instruction_index": 1633,
+      "classification": "FACT",
+      "protocol_semantics": "UNKNOWN",
+      "semantic_label": null,
+      "value_class": "V4_APPLICATION_ACTION",
+      "t6_stage": "T6.4_APPLICATION_ACTION",
+      "consumers": [
+        {
+          "kind": "FIELD_LOAD",
+          "method": "Lbg0;->t(Ljava/lang/Object; [B I I I Lve0;)I",
+          "instruction_index": 227,
+          "classification": "CORRELATION"
+        },
+        {
+          "kind": "BRANCH_ON_FIELD_VALUE",
+          "method": "Lbg0;->t(Ljava/lang/Object; [B I I I Lve0;)I",
+          "instruction_index": 228,
+          "classification": "CORRELATION"
+        },
+        {
+          "kind": "VALUE_PARAMETER_FROM_FIELD",
+          "method": "Lbg0;->t(Ljava/lang/Object; [B I I I Lve0;)I",
+          "instruction_index": 235,
+          "classification": "CORRELATION"
+        },
+        {
+          "kind": "BRANCH_ON_FIELD_VALUE",
+          "method": "Lbg0;->t(Ljava/lang/Object; [B I I I Lve0;)I",
+          "instruction_index": 254,
+          "classification": "CORRELATION"
+        },
+        {
+          "kind": "VALUE_PARAMETER_FROM_FIELD",
+          "method": "Lbg0;->t(Ljava/lang/Object; [B I I I Lve0;)I",
+          "instruction_index": 259,
+          "classification": "CORRELATION"
+        },
+        {
+          "kind": "BRANCH_ON_FIELD_VALUE",
+          "method": "Lbg0;->t(Ljava/lang/Object; [B I I I Lve0;)I",
+          "instruction_index": 270,
+          "classification": "CORRELATION"
+        },
+        {
+          "kind": "VALUE_PARAMETER_FROM_FIELD",
+          "method": "Lbg0;->t(Ljava/lang/Object; [B I I I Lve0;)I",
+          "instruction_index": 273,
+          "classification": "CORRELATION"
+        },
+        {
+          "kind": "VALUE_PARAMETER_FROM_FIELD",
+          "method": "Lbg0;->t(Ljava/lang/Object; [B I I I Lve0;)I",
+          "instruction_index": 285,
+          "classification": "CORRELATION"
+        },
+        {
+          "kind": "VALUE_PARAMETER_FROM_FIELD",
+          "method": "Lbg0;->t(Ljava/lang/Object; [B I I I Lve0;)I",
+          "instruction_index": 285,
+          "classification": "CORRELATION"
+        },
+        {
+          "kind": "VALUE_PARAMETER_FROM_FIELD",
+          "method": "Lbg0;->t(Ljava/lang/Object; [B I I I Lve0;)I",
+          "instruction_index": 285,
+          "classification": "CORRELATION"
+        },
+        {
+          "kind": "VALUE_PARAMETER_FROM_FIELD",
+          "method": "Lbg0;->t(Ljava/lang/Object; [B I I I Lve0;)I",
+          "instruction_index": 285,
+          "classification": "CORRELATION"
+        },
+        {
+          "kind": "VALUE_PARAMETER_FROM_FIELD",
+          "method": "Lbg0;->t(Ljava/lang/Object; [B I I I Lve0;)I",
+          "instruction_index": 291,
+          "classification": "CORRELATION"
+        },
+        {
+          "kind": "VALUE_PARAMETER_FROM_FIELD",
+          "method": "Lbg0;->t(Ljava/lang/Object; [B I I I Lve0;)I",
+          "instruction_index": 291,
+          "classification": "CORRELATION"
+        },
+        {
+          "kind": "BRANCH_ON_FIELD_VALUE",
+          "method": "Lbg0;->t(Ljava/lang/Object; [B I I I Lve0;)I",
+          "instruction_index": 324,
+          "classification": "CORRELATION"
+        },
+        {
+          "kind": "VALUE_PARAMETER_FROM_FIELD",
+          "method": "Lbg0;->t(Ljava/lang/Object; [B I I I Lve0;)I",
+          "instruction_index": 328,
+          "classification": "CORRELATION"
+        },
+        {
+          "kind": "VALUE_PARAMETER_FROM_FIELD",
+          "method": "Lbg0;->t(Ljava/lang/Object; [B I I I Lve0;)I",
+          "instruction_index": 328,
+          "classification": "CORRELATION"
+        },
+        {
+          "kind": "VALUE_PARAMETER_FROM_FIELD",
+          "method": "Lbg0;->t(Ljava/lang/Object; [B I I I Lve0;)I",
+          "instruction_index": 328,
+          "classification": "CORRELATION"
+        },
+        {
+          "kind": "BRANCH_ON_FIELD_VALUE",
+          "method": "Lbg0;->t(Ljava/lang/Object; [B I I I Lve0;)I",
+          "instruction_index": 331,
+          "classification": "CORRELATION"
+        },
+        {
+          "kind": "BRANCH_ON_FIELD_VALUE",
+          "method": "Lbg0;->t(Ljava/lang/Object; [B I I I Lve0;)I",
+          "instruction_index": 332,
+          "classification": "CORRELATION"
+        },
+        {
+          "kind": "BRANCH_ON_FIELD_VALUE",
+          "method": "Lbg0;->t(Ljava/lang/Object; [B I I I Lve0;)I",
+          "instruction_index": 347,
+          "classification": "CORRELATION"
+        }
+      ],
+      "consumer_kinds": [
+        "BRANCH_ON_FIELD_VALUE",
+        "COLLECTION_INSERT_FROM_FIELD",
+        "FIELD_LOAD",
+        "VALUE_PARAMETER_FROM_FIELD",
+        "VALUE_RETURN_FROM_FIELD"
+      ],
+      "lineage": [
+        "BYTES → Ljava/lang/String;-><init>([B I I Ljava/nio/charset/Charset;)V",
+        "REGISTER → FIELD_STORE zzc Llg0;",
+        "CONSUMER FIELD_LOAD @ Lbg0;->t(Ljava/lang/Object; [B I I I Lve0;)I",
+        "CONSUMER BRANCH_ON_FIELD_VALUE @ Lbg0;->t(Ljava/lang/Object; [B I I I Lve0;)I",
+        "CONSUMER VALUE_PARAMETER_FROM_FIELD @ Lbg0;->t(Ljava/lang/Object; [B I I I Lve0;)I",
+        "CONSUMER BRANCH_ON_FIELD_VALUE @ Lbg0;->t(Ljava/lang/Object; [B I I I Lve0;)I",
+        "CONSUMER VALUE_PARAMETER_FROM_FIELD @ Lbg0;->t(Ljava/lang/Object; [B I I I Lve0;)I",
+        "CONSUMER BRANCH_ON_FIELD_VALUE @ Lbg0;->t(Ljava/lang/Object; [B I I I Lve0;)I",
+        "CONSUMER VALUE_PARAMETER_FROM_FIELD @ Lbg0;->t(Ljava/lang/Object; [B I I I Lve0;)I",
+        "CONSUMER VALUE_PARAMETER_FROM_FIELD @ Lbg0;->t(Ljava/lang/Object; [B I I I Lve0;)I"
+      ]
+    },
+    {
+      "value_id": "VALUE-V008",
+      "source_method": "Lbg0;->t(Ljava/lang/Object; [B I I I Lve0;)I",
+      "source_kind": "STRING_FROM_BYTES",
+      "source_api": "Ljava/lang/String;-><init>([B I I Ljava/nio/charset/Charset;)V",
+      "primitive_type": "string",
+      "stored_field": "Llf0;->zzc Llg0;",
+      "store_instruction_index": 1863,
+      "classification": "FACT",
+      "protocol_semantics": "UNKNOWN",
+      "semantic_label": null,
+      "value_class": "V4_APPLICATION_ACTION",
+      "t6_stage": "T6.4_APPLICATION_ACTION",
+      "consumers": [
+        {
+          "kind": "FIELD_LOAD",
+          "method": "Lbg0;->t(Ljava/lang/Object; [B I I I Lve0;)I",
+          "instruction_index": 227,
+          "classification": "CORRELATION"
+        },
+        {
+          "kind": "BRANCH_ON_FIELD_VALUE",
+          "method": "Lbg0;->t(Ljava/lang/Object; [B I I I Lve0;)I",
+          "instruction_index": 228,
+          "classification": "CORRELATION"
+        },
+        {
+          "kind": "VALUE_PARAMETER_FROM_FIELD",
+          "method": "Lbg0;->t(Ljava/lang/Object; [B I I I Lve0;)I",
+          "instruction_index": 235,
+          "classification": "CORRELATION"
+        },
+        {
+          "kind": "BRANCH_ON_FIELD_VALUE",
+          "method": "Lbg0;->t(Ljava/lang/Object; [B I I I Lve0;)I",
+          "instruction_index": 254,
+          "classification": "CORRELATION"
+        },
+        {
+          "kind": "VALUE_PARAMETER_FROM_FIELD",
+          "method": "Lbg0;->t(Ljava/lang/Object; [B I I I Lve0;)I",
+          "instruction_index": 259,
+          "classification": "CORRELATION"
+        },
+        {
+          "kind": "BRANCH_ON_FIELD_VALUE",
+          "method": "Lbg0;->t(Ljava/lang/Object; [B I I I Lve0;)I",
+          "instruction_index": 270,
+          "classification": "CORRELATION"
+        },
+        {
+          "kind": "VALUE_PARAMETER_FROM_FIELD",
+          "method": "Lbg0;->t(Ljava/lang/Object; [B I I I Lve0;)I",
+          "instruction_index": 273,
+          "classification": "CORRELATION"
+        },
+        {
+          "kind": "VALUE_PARAMETER_FROM_FIELD",
+          "method": "Lbg0;->t(Ljava/lang/Object; [B I I I Lve0;)I",
+          "instruction_index": 285,
+          "classification": "CORRELATION"
+        },
+        {
+          "kind": "VALUE_PARAMETER_FROM_FIELD",
+          "method": "Lbg0;->t(Ljava/lang/Object; [B I I I Lve0;)I",
+          "instruction_index": 285,
+          "classification": "CORRELATION"
+        },
+        {
+          "kind": "VALUE_PARAMETER_FROM_FIELD",
+          "method": "Lbg0;->t(Ljava/lang/Object; [B I I I Lve0;)I",
+          "instruction_index": 285,
+          "classification": "CORRELATION"
+        },
+        {
+          "kind": "VALUE_PARAMETER_FROM_FIELD",
+          "method": "Lbg0;->t(Ljava/lang/Object; [B I I I Lve0;)I",
+          "instruction_index": 285,
+          "classification": "CORRELATION"
+        },
+        {
+          "kind": "VALUE_PARAMETER_FROM_FIELD",
+          "method": "Lbg0;->t(Ljava/lang/Object; [B I I I Lve0;)I",
+          "instruction_index": 291,
+          "classification": "CORRELATION"
+        },
+        {
+          "kind": "VALUE_PARAMETER_FROM_FIELD",
+          "method": "Lbg0;->t(Ljava/lang/Object; [B I I I Lve0;)I",
+          "instruction_index": 291,
+          "classification": "CORRELATION"
+        },
+        {
+          "kind": "BRANCH_ON_FIELD_VALUE",
+          "method": "Lbg0;->t(Ljava/lang/Object; [B I I I Lve0;)I",
+          "instruction_index": 324,
+          "classification": "CORRELATION"
+        },
+        {
+          "kind": "VALUE_PARAMETER_FROM_FIELD",
+          "method": "Lbg0;->t(Ljava/lang/Object; [B I I I Lve0;)I",
+          "instruction_index": 328,
+          "classification": "CORRELATION"
+        },
+        {
+          "kind": "VALUE_PARAMETER_FROM_FIELD",
+          "method": "Lbg0;->t(Ljava/lang/Object; [B I I I Lve0;)I",
+          "instruction_index": 328,
+          "classification": "CORRELATION"
+        },
+        {
+          "kind": "VALUE_PARAMETER_FROM_FIELD",
+          "method": "Lbg0;->t(Ljava/lang/Object; [B I I I Lve0;)I",
+          "instruction_index": 328,
+          "classification": "CORRELATION"
+        },
+        {
+          "kind": "BRANCH_ON_FIELD_VALUE",
+          "method": "Lbg0;->t(Ljava/lang/Object; [B I I I Lve0;)I",
+          "instruction_index": 331,
+          "classification": "CORRELATION"
+        },
+        {
+          "kind": "BRANCH_ON_FIELD_VALUE",
+          "method": "Lbg0;->t(Ljava/lang/Object; [B I I I Lve0;)I",
+          "instruction_index": 332,
+          "classification": "CORRELATION"
+        },
+        {
+          "kind": "BRANCH_ON_FIELD_VALUE",
+          "method": "Lbg0;->t(Ljava/lang/Object; [B I I I Lve0;)I",
+          "instruction_index": 347,
+          "classification": "CORRELATION"
+        }
+      ],
+      "consumer_kinds": [
+        "BRANCH_ON_FIELD_VALUE",
+        "COLLECTION_INSERT_FROM_FIELD",
+        "FIELD_LOAD",
+        "VALUE_PARAMETER_FROM_FIELD",
+        "VALUE_RETURN_FROM_FIELD"
+      ],
+      "lineage": [
+        "BYTES → Ljava/lang/String;-><init>([B I I Ljava/nio/charset/Charset;)V",
+        "REGISTER → FIELD_STORE zzc Llg0;",
+        "CONSUMER FIELD_LOAD @ Lbg0;->t(Ljava/lang/Object; [B I I I Lve0;)I",
+        "CONSUMER BRANCH_ON_FIELD_VALUE @ Lbg0;->t(Ljava/lang/Object; [B I I I Lve0;)I",
+        "CONSUMER VALUE_PARAMETER_FROM_FIELD @ Lbg0;->t(Ljava/lang/Object; [B I I I Lve0;)I",
+        "CONSUMER BRANCH_ON_FIELD_VALUE @ Lbg0;->t(Ljava/lang/Object; [B I I I Lve0;)I",
+        "CONSUMER VALUE_PARAMETER_FROM_FIELD @ Lbg0;->t(Ljava/lang/Object; [B I I I Lve0;)I",
+        "CONSUMER BRANCH_ON_FIELD_VALUE @ Lbg0;->t(Ljava/lang/Object; [B I I I Lve0;)I",
+        "CONSUMER VALUE_PARAMETER_FROM_FIELD @ Lbg0;->t(Ljava/lang/Object; [B I I I Lve0;)I",
+        "CONSUMER VALUE_PARAMETER_FROM_FIELD @ Lbg0;->t(Ljava/lang/Object; [B I I I Lve0;)I"
+      ]
+    },
+    {
+      "value_id": "VALUE-V009",
+      "source_method": "Lbg0;->t(Ljava/lang/Object; [B I I I Lve0;)I",
+      "source_kind": "STRING_FROM_BYTES",
+      "source_api": "Ljava/lang/String;-><init>([B I I Ljava/nio/charset/Charset;)V",
+      "primitive_type": "string",
+      "register": "v8",
+      "instruction_index": 1195,
+      "stored_field": null,
+      "classification": "FACT",
+      "protocol_semantics": "UNKNOWN",
+      "semantic_label": null,
+      "value_class": "V3_CONTROL_FLOW",
+      "t6_stage": "T6.3_CONTROL_FLOW",
+      "consumers": [],
+      "consumer_kinds": [],
+      "lineage": [
+        "BYTES → Ljava/lang/String;-><init>([B I I Ljava/nio/charset/Charset;)V",
+        "REGISTER v8",
+        "NO_FIELD_STORE"
+      ]
+    },
+    {
+      "value_id": "VALUE-V010",
+      "source_method": "Lbg0;->t(Ljava/lang/Object; [B I I I Lve0;)I",
+      "source_kind": "STRING_FROM_BYTES",
+      "source_api": "Ljava/lang/String;-><init>([B I I Ljava/nio/charset/Charset;)V",
+      "primitive_type": "string",
+      "register": "v8",
+      "instruction_index": 1212,
+      "stored_field": null,
+      "classification": "FACT",
+      "protocol_semantics": "UNKNOWN",
+      "semantic_label": null,
+      "value_class": "V3_CONTROL_FLOW",
+      "t6_stage": "T6.3_CONTROL_FLOW",
+      "consumers": [],
+      "consumer_kinds": [],
+      "lineage": [
+        "BYTES → Ljava/lang/String;-><init>([B I I Ljava/nio/charset/Charset;)V",
+        "REGISTER v8",
+        "NO_FIELD_STORE"
+      ]
+    },
+    {
+      "value_id": "VALUE-V011",
+      "source_method": "Lbg0;->t(Ljava/lang/Object; [B I I I Lve0;)I",
+      "source_kind": "STRING_FROM_BYTES",
+      "source_api": "Ljava/lang/String;-><init>([B I I Ljava/nio/charset/Charset;)V",
+      "primitive_type": "string",
+      "register": "v13",
+      "instruction_index": 1236,
+      "stored_field": null,
+      "classification": "FACT",
+      "protocol_semantics": "UNKNOWN",
+      "semantic_label": null,
+      "value_class": "V3_CONTROL_FLOW",
+      "t6_stage": "T6.3_CONTROL_FLOW",
+      "consumers": [],
+      "consumer_kinds": [],
+      "lineage": [
+        "BYTES → Ljava/lang/String;-><init>([B I I Ljava/nio/charset/Charset;)V",
+        "REGISTER v13",
+        "NO_FIELD_STORE"
+      ]
+    },
+    {
+      "value_id": "VALUE-V012",
+      "source_method": "Lbg0;->t(Ljava/lang/Object; [B I I I Lve0;)I",
+      "source_kind": "STRING_FROM_BYTES",
+      "source_api": "Ljava/lang/String;-><init>([B I I Ljava/nio/charset/Charset;)V",
+      "primitive_type": "string",
+      "register": "v13",
+      "instruction_index": 1257,
+      "stored_field": null,
+      "classification": "FACT",
+      "protocol_semantics": "UNKNOWN",
+      "semantic_label": null,
+      "value_class": "V3_CONTROL_FLOW",
+      "t6_stage": "T6.3_CONTROL_FLOW",
+      "consumers": [],
+      "consumer_kinds": [],
+      "lineage": [
+        "BYTES → Ljava/lang/String;-><init>([B I I Ljava/nio/charset/Charset;)V",
+        "REGISTER v13",
+        "NO_FIELD_STORE"
+      ]
+    }
+  ],
+  "protocol_semantics": "UNKNOWN"
+}

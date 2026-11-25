@@ -1,0 +1,39 @@
+{
+  "schema": "apk_forensics.t5_decoder_audit.v1",
+  "t5_definition_v14": {
+    "requires": "Tracked byte[]/ByteBuffer identity has a FACT edge into at least one of: aget-byte/aget; ByteBuffer.wrap/get*/put*; String([B); or a parse/decode-named invoke that also receives the tracked buffer (dataflow_role).",
+    "excludes": "InputStream/AccessorySocket read()I or read([B)I *length* move-result (READ_LENGTH); method/class names alone; copy-only without further processing; protocol/message meaning claims.",
+    "sees_v13": "Transport wrapper read/write; BYTE_ARRAY arg; mis-tagged PRIMITIVE_DECODE from read length; PATH-COMM INBOUND_PRIMITIVE without real byte ops.",
+    "cannot_see_v13": "Interface consumers (AccessorySocket;->read in BclConnection); Packet.decode* ByteBuffer.getShort/getInt; aget-byte loops; state mutation onto Packet fields after decode."
+  },
+  "t5_candidate_requires": "Tracked byte[]/ByteBuffer identity has a FACT edge into at least one of: aget-byte/aget; ByteBuffer.wrap/get*/put*; String([B); or a parse/decode-named invoke that also receives the tracked buffer (dataflow_role).",
+  "t5_candidate_excludes": "InputStream/AccessorySocket read()I or read([B)I *length* move-result (READ_LENGTH); method/class names alone; copy-only without further processing; protocol/message meaning claims.",
+  "t5_candidate_currently_sees_v13": "Transport wrapper read/write; BYTE_ARRAY arg; mis-tagged PRIMITIVE_DECODE from read length; PATH-COMM INBOUND_PRIMITIVE without real byte ops.",
+  "t5_candidate_currently_cannot_see_v13": "Interface consumers (AccessorySocket;->read in BclConnection); Packet.decode* ByteBuffer.getShort/getInt; aget-byte loops; state mutation onto Packet fields after decode.",
+  "v13_observation": {
+    "transport_paths_reaching_T5": 0,
+    "communication_decoder_candidates": 0,
+    "communication_primitive_decoding": 0,
+    "communication_buffer_operations": 0,
+    "note": "v1.3 T5 required DECODER/ENCODER nodes or decoder_candidates>0. PRIMITIVE_DECODE on PATH-COMM was largely READ_LENGTH mis-tags, correctly refused as T5."
+  },
+  "v14_after_expansion": {
+    "byte_processing": 0,
+    "state_mutations": 0,
+    "decoder_candidates": 0,
+    "primitive_decoding": 0,
+    "read_lengths": 1,
+    "path_comm": 2
+  },
+  "root_cause_v13_t5_zero": {
+    "primary": "B_ANALYZER_MODELING_GAP",
+    "details": [
+      "Transport wrappers (BtAccessorySocket.read) only forward to InputStream; no aget/ByteBuffer in retained set.",
+      "Real consumers call AccessorySocket;->read via BclConnection.internalread / readPacket — not in v1.3 seed set.",
+      "Packet.decode* performs ByteBuffer.wrap + getShort/getInt (FACT byte processing) outside retention.",
+      "v1.3 T5 gate required named DECODER nodes; READ_LENGTH was wrongly counted as primitive_decoding but not T5."
+    ],
+    "not_primary": "A_TRUE_APK_END — byte processing exists statically above the interface."
+  },
+  "protocol_semantics": "UNKNOWN"
+}

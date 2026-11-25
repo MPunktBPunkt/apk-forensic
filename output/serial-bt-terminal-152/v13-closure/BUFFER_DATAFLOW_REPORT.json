@@ -1,0 +1,82 @@
+{
+  "schema": "apk_forensics.buffer_dataflow_report.v1",
+  "connections": [
+    {
+      "source": "input:I1",
+      "operation": "Ljava/io/InputStream;->read([B)I",
+      "target": "v1",
+      "buffer_identity": "REGISTER",
+      "method": "La00;->run()V",
+      "classification": "FACT",
+      "next_consumer": "see PATH-COMM / unresolved"
+    },
+    {
+      "source": "input:I1",
+      "operation": "Ljava/io/InputStream;->read([B)I",
+      "target": "v1",
+      "buffer_identity": "REGISTER",
+      "method": "La00;->run()V",
+      "classification": "FACT",
+      "next_consumer": "see PATH-COMM / unresolved"
+    },
+    {
+      "source": "output:O1",
+      "operation": "Ljava/io/OutputStream;->write([B)V",
+      "target": "v2",
+      "buffer_identity": "REGISTER",
+      "method": "La00;->e([B)V",
+      "classification": "FACT",
+      "next_consumer": "see PATH-COMM / unresolved"
+    },
+    {
+      "source": "output:O1",
+      "operation": "Ljava/io/OutputStream;->write([B)V",
+      "target": "v2",
+      "buffer_identity": "REGISTER",
+      "method": "La00;->e([B)V",
+      "classification": "FACT",
+      "next_consumer": "see PATH-COMM / unresolved"
+    },
+    {
+      "source": "output:O1",
+      "operation": "Ljava/io/OutputStream;->write([B)V",
+      "target": "v2",
+      "buffer_identity": "REGISTER",
+      "method": "La00;->e([B)V",
+      "classification": "FACT",
+      "next_consumer": "see PATH-COMM / unresolved"
+    },
+    {
+      "source": "input:I1",
+      "operation": "Ljava/io/InputStream;->read([B)I",
+      "target": "v1",
+      "buffer_identity": "REGISTER",
+      "method": "La00;->run()V",
+      "classification": "FACT",
+      "next_consumer": "see PATH-COMM / unresolved"
+    }
+  ],
+  "counts": {
+    "buffer_ops": 6,
+    "transport_paths_reaching_buffer": 3,
+    "transport_paths_reaching_consumer_producer": 0,
+    "transport_paths_reaching_decoder_encoder": 0
+  },
+  "decoder_encoder": {
+    "decoder_candidates": 0,
+    "serializer_candidates": 0,
+    "primitive_decoding_sites": 0,
+    "interpretation": "Primitive int/short results after read are INFERENCE candidates for byte-level handling only. Method names (decode/parse/Bcl/Etch/BMW) are search indicators, never protocol proof.",
+    "protocol_semantics": "UNKNOWN"
+  },
+  "hard_rule": "No semantic interpretation of bytes; no BMW/RFCOMM payload claims from names.",
+  "provenance": {
+    "source_report": "/home/martin/projects/apk-forensics/output/serial-bt-terminal-152/report.json",
+    "source_engine_version": "1.6.0",
+    "source_plan_sha256": "0a211deda9574bf9c68b9dbf286d5b88479c76d72d629311aabe5b65a81d07aa",
+    "source_artifact_sha256": "e44ab3b93e1701fcca67869169ba49ef2e918416d28928a56a135e8bff343192",
+    "postprocessing_version": "1.6.0",
+    "limits_raised": false,
+    "max_field_hops": 2
+  }
+}

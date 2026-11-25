@@ -1,0 +1,327 @@
+{
+  "schema": "apk_forensics.runtime_bridge_analysis.v1",
+  "engine": "1.6.1",
+  "generated_utc": "2026-11-25T06:30:11.220374+00:00",
+  "verdict": "INPUT_MISSING",
+  "verdict_detail": {
+    "STATIC_TO_RUNTIME": "INPUT_MISSING",
+    "RUNTIME_TO_WIRE": "NOT_EXECUTED (no APK runtime event to join)",
+    "STATIC_TO_RUNTIME_TO_WIRE": "NOT_EXECUTED",
+    "partial_note": "LABSIM phone.jsonl tx hex_head can prefix-match normalized PHONE_TO_HU wire packets (simulator↔wire CORRELATION). This is NOT a Static APK VALUE bridge."
+  },
+  "RUNTIME_INVENTORY": [
+    {
+      "source": "bt-analyzer LAB B3 FULLAUTH phone.jsonl",
+      "repository": "bt-analyzer",
+      "file": "docs/evidence/LAB_B3_TCP_FULLAUTH_20261120T090004Z/phone.jsonl",
+      "format": "JSONL",
+      "apk_related": false,
+      "runtime_related": true,
+      "timestamp": "partial / via sibling b3 relay_start",
+      "event_id": "line-index / sess.inner",
+      "operation": "tx/rx/sess (simulator)",
+      "socket_stream": "TCP LAB peer — not BluetoothSocket handle",
+      "read_write": "tx/rx byte events",
+      "object_handle": "NONE (no APK object id)",
+      "direction": "implicit phone side",
+      "peer": "127.0.0.1 LAB",
+      "payload_bytes": "hex_head partial; full in raw bins",
+      "provenance": "LABSIM (mybmw_sim_start explicitly logged)",
+      "deterministically_from_capture": true,
+      "classification": "INDIRECT RUNTIME EVIDENCE (simulator) — NOT APK process runtime"
+    },
+    {
+      "source": "bt-analyzer LAB B3 FULLAUTH b3.jsonl + raw bins",
+      "repository": "bt-analyzer",
+      "file": "docs/evidence/LAB_B3_TCP_FULLAUTH_20261120T090004Z/{b3.jsonl,raw/*.bin}",
+      "format": "JSONL + binary",
+      "apk_related": false,
+      "runtime_related": false,
+      "timestamp": "relay_start.ts epoch",
+      "event_id": "bytes/bcl_frame sequence",
+      "operation": "relay bytes",
+      "socket_stream": "B3 TCP relay",
+      "read_write": "directional streams",
+      "object_handle": "NONE",
+      "direction": "PHONE_TO_HU / HU_TO_PHONE",
+      "peer": "LAB TCP",
+      "payload_bytes": "full",
+      "provenance": "LAB wire/capture",
+      "deterministically_from_capture": true,
+      "classification": "WIRE-ONLY"
+    },
+    {
+      "source": "Android BT stack verbose logcat (FIELD)",
+      "repository": "bt-analyzer",
+      "file": "docs/bluetooth_20261114_083313_01892.txt / bmw_aaidrive_field_reduced_20261114.txt",
+      "format": "text logcat",
+      "apk_related": "partial (UID 10479 RFCOMM client observed)",
+      "runtime_related": true,
+      "timestamp": "yes (wall-clock in log lines)",
+      "event_id": "RFCOMM session ids in analysis doc",
+      "operation": "PORT_WriteData / PORT_DataInd (stack)",
+      "socket_stream": "RFCOMM DLCI/SCN — not app InputStream object",
+      "read_write": "sizes only",
+      "object_handle": "kernel/stack pointers — not DEX objects",
+      "direction": "inferable at RFCOMM layer",
+      "peer": "HU D4:36:39:CF:E1:B5 (FIELD)",
+      "payload_bytes": "NO data_hex — BCL content UNKNOWN",
+      "provenance": "FIELD operator logcat",
+      "deterministically_from_capture": false,
+      "classification": "INDIRECT RUNTIME EVIDENCE (Bluetooth stack I/O sizes) — INSUFFICIENT for VALUE binding"
+    },
+    {
+      "source": "FIELD_B3_GATEB forensic timelines",
+      "repository": "bt-analyzer",
+      "file": "docs/evidence/FIELD_B3_GATEB_20261121T112446Z/forensic/*",
+      "format": "JSON timelines / etch events",
+      "apk_related": false,
+      "runtime_related": "behavioral on wire/session layer",
+      "timestamp": "yes (chrono offsets / capture time)",
+      "event_id": "etch methods / frame index",
+      "operation": "etch RPC names on wire",
+      "socket_stream": "B3/RFCOMM capture path",
+      "read_write": "wire frames",
+      "object_handle": "NONE toward DEX VALUE-V###",
+      "direction": "yes",
+      "peer": "FIELD phone↔HU",
+      "payload_bytes": "yes in raw bins",
+      "provenance": "FIELD wire forensic",
+      "deterministically_from_capture": true,
+      "classification": "WIRE-ONLY / INDIRECT (session) — not APK Dalvik runtime"
+    },
+    {
+      "source": "apk-forensics v1.5 application-flow",
+      "repository": "apk-forensic",
+      "file": "output/v15-application-flow/APPLICATION_FLOW_EVIDENCE_REPORT.json",
+      "format": "JSON",
+      "apk_related": true,
+      "runtime_related": false,
+      "timestamp": "NONE",
+      "event_id": "VALUE-V###",
+      "operation": "static decode/store/load",
+      "socket_stream": "static RFCOMM path only",
+      "read_write": "static",
+      "object_handle": "DEX fields/methods",
+      "direction": "path-level INFERENCE",
+      "peer": "UNKNOWN",
+      "payload_bytes": "NONE in catalog",
+      "provenance": "STATIC APK analysis",
+      "deterministically_from_capture": false,
+      "classification": "STATIC-ONLY"
+    },
+    {
+      "source": "Frida / Xposed / ART method trace / app instrumentation",
+      "repository": "searched: apk-forensic, bt-analyzer, hu-probe, idrivesim",
+      "file": "NOT_FOUND for BMW Connected APK process",
+      "format": "n/a",
+      "apk_related": "n/a",
+      "runtime_related": "n/a",
+      "timestamp": "n/a",
+      "event_id": "n/a",
+      "operation": "n/a",
+      "socket_stream": "n/a",
+      "read_write": "n/a",
+      "object_handle": "n/a",
+      "direction": "n/a",
+      "peer": "n/a",
+      "payload_bytes": "n/a",
+      "provenance": "n/a",
+      "deterministically_from_capture": false,
+      "classification": "INSUFFICIENT — DIRECT APK RUNTIME EVIDENCE ABSENT"
+    }
+  ],
+  "RUNTIME_ANCHORS": {
+    "priority_1_explicit_apk_io": "NOT_FOUND",
+    "priority_2_apk_application_event_tied_to_io": "NOT_FOUND",
+    "priority_3_behavioral_with_precise_wire_time": "FOUND (LABSIM/FIELD session) but not APK-VALUE-linked",
+    "priority_4_time_proximity_only": "available in logcat/wire — insufficient alone",
+    "strongest_available_anchor_for_apk_value": "NONE"
+  },
+  "SELECTED_VALUE": {
+    "value_id": "VALUE-V001",
+    "selection_rationale": [
+      "Clear source: Info.decodeVersion([B)S (DECODE_RETURN_PRIMITIVE)",
+      "Clear buffer relation: byte[] decode API",
+      "Field store: BclConnection.mVersion",
+      "Consumers: FIELD_LOAD + BRANCH + PARAMETER + ROUNDTRIP_FROM_FIELD",
+      "V5_ROUNDTRIP class (static)",
+      "Lower ambiguity than Packet ports/data (V005–V008) which share similar decode patterns"
+    ],
+    "static_evidence": {
+      "source_method": "Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection$2;->run()V",
+      "source_api": "Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Info;->decodeVersion([B)S",
+      "source_kind": "DECODE_RETURN_PRIMITIVE",
+      "stored_field": "Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection;->mVersion S",
+      "value_class": "V5_ROUNDTRIP",
+      "classification": "FACT",
+      "protocol_semantics": "UNKNOWN",
+      "consumer_count": 20
+    },
+    "direction": "UNKNOWN at VALUE instance level (decode is inbound-typical but peer direction not FACT without runtime/wire binding)",
+    "path": "STATIC: bytes → decodeVersion → mVersion → load/branch/param/roundtrip candidates",
+    "evidence_class": "FACT (static decode/store); end-to-end application path remains INFERENCE"
+  },
+  "STATIC_TO_RUNTIME": {
+    "result": "NOT CORRELATED / INPUT_MISSING",
+    "attempted_anchors": [
+      "DEX method identity ↔ LABSIM sess.method names → REJECTED (name-only + different process; sas_* ≠ decodeVersion)",
+      "VALUE field mVersion ↔ wire handshake version field → REJECTED (protocol/semantic guess without runtime)",
+      "RFCOMM UID 10479 logcat writes ↔ VALUE-V001 → INSUFFICIENT (sizes only, no payload, no decode event)"
+    ],
+    "classification": "INPUT_MISSING"
+  },
+  "RUNTIME_TO_WIRE": {
+    "apk_runtime_to_wire": "NOT_EXECUTED",
+    "labsim_to_wire_demonstration": {
+      "status": "INSUFFICIENT / NOT a strong unique CORRELATION",
+      "pairs": [
+        {
+          "sim_tx_line": 2,
+          "sim_n": 4,
+          "sim_hex_head": "12345678",
+          "wire_packet_id": "W-0001",
+          "wire_offset": 0,
+          "wire_length": 4,
+          "prefix_match": true,
+          "classification": "CORRELATION",
+          "note": "LABSIM phone.jsonl tx ↔ normalized wire — NOT APK Dalvik runtime"
+        },
+        {
+          "sim_tx_line": 4,
+          "sim_n": 10,
+          "sim_hex_head": "00050000000000020004",
+          "wire_packet_id": "W-0003",
+          "wire_offset": 4,
+          "wire_length": 10,
+          "prefix_match": true,
+          "classification": "CORRELATION",
+          "note": "LABSIM phone.jsonl tx ↔ normalized wire — NOT APK Dalvik runtime"
+        },
+        {
+          "sim_tx_line": 5,
+          "sim_n": 56,
+          "sim_hex_head": "0008000000000030002430653962393063342d636265312d343734322d383238332d6433363765396135363631390000",
+          "wire_packet_id": "W-0005",
+          "wire_offset": 14,
+          "wire_length": 226,
+          "prefix_match": true,
+          "classification": "CORRELATION",
+          "note": "LABSIM phone.jsonl tx ↔ normalized wire — NOT APK Dalvik runtime"
+        },
+        {
+          "sim_tx_line": 6,
+          "sim_n": 8,
+          "sim_hex_head": "0001138913890000",
+          "wire_packet_id": "W-0008",
+          "wire_offset": 240,
+          "wire_length": 559,
+          "prefix_match": false,
+          "classification": "NOT CORRELATED",
+          "note": "LABSIM phone.jsonl tx ↔ normalized wire — NOT APK Dalvik runtime"
+        }
+      ],
+      "all_prefix_match": false,
+      "evidence_class": "CORRELATION (simulator tx ↔ wire bytes)",
+      "not": "APK Dalvik runtime",
+      "matched": 3,
+      "total_paired": 4,
+      "note": "Ordered zip of phone.jsonl tx vs PHONE_TO_HU WIRE_PACKETs; partial hex_head prefix only. Not used as APK runtime bridge. Match count is informational.",
+      "reason": "phone.jsonl tx segmentation (7 txs) ≠ b3 PHONE_TO_HU byte events (4 packets). Naive ordered zip yields mixed prefix hits and a clear mismatch — not a unique provenance link. Still irrelevant as APK runtime."
+    },
+    "labsim_to_wire_strong_correlation": false
+  },
+  "TRIPLE_CORRELATION": {
+    "exists": false,
+    "correlation_records": []
+  },
+  "BYTE_LEVEL_CORRELATION": "UNKNOWN",
+  "ROUNDTRIP_CORRELATION": {
+    "static_V5_present": true,
+    "value": "VALUE-V001",
+    "wire_roundtrip": false,
+    "request_response_labels": "UNKNOWN",
+    "note": "Static V5_ROUNDTRIP is APK-static only; no runtime/wire dual-direction binding to this VALUE"
+  },
+  "SEMANTICS": {
+    "hypotheses_supported_to_FACT": [],
+    "hypotheses_remaining_UNKNOWN": [
+      "protocol_semantics",
+      "version field meaning on wire vs mVersion",
+      "request/response roles",
+      "message meaning"
+    ]
+  },
+  "NEGATIVE_CONTROLS": [
+    {
+      "case": "wrong value (e.g. V024) vs any LABSIM event",
+      "result": "no unique anchor — would falsely rely on names → REJECTED"
+    },
+    {
+      "case": "wrong packet for LABSIM hex_head",
+      "result": "prefix mismatch fails (checked by ordered pairing requirement)"
+    },
+    {
+      "case": "wrong direction HU_TO_PHONE for phone tx",
+      "result": "would not prefix-match PHONE_TO_HU packets"
+    },
+    {
+      "case": "LABSIM as APK runtime",
+      "result": "REJECTED — mybmw_sim_start provenance"
+    },
+    {
+      "case": "logcat size-only as VALUE binding",
+      "result": "INSUFFICIENT / REJECTED for VALUE↔packet"
+    },
+    {
+      "case": "multiple alternate packets same criteria for VALUE",
+      "result": "N/A — no VALUE binding established"
+    },
+    {
+      "case": "naive LABSIM tx↔wire ordered zip",
+      "result": "REJECTED as strong correlation — segmentation mismatch (7 vs 4)"
+    }
+  ],
+  "PROVENANCE_CHAIN_ATTEMPTED": [
+    "VALUE-V001 ← output/v15-application-flow/APPLICATION_FLOW_EVIDENCE_REPORT.json (STATIC FACT decode/store)",
+    "APK runtime event ← NOT_FOUND",
+    "Wire packets ← output/v16-wire-correlation/wire_LAB_B3_TCP_FULLAUTH_20261120T090004Z.json (external FACT after CASE-B normalize)"
+  ],
+  "COVERAGE": {
+    "static_values": 24,
+    "values_with_runtime_evidence": 0,
+    "values_with_runtime_to_wire": 0,
+    "values_with_full_static_runtime_wire": 0,
+    "dimension": "COVERAGE (does not alter FACT class of static values)"
+  },
+  "SCHEMA_GAP": {
+    "case": "A — existing schema sufficient",
+    "note": "Missing artefact is APK-process runtime_evidence.v1 (method/read/write + bytes + time). Not a schema defect."
+  },
+  "CODE_CHANGE": {
+    "necessary": false,
+    "reason": "No APK runtime artefact to normalize; simulation forbidden"
+  },
+  "V17_JUSTIFIED": false,
+  "ANSWERS": {
+    "Q1": "LABSIM phone/hu/b3 jsonl+bins; FIELD BT logcat (sizes); FIELD_B3 wire forensics; static APK reports. No Frida/ART method traces for Connected.",
+    "Q2": "LABSIM = indirect/simulator runtime; logcat = indirect stack I/O; B3 bins = wire-only; APK reports = static-only. No DIRECT APK runtime evidence.",
+    "Q3": "No unambiguous runtime anchor for a BMW VALUE-V###.",
+    "Q4": "VALUE-V001 (best static candidate for a future bridge).",
+    "Q5": "decodeVersion→mVersion with store/load/branch/roundtrip consumers; clearest single-field lineage.",
+    "Q6": "No — INPUT_MISSING / NOT CORRELATED.",
+    "Q7": "No for APK runtime. LABSIM↔wire also lacks a unique strong mapping under byte-event segmentation (7 phone tx vs 4 PHONE_TO_HU packets); not used as bridge.",
+    "Q8": "No — VALUE→Runtime→Wire does not exist yet.",
+    "Q9": "BYTE_LEVEL_CORRELATION = UNKNOWN (no runtime buffer observation for VALUE).",
+    "Q10": "No wire-backed roundtrip for VALUE-V001.",
+    "Q11": "protocol semantics; HU identity from APK; which VALUE instance produced which bytes; request/response; runtime execution of decodeVersion.",
+    "Q12": "wrong-value/name-only; wrong-direction; LABSIM≠APK runtime; size-only logcat; ordered hex_head mismatch.",
+    "Q13": "No true schema gap — missing input artefact.",
+    "Q14": "No code change.",
+    "Q15": "n/a",
+    "Q16": "24 static / 0 runtime-correlated / 0 wire-correlated / 0 full-chain.",
+    "Q17": "None elevated by this bridge attempt.",
+    "Q18": "All protocol/message/request-response hypotheses remain UNKNOWN.",
+    "Q19": "No — capture APK-process runtime_evidence.v1 first; v1.7 architecture not justified."
+  }
+}

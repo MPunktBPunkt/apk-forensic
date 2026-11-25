@@ -1,0 +1,32 @@
+{
+  "schema": "apk_forensics.v16_wire_correlation_summary.v1",
+  "case": "B_NORMALIZATION_ONLY",
+  "artefact": "LAB_B3_TCP_FULLAUTH_20261120T090004Z",
+  "normalized_packets": {
+    "packets": 10,
+    "by_direction": {
+      "HU_TO_PHONE": 6,
+      "PHONE_TO_HU": 4
+    },
+    "phone_to_hu_bytes": 799,
+    "hu_to_phone_bytes": 215,
+    "jsonl_byte_events": 10,
+    "stream_slice_complete": true
+  },
+  "bmw_correlation_counts": {
+    "static_values": 24,
+    "runtime_events": 0,
+    "wire_packets": 10,
+    "static_runtime": 24,
+    "runtime_wire": 0,
+    "end_to_end": 0,
+    "exact": 0,
+    "strong": 0,
+    "ambiguous": 0,
+    "rejected": 0,
+    "unknown": 24
+  },
+  "value_wire": "NOT_EXECUTED_NO_RUNTIME",
+  "roundtrip_wire": "NOT_EXECUTED_NO_RUNTIME",
+  "protocol_semantics": "UNKNOWN"
+}

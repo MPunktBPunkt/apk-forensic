@@ -1,0 +1,61 @@
+{
+  "schema": "apk_forensics.object_identity_coverage_report.v1",
+  "rules": {
+    "same_type_not_alias": "FACT/REJECTED merge-by-type",
+    "same_field": "Same static field position in object context; not automatic same instance across contexts",
+    "move_result_overwrite": "Ends local register identity",
+    "cycle_guard": "Real field/object cycle stops tracking",
+    "stream_wrapper_new_identity": "New stream/wrapper object starts hops=0"
+  },
+  "identity_breaks": [
+    {
+      "path": "BTDATA-000001",
+      "kind": "move_result_overwrite",
+      "object_id": "input:I1",
+      "method": "La00;->run()V",
+      "classification": "FACT",
+      "note": "Local identity ends; same type must not merge"
+    }
+  ],
+  "same_field_continuations": [],
+  "false_alias_candidates": [
+    {
+      "path": "PATH-000001",
+      "socket_object": "socket:S1",
+      "rule": "REJECTED: merge-by-type",
+      "note": "Equal type BluetoothSocket ≠ same object identity across paths"
+    },
+    {
+      "path": "PATH-000002",
+      "socket_object": "socket:S1",
+      "rule": "REJECTED: merge-by-type",
+      "note": "Equal type BluetoothSocket ≠ same object identity across paths"
+    },
+    {
+      "path": "PATH-000003",
+      "socket_object": "socket:S1",
+      "rule": "REJECTED: merge-by-type",
+      "note": "Equal type BluetoothSocket ≠ same object identity across paths"
+    },
+    {
+      "path": "PATH-000004",
+      "socket_object": "socket:S1",
+      "rule": "REJECTED: merge-by-type",
+      "note": "Equal type BluetoothSocket ≠ same object identity across paths"
+    }
+  ],
+  "summary": {
+    "identity_break_records": 1,
+    "same_field_notes": 0,
+    "false_alias_candidate_rows": 4
+  },
+  "provenance": {
+    "source_report": "/home/martin/projects/apk-forensics/output/serial-bt-terminal-152/report.json",
+    "source_engine_version": "1.6.0",
+    "source_plan_sha256": "0a211deda9574bf9c68b9dbf286d5b88479c76d72d629311aabe5b65a81d07aa",
+    "source_artifact_sha256": "e44ab3b93e1701fcca67869169ba49ef2e918416d28928a56a135e8bff343192",
+    "postprocessing_version": "1.6.0",
+    "limits_raised": false,
+    "max_field_hops": 2
+  }
+}

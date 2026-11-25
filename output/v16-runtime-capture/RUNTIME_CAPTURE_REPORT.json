@@ -1,0 +1,179 @@
+{
+  "schema": "apk_forensics.runtime_capture_report.v1",
+  "engine": "1.6.1",
+  "final_verdict": "INPUT_MISSING",
+  "A_environment": {
+    "host": {
+      "adb": "present (/usr/bin/adb 34.0.5-debian)",
+      "adb_devices": [],
+      "frida_cli": "NOT_FOUND",
+      "frida_python": "NOT_FOUND",
+      "emulator": "NOT_FOUND",
+      "usb_android_device": "NOT_OBSERVED",
+      "usb_observed": [
+        "CP210x UART",
+        "QinHeng USB Serial",
+        "Intel BT adapter",
+        "hubs"
+      ]
+    },
+    "instrumentation_method": "NONE — blocked before hook (no device, no Frida)",
+    "capture_time_utc": "2026-11-25T06:36:27.106398+00:00",
+    "planned_hook": {
+      "priority_1": "Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Info;->decodeVersion([B)S",
+      "capture_fields": [
+        "timestamp",
+        "process",
+        "class",
+        "method",
+        "descriptor",
+        "METHOD_ENTER",
+        "bytes_hex",
+        "length",
+        "return_short"
+      ],
+      "fallback_chain_if_unreachable": [
+        "InputStream.read([B)",
+        "BclConnection readPacket / related",
+        "Packet.decode*",
+        "Info.decodeVersion([B)S"
+      ],
+      "fallback_used": false,
+      "fallback_reason": "n/a — instrumentation not started"
+    }
+  },
+  "B_process_identity": {
+    "pid": null,
+    "process": null,
+    "package": null,
+    "uid": null,
+    "observed": false,
+    "invalid_substitutes_rejected": [
+      "mybmw_sim",
+      "LABSIM phone.jsonl",
+      "host-side tools"
+    ]
+  },
+  "C_hook_target": {
+    "selected": "Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Info;->decodeVersion([B)S",
+    "class": "com.bmwgroup.connected.core.services.accessory.bcl.packet.Info",
+    "method": "decodeVersion",
+    "descriptor": "([B)S",
+    "reachable_at_runtime": "UNKNOWN — not tested (no process)",
+    "alternative_used": false
+  },
+  "D_runtime_events": [],
+  "E_static_mapping": {
+    "runtime_method": null,
+    "static_method": "Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Info;->decodeVersion([B)S",
+    "value_id": "VALUE-V001",
+    "mapping_status": "STATIC_ONLY (unchanged)",
+    "static": {
+      "value_id": "VALUE-V001",
+      "apk_file": "artifacts/de.bmw.connected-6.0.0.4962.apk",
+      "package_name": "de.bmw.connected",
+      "version_name": "6.0.0.4962",
+      "version_code": 4962,
+      "sha256": "b1135e357b62a1f54b3b791609684cb54a184fa29c0e65a3f80e58ee22f496bd",
+      "source_method": "Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection$2;->run()V",
+      "source_api": "Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Info;->decodeVersion([B)S",
+      "descriptor": "([B)S",
+      "class_jvm": "com.bmwgroup.connected.core.services.accessory.bcl.packet.Info",
+      "method_name": "decodeVersion",
+      "stored_field": "Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection;->mVersion S",
+      "value_class": "V5_ROUNDTRIP",
+      "static_classification": "FACT",
+      "protocol_semantics": "UNKNOWN",
+      "static_report": "output/v15-application-flow/APPLICATION_FLOW_EVIDENCE_REPORT.json",
+      "note_package": "VALUE-V001 baseline comes from de.bmw.connected 6.0.0.4962 (Connected), not de.bmw.connected.mobile20.row (MyBMW). Hook target must match this APK/process."
+    }
+  },
+  "F_wire_mapping": {
+    "status": "NOT_EXECUTED",
+    "session": {
+      "available_wire": "output/v16-wire-correlation/wire_LAB_B3_TCP_FULLAUTH_20261120T090004Z.json",
+      "wire_origin": "bt-analyzer LAB_B3_TCP_FULLAUTH_20261120T090004Z",
+      "same_session_as_this_runtime_attempt": false,
+      "classification": "SESSION_MISMATCH / NOT_APPLICABLE",
+      "reason": "No APK runtime capture was produced in this attempt. Even if a future hook succeeds, LAB_B3 FULLAUTH is a LABSIM relay session and must not be joined unless same-session identity is independently established."
+    },
+    "criteria_documented_but_unused": [
+      "exact bytes",
+      "byte subsequence",
+      "length",
+      "direction",
+      "time window",
+      "session",
+      "packet index"
+    ]
+  },
+  "G_negative_controls": [
+    {
+      "id": "NEG-A",
+      "description": "Static VALUE without observed runtime call (all 24 values including V001)",
+      "expectation": "NO_RUNTIME_CORRELATION",
+      "result": "NO_RUNTIME_CORRELATION",
+      "classification": "FACT about absence"
+    },
+    {
+      "id": "NEG-B",
+      "description": "LABSIM phone.jsonl / stack logcat sizes as substitute for APK runtime",
+      "expectation": "REJECTED as APK runtime",
+      "result": "REJECTED",
+      "classification": "REJECTED"
+    },
+    {
+      "id": "NEG-C",
+      "description": "Correlate any invented runtime bytes to LAB_B3 wire",
+      "expectation": "not performed",
+      "result": "NOT_EXECUTED (no simulation)",
+      "classification": "n/a"
+    }
+  ],
+  "H_coverage": {
+    "static_values_total": 24,
+    "runtime_events_total": 0,
+    "runtime_events_correlated": 0,
+    "wire_packets_total": 10,
+    "runtime_wire_correlations": 0,
+    "full_chain_correlations": 0,
+    "target_value": "VALUE-V001",
+    "target_runtime_events": 0,
+    "target_full_chain": 0
+  },
+  "I_evidence_classification": {
+    "FACT": [
+      "adb reports zero devices",
+      "Frida absent on host",
+      "VALUE-V001 statically maps to Info;->decodeVersion([B)S in de.bmw.connected 6.0.0.4962",
+      "No runtime_evidence events were recorded in this capture attempt"
+    ],
+    "CORRELATION": [],
+    "INFERENCE": [],
+    "HYPOTHESIS": [],
+    "UNKNOWN": [
+      "whether decodeVersion is reached on a live Connected session",
+      "runtime bytes for VALUE-V001",
+      "JNI use by decodeVersion",
+      "protocol meaning of returned short"
+    ],
+    "REJECTED": [
+      "using LABSIM as APK runtime",
+      "simulating decodeVersion invocations",
+      "joining this attempt to LAB_B3 without same-session proof"
+    ]
+  },
+  "J_final_verdict": "INPUT_MISSING",
+  "closing_answers": {
+    "1_apk_process_instrumented": false,
+    "2_decodeVersion_or_justified_replacement_observed": false,
+    "3_real_runtime_bytes": false,
+    "4_runtime_and_wire_same_session": false,
+    "5_unique_runtime_wire_correlation": false,
+    "6_value_v001_runtime_wire_proven": false,
+    "7_missing_building_block": "Attached Android device/emulator with installable/runnable de.bmw.connected (matching APK under analysis) + Frida/ART instrumentation capability + a live session that produces RFCOMM/Connected traffic + same-session wire capture. Without these, Static→Runtime→Wire cannot close."
+  },
+  "jni_boundary": "JNI_UNKNOWN",
+  "code_change": false,
+  "v17": false
+}

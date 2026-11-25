@@ -1,0 +1,34 @@
+{
+  "schema": "apk_forensics.byte_processing_report.v1",
+  "counts": {
+    "read_sites": 1,
+    "write_sites": 1,
+    "buffer_operations": 2,
+    "decoder_candidates": 0,
+    "serializer_candidates": 0,
+    "message_constructions": 1,
+    "primitive_decoding": 0,
+    "string_decoding": 6,
+    "byte_processing": 0,
+    "state_mutations": 0,
+    "object_constructions": 0,
+    "read_lengths": 1
+  },
+  "rows": [
+    {
+      "method": "La00;->run()V",
+      "kind": "READ_LENGTH",
+      "api": "Ljava/io/InputStream;->read([B)I",
+      "register": "v2",
+      "classification": "FACT",
+      "evidence_role": "READ_LENGTH_NOT_DECODE"
+    }
+  ],
+  "hard_rule": "Byte processing ≠ protocol semantics.",
+  "t5_definition": {
+    "requires": "Tracked byte[]/ByteBuffer identity has a FACT edge into at least one of: aget-byte/aget; ByteBuffer.wrap/get*/put*; String([B); or a parse/decode-named invoke that also receives the tracked buffer (dataflow_role).",
+    "excludes": "InputStream/AccessorySocket read()I or read([B)I *length* move-result (READ_LENGTH); method/class names alone; copy-only without further processing; protocol/message meaning claims.",
+    "sees_v13": "Transport wrapper read/write; BYTE_ARRAY arg; mis-tagged PRIMITIVE_DECODE from read length; PATH-COMM INBOUND_PRIMITIVE without real byte ops.",
+    "cannot_see_v13": "Interface consumers (AccessorySocket;->read in BclConnection); Packet.decode* ByteBuffer.getShort/getInt; aget-byte loops; state mutation onto Packet fields after decode."
+  }
+}

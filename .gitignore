@@ -21,6 +21,11 @@ htmlcov/
 # Tool output / lifecycle areas
 output/*
 !output/.gitkeep
+# Keep forensic evaluation / correlation reports (not APKs)
+!output/v16-*/
+!output/v16-*/**
+!output/serial-bt-terminal-152/
+!output/serial-bt-terminal-152/**
 work/
 cache/
 .apk-forensics-workspace.json

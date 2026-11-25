@@ -1,0 +1,2550 @@
+{
+  "schema": "apk_forensics.application_flow_evidence_report.v1",
+  "provenance": {
+    "source_report": "/home/martin/projects/apk-forensics/output/bmw-connected-600-v10/report.json",
+    "apk": "/home/martin/projects/apk-forensics/artifacts/de.bmw.connected-6.0.0.4962.apk",
+    "postprocessing_version": "1.5.0",
+    "methods_analyzed": 68,
+    "method_retention": {
+      "candidate_methods": 68,
+      "retained_methods": 68,
+      "discarded_methods": 0,
+      "discard_reason": null,
+      "cap": 200,
+      "capped": false,
+      "limit_kind": "analyzer",
+      "note": "Retention cap is an analyzer bound, not a native/reflection APK boundary.",
+      "seed_expansion": {
+        "enabled": true,
+        "max_extra": 80,
+        "added": [
+          "Lcom/bmwgroup/connected/core/services/accessory/UsbService;->openAccessory()Z",
+          "Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection$2;->run()V",
+          "Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection;-><clinit>()V",
+          "Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection;->doKnock()V",
+          "Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection;->initSession()Z",
+          "Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection;->readAndCheckPacket(S S)V",
+          "Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection;->write([B Z)V",
+          "Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection;->broadcast([B)Z",
+          "Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection;->close(S S)V",
+          "Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection;->data(S S [B I)V",
+          "Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection;->internalread([B I)I",
+          "Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection;->knock([B [B [B [B Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection$AppType; S)Z",
+          "Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection;->launch([B)Z",
+          "Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection;->open(S S)V",
+          "Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection;->readPacket(Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Packet;)V",
+          "Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection;->register(Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection$RegisterSubCommand; [B)Z",
+          "Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection;->selectproto()Z",
+          "Lcom/bmwgroup/connected/core/services/accessory/bcl/BclWatchdog;->watch()V",
+          "Lcom/bmwgroup/connected/core/services/accessory/bcl/BclWorker$1;->run()V",
+          "Lcom/bmwgroup/connected/core/services/accessory/bcl/BclWorker$2;->run()V",
+          "Lcom/bmwgroup/connected/core/services/accessory/bcl/BufferedBclConnection$1;-><init>(Lcom/bmwgroup/connected/core/services/accessory/bcl/BufferedBclConnection; Lcom/bmwgroup/connected/core/services/accessory/AccessorySocket;)V",
+          "Lcom/bmwgroup/connected/core/services/accessory/bcl/BufferedBclConnection$1;->run()V",
+          "Lcom/bmwgroup/connected/core/services/accessory/bcl/BufferedBclConnection;-><init>(Landroid/content/Context; Lcom/bmwgroup/connected/core/services/accessory/AccessorySocket; Ljava/lang/String; Ljava/lang/String; I)V",
+          "Lcom/bmwgroup/connected/core/services/accessory/bcl/BufferedBclConnection;->access$000(Lcom/bmwgroup/connected/core/services/accessory/bcl/BufferedBclConnection;)Ljava/lang/Throwable;",
+          "Lcom/bmwgroup/connected/core/services/accessory/bcl/BufferedBclConnection;->access$002(Lcom/bmwgroup/connected/core/services/accessory/bcl/BufferedBclConnection; Ljava/lang/Throwable;)Ljava/lang/Throwable;",
+          "Lcom/bmwgroup/connected/core/services/accessory/bcl/BufferedBclConnection;->access$100(Lcom/bmwgroup/connected/core/services/accessory/bcl/BufferedBclConnection;)Ljava/util/Queue;",
+          "Lcom/bmwgroup/connected/core/services/accessory/bcl/BufferedBclConnection;->access$200(Lcom/bmwgroup/connected/core/services/accessory/bcl/BufferedBclConnection;)Ljava/lang/Object;",
+          "Lcom/bmwgroup/connected/core/services/accessory/bcl/BufferedBclConnection;->waitForNextBuffer()V",
+          "Lcom/bmwgroup/connected/core/services/accessory/bcl/BufferedBclConnection;->init()Z",
+          "Lcom/bmwgroup/connected/core/services/accessory/bcl/BufferedBclConnection;->internalread([B I)I",
+          "Lcom/bmwgroup/connected/core/services/accessory/bcl/BufferedBclConnection;->pushBackPacket(Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Packet;)V",
+          "Lcom/bmwgroup/connected/core/services/accessory/bcl/BufferedBclConnection;->reset(Z Ljava/lang/String;)V",
+          "Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Packet;->decodeCommand([B)Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Command;",
+          "Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Packet;->decodeDataLen([B)S",
+          "Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Packet;->decodeDestPort([B)S",
+          "Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Packet;->decodeSopOffset([B)I",
+          "Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Packet;->decodeSrcPort([B)S",
+          "Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Packet;->encode(Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Command; S S S [B)[B",
+          "Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Packet;->getPacketInfo([B)Ljava/lang/String;",
+          "Lcom/bmwgroup/connected/sdk/internal/connectivity/transport/DeviceManagerLoginThread;->run()V",
+          "Lcom/bmwgroup/connected/sdk/internal/connectivity/transport/DeviceManagerLoginThread;->write([B)V"
+        ],
+        "scanned_methods": 119130,
+        "note": "Expansion follows concrete invoke refs to AccessorySocket/Packet/BclConnection buffer APIs — not method-name protocol claims.",
+        "added_count": 41
+      }
+    },
+    "warnings": [
+      "v1.4 seed expansion added 41 interface/buffer consumer methods."
+    ],
+    "expand_interface_consumers": true,
+    "max_field_hops": 2,
+    "limits_raised": false
+  },
+  "structured_value_definition": {
+    "definition": "A STRUCTURED_VALUE is a FACT when a tracked byte[]/ByteBuffer identity is transformed by a concrete DEX instruction into a typed register value (primitive, String, or object ref) that is distinct from READ_LENGTH.",
+    "examples": [
+      "ByteBuffer.getInt/getShort → register",
+      "aget-byte → register",
+      "decode*([B) → move-result / move-result-object",
+      "String.<init>([B) → object register"
+    ],
+    "excludes": [
+      "InputStream.read length move-result (READ_LENGTH)",
+      "Field/method/class names as semantic labels",
+      "Protocol/command/message claims"
+    ]
+  },
+  "value_classes": {
+    "V0_SOURCE_ONLY": "Value extracted; not further followed.",
+    "V1_FIELD_STATE": "Value written to object field.",
+    "V2_CONSUMED": "Value/field loaded and passed/returned.",
+    "V3_CONTROL_FLOW": "Value influences branch/switch/compare.",
+    "V4_APPLICATION_ACTION": "Value drives further state/collection/action.",
+    "V5_ROUNDTRIP": "Value reaches encode/write-like output path."
+  },
+  "flow_counts": {
+    "methods_analyzed": 68,
+    "structured_values": 23,
+    "field_stores": 8,
+    "field_loads": 63,
+    "branches": 36,
+    "parameters": 191,
+    "returns": 5,
+    "state_mutations": 6,
+    "collections": 2,
+    "roundtrip_candidates": 13,
+    "catalog_values": 24
+  },
+  "value_catalog": [
+    {
+      "value_id": "VALUE-V001",
+      "source_method": "Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection$2;->run()V",
+      "source_kind": "DECODE_RETURN_PRIMITIVE",
+      "source_api": "Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Info;->decodeVersion([B)S",
+      "primitive_type": "primitive",
+      "stored_field": "Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection;->mVersion S",
+      "store_instruction_index": 71,
+      "classification": "FACT",
+      "protocol_semantics": "UNKNOWN",
+      "semantic_label": null,
+      "value_class": "V5_ROUNDTRIP",
+      "t6_stage": "T6.5_ROUNDTRIP",
+      "consumers": [
+        {
+          "kind": "FIELD_LOAD",
+          "method": "Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection$2;->run()V",
+          "instruction_index": 75,
+          "classification": "CORRELATION"
+        },
+        {
+          "kind": "BRANCH_ON_FIELD_VALUE",
+          "method": "Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection$2;->run()V",
+          "instruction_index": 76,
+          "classification": "CORRELATION"
+        },
+        {
+          "kind": "FIELD_LOAD",
+          "method": "Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection$2;->run()V",
+          "instruction_index": 80,
+          "classification": "CORRELATION"
+        },
+        {
+          "kind": "BRANCH_ON_FIELD_VALUE",
+          "method": "Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection$2;->run()V",
+          "instruction_index": 81,
+          "classification": "CORRELATION"
+        },
+        {
+          "kind": "FIELD_LOAD",
+          "method": "Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection;->write([B Z)V",
+          "instruction_index": 4,
+          "classification": "CORRELATION"
+        },
+        {
+          "kind": "FIELD_LOAD",
+          "method": "Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection;->write([B Z)V",
+          "instruction_index": 10,
+          "classification": "CORRELATION"
+        },
+        {
+          "kind": "BRANCH_ON_FIELD_VALUE",
+          "method": "Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection;->write([B Z)V",
+          "instruction_index": 13,
+          "classification": "CORRELATION"
+        },
+        {
+          "kind": "FIELD_LOAD",
+          "method": "Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection;->write([B Z)V",
+          "instruction_index": 19,
+          "classification": "CORRELATION"
+        },
+        {
+          "kind": "VALUE_PARAMETER_FROM_FIELD",
+          "method": "Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection;->write([B Z)V",
+          "instruction_index": 28,
+          "classification": "CORRELATION"
+        },
+        {
+          "kind": "VALUE_PARAMETER_FROM_FIELD",
+          "method": "Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection;->write([B Z)V",
+          "instruction_index": 28,
+          "classification": "CORRELATION"
+        },
+        {
+          "kind": "VALUE_PARAMETER_FROM_FIELD",
+          "method": "Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection;->write([B Z)V",
+          "instruction_index": 44,
+          "classification": "CORRELATION"
+        },
+        {
+          "kind": "VALUE_PARAMETER_FROM_FIELD",
+          "method": "Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection;->write([B Z)V",
+          "instruction_index": 46,
+          "classification": "CORRELATION"
+        },
+        {
+          "kind": "VALUE_PARAMETER_FROM_FIELD",
+          "method": "Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection;->write([B Z)V",
+          "instruction_index": 60,
+          "classification": "CORRELATION"
+        },
+        {
+          "kind": "ROUNDTRIP_FROM_FIELD",
+          "method": "Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection;->write([B Z)V",
+          "instruction_index": 60,
+          "classification": "CORRELATION"
+        },
+        {
+          "kind": "VALUE_PARAMETER_FROM_FIELD",
+          "method": "Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection;->write([B Z)V",
+          "instruction_index": 69,
+          "classification": "CORRELATION"
+        },
+        {
+          "kind": "FIELD_LOAD",
+          "method": "Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection;->write([B Z)V",
+          "instruction_index": 71,
+          "classification": "CORRELATION"
+        },
+        {
+          "kind": "FIELD_LOAD",
+          "method": "Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection;->write([B Z)V",
+          "instruction_index": 89,
+          "classification": "CORRELATION"
+        },
+        {
+          "kind": "VALUE_PARAMETER_FROM_FIELD",
+          "method": "Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection;->write([B Z)V",
+          "instruction_index": 99,
+          "classification": "CORRELATION"
+        },
+        {
+          "kind": "ROUNDTRIP_FROM_FIELD",
+          "method": "Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection;->write([B Z)V",
+          "instruction_index": 99,
+          "classification": "CORRELATION"
+        },
+        {
+          "kind": "VALUE_PARAMETER_FROM_FIELD",
+          "method": "Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection;->write([B Z)V",
+          "instruction_index": 99,
+          "classification": "CORRELATION"
+        }
+      ],
+      "consumer_kinds": [
+        "BRANCH_ON_FIELD_VALUE",
+        "FIELD_LOAD",
+        "ROUNDTRIP_FROM_FIELD",
+        "VALUE_PARAMETER_FROM_FIELD",
+        "VALUE_RETURN_FROM_FIELD"
+      ],
+      "lineage": [
+        "BYTES → Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Info;->decodeVersion([B)S",
+        "REGISTER → FIELD_STORE mVersion S",
+        "CONSUMER FIELD_LOAD @ Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection$2;->run()V",
+        "CONSUMER BRANCH_ON_FIELD_VALUE @ Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection$2;->run()V",
+        "CONSUMER FIELD_LOAD @ Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection$2;->run()V",
+        "CONSUMER BRANCH_ON_FIELD_VALUE @ Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection$2;->run()V",
+        "CONSUMER FIELD_LOAD @ Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection;->write([B Z)V",
+        "CONSUMER FIELD_LOAD @ Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection;->write([B Z)V",
+        "CONSUMER BRANCH_ON_FIELD_VALUE @ Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection;->write([B Z)V",
+        "CONSUMER FIELD_LOAD @ Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection;->write([B Z)V"
+      ]
+    },
+    {
+      "value_id": "VALUE-V002",
+      "source_method": "Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection$2;->run()V",
+      "source_kind": "DECODE_RETURN_PRIMITIVE",
+      "source_api": "Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Info;->decodeInstanceId([B)S",
+      "primitive_type": "primitive",
+      "stored_field": "Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection;->mInstanceId S",
+      "store_instruction_index": 90,
+      "classification": "FACT",
+      "protocol_semantics": "UNKNOWN",
+      "semantic_label": null,
+      "value_class": "V1_FIELD_STATE",
+      "t6_stage": "T6.1_FIELD_STATE",
+      "consumers": [],
+      "consumer_kinds": [],
+      "lineage": [
+        "BYTES → Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Info;->decodeInstanceId([B)S",
+        "REGISTER → FIELD_STORE mInstanceId S"
+      ]
+    },
+    {
+      "value_id": "VALUE-V003",
+      "source_method": "Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection$2;->run()V",
+      "source_kind": "DECODE_RETURN_PRIMITIVE",
+      "source_api": "Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Info;->decodeBuffersize([B)I",
+      "primitive_type": "primitive",
+      "stored_field": "Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection;->mHuBufsize I",
+      "store_instruction_index": 95,
+      "classification": "FACT",
+      "protocol_semantics": "UNKNOWN",
+      "semantic_label": null,
+      "value_class": "V1_FIELD_STATE",
+      "t6_stage": "T6.1_FIELD_STATE",
+      "consumers": [],
+      "consumer_kinds": [],
+      "lineage": [
+        "BYTES → Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Info;->decodeBuffersize([B)I",
+        "REGISTER → FIELD_STORE mHuBufsize I"
+      ]
+    },
+    {
+      "value_id": "VALUE-V004",
+      "source_method": "Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection;->readPacket(Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Packet;)V",
+      "source_kind": "DECODE_RETURN_OBJECT",
+      "source_api": "Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Packet;->decodeCommand([B)Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Command",
+      "primitive_type": "object",
+      "stored_field": "Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Packet;->mCommand Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Command;",
+      "store_instruction_index": 15,
+      "classification": "FACT",
+      "protocol_semantics": "UNKNOWN",
+      "semantic_label": null,
+      "value_class": "V5_ROUNDTRIP",
+      "t6_stage": "T6.5_ROUNDTRIP",
+      "consumers": [
+        {
+          "kind": "FIELD_LOAD",
+          "method": "Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection$2;->run()V",
+          "instruction_index": 53,
+          "classification": "CORRELATION"
+        },
+        {
+          "kind": "BRANCH_ON_FIELD_VALUE",
+          "method": "Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection$2;->run()V",
+          "instruction_index": 55,
+          "classification": "CORRELATION"
+        },
+        {
+          "kind": "FIELD_LOAD",
+          "method": "Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection$2;->run()V",
+          "instruction_index": 56,
+          "classification": "CORRELATION"
+        },
+        {
+          "kind": "BRANCH_ON_FIELD_VALUE",
+          "method": "Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection$2;->run()V",
+          "instruction_index": 57,
+          "classification": "CORRELATION"
+        },
+        {
+          "kind": "FIELD_LOAD",
+          "method": "Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection$2;->run()V",
+          "instruction_index": 61,
+          "classification": "CORRELATION"
+        },
+        {
+          "kind": "VALUE_PARAMETER_FROM_FIELD",
+          "method": "Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection$2;->run()V",
+          "instruction_index": 62,
+          "classification": "CORRELATION"
+        },
+        {
+          "kind": "VALUE_PARAMETER_FROM_FIELD",
+          "method": "Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection$2;->run()V",
+          "instruction_index": 65,
+          "classification": "CORRELATION"
+        },
+        {
+          "kind": "FIELD_LOAD",
+          "method": "Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection;->readAndCheckPacket(S S)V",
+          "instruction_index": 31,
+          "classification": "CORRELATION"
+        },
+        {
+          "kind": "FIELD_LOAD",
+          "method": "Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection;->readAndCheckPacket(S S)V",
+          "instruction_index": 42,
+          "classification": "CORRELATION"
+        },
+        {
+          "kind": "BRANCH_ON_FIELD_VALUE",
+          "method": "Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection;->readAndCheckPacket(S S)V",
+          "instruction_index": 44,
+          "classification": "CORRELATION"
+        },
+        {
+          "kind": "VALUE_PARAMETER_FROM_FIELD",
+          "method": "Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection;->readAndCheckPacket(S S)V",
+          "instruction_index": 50,
+          "classification": "CORRELATION"
+        },
+        {
+          "kind": "VALUE_PARAMETER_FROM_FIELD",
+          "method": "Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection;->readAndCheckPacket(S S)V",
+          "instruction_index": 60,
+          "classification": "CORRELATION"
+        },
+        {
+          "kind": "FIELD_LOAD",
+          "method": "Lcom/bmwgroup/connected/core/services/accessory/bcl/BclWorker$2;->run()V",
+          "instruction_index": 26,
+          "classification": "CORRELATION"
+        },
+        {
+          "kind": "BRANCH_ON_FIELD_VALUE",
+          "method": "Lcom/bmwgroup/connected/core/services/accessory/bcl/BclWorker$2;->run()V",
+          "instruction_index": 27,
+          "classification": "CORRELATION"
+        },
+        {
+          "kind": "FIELD_LOAD",
+          "method": "Lcom/bmwgroup/connected/core/services/accessory/bcl/BclWorker$2;->run()V",
+          "instruction_index": 28,
+          "classification": "CORRELATION"
+        },
+        {
+          "kind": "VALUE_PARAMETER_FROM_FIELD",
+          "method": "Lcom/bmwgroup/connected/core/services/accessory/bcl/BclWorker$2;->run()V",
+          "instruction_index": 29,
+          "classification": "CORRELATION"
+        },
+        {
+          "kind": "FIELD_LOAD",
+          "method": "Lcom/bmwgroup/connected/core/services/accessory/bcl/BclWorker$2;->run()V",
+          "instruction_index": 49,
+          "classification": "CORRELATION"
+        },
+        {
+          "kind": "BRANCH_ON_FIELD_VALUE",
+          "method": "Lcom/bmwgroup/connected/core/services/accessory/bcl/BclWorker$2;->run()V",
+          "instruction_index": 51,
+          "classification": "CORRELATION"
+        },
+        {
+          "kind": "VALUE_PARAMETER_FROM_FIELD",
+          "method": "Lcom/bmwgroup/connected/core/services/accessory/bcl/BclWorker$2;->run()V",
+          "instruction_index": 53,
+          "classification": "CORRELATION"
+        },
+        {
+          "kind": "VALUE_PARAMETER_FROM_FIELD",
+          "method": "Lcom/bmwgroup/connected/core/services/accessory/bcl/BclWorker$2;->run()V",
+          "instruction_index": 55,
+          "classification": "CORRELATION"
+        }
+      ],
+      "consumer_kinds": [
+        "BRANCH_ON_FIELD_VALUE",
+        "COLLECTION_INSERT_FROM_FIELD",
+        "FIELD_LOAD",
+        "ROUNDTRIP_FROM_FIELD",
+        "VALUE_PARAMETER_FROM_FIELD"
+      ],
+      "lineage": [
+        "BYTES → Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Packet;->decodeCommand([B)Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Command",
+        "REGISTER → FIELD_STORE mCommand Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Command;",
+        "CONSUMER FIELD_LOAD @ Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection$2;->run()V",
+        "CONSUMER BRANCH_ON_FIELD_VALUE @ Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection$2;->run()V",
+        "CONSUMER FIELD_LOAD @ Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection$2;->run()V",
+        "CONSUMER BRANCH_ON_FIELD_VALUE @ Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection$2;->run()V",
+        "CONSUMER FIELD_LOAD @ Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection$2;->run()V",
+        "CONSUMER VALUE_PARAMETER_FROM_FIELD @ Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection$2;->run()V",
+        "CONSUMER VALUE_PARAMETER_FROM_FIELD @ Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection$2;->run()V",
+        "CONSUMER FIELD_LOAD @ Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection;->readAndCheckPacket(S S)V"
+      ]
+    },
+    {
+      "value_id": "VALUE-V005",
+      "source_method": "Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection;->readPacket(Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Packet;)V",
+      "source_kind": "DECODE_RETURN_PRIMITIVE",
+      "source_api": "Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Packet;->decodeSrcPort([B)S",
+      "primitive_type": "primitive",
+      "stored_field": "Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Packet;->mSrcPort S",
+      "store_instruction_index": 18,
+      "classification": "FACT",
+      "protocol_semantics": "UNKNOWN",
+      "semantic_label": null,
+      "value_class": "V5_ROUNDTRIP",
+      "t6_stage": "T6.5_ROUNDTRIP",
+      "consumers": [
+        {
+          "kind": "FIELD_LOAD",
+          "method": "Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection$2;->run()V",
+          "instruction_index": 83,
+          "classification": "CORRELATION"
+        },
+        {
+          "kind": "BRANCH_ON_FIELD_VALUE",
+          "method": "Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection$2;->run()V",
+          "instruction_index": 84,
+          "classification": "CORRELATION"
+        },
+        {
+          "kind": "VALUE_PARAMETER_FROM_FIELD",
+          "method": "Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection$2;->run()V",
+          "instruction_index": 100,
+          "classification": "CORRELATION"
+        },
+        {
+          "kind": "FIELD_LOAD",
+          "method": "Lcom/bmwgroup/connected/core/services/accessory/bcl/BclWorker$2;->run()V",
+          "instruction_index": 33,
+          "classification": "CORRELATION"
+        },
+        {
+          "kind": "VALUE_PARAMETER_FROM_FIELD",
+          "method": "Lcom/bmwgroup/connected/core/services/accessory/bcl/BclWorker$2;->run()V",
+          "instruction_index": 34,
+          "classification": "CORRELATION"
+        },
+        {
+          "kind": "FIELD_LOAD",
+          "method": "Lcom/bmwgroup/connected/core/services/accessory/bcl/BclWorker$2;->run()V",
+          "instruction_index": 61,
+          "classification": "CORRELATION"
+        },
+        {
+          "kind": "VALUE_PARAMETER_FROM_FIELD",
+          "method": "Lcom/bmwgroup/connected/core/services/accessory/bcl/BclWorker$2;->run()V",
+          "instruction_index": 62,
+          "classification": "CORRELATION"
+        },
+        {
+          "kind": "FIELD_LOAD",
+          "method": "Lcom/bmwgroup/connected/core/services/accessory/bcl/BclWorker$2;->run()V",
+          "instruction_index": 69,
+          "classification": "CORRELATION"
+        },
+        {
+          "kind": "VALUE_PARAMETER_FROM_FIELD",
+          "method": "Lcom/bmwgroup/connected/core/services/accessory/bcl/BclWorker$2;->run()V",
+          "instruction_index": 70,
+          "classification": "CORRELATION"
+        },
+        {
+          "kind": "VALUE_PARAMETER_FROM_FIELD",
+          "method": "Lcom/bmwgroup/connected/core/services/accessory/bcl/BclWorker$2;->run()V",
+          "instruction_index": 73,
+          "classification": "CORRELATION"
+        },
+        {
+          "kind": "VALUE_PARAMETER_FROM_FIELD",
+          "method": "Lcom/bmwgroup/connected/core/services/accessory/bcl/BclWorker$2;->run()V",
+          "instruction_index": 80,
+          "classification": "CORRELATION"
+        },
+        {
+          "kind": "VALUE_PARAMETER_FROM_FIELD",
+          "method": "Lcom/bmwgroup/connected/core/services/accessory/bcl/BclWorker$2;->run()V",
+          "instruction_index": 106,
+          "classification": "CORRELATION"
+        },
+        {
+          "kind": "FIELD_LOAD",
+          "method": "Lcom/bmwgroup/connected/core/services/accessory/bcl/BclWorker$2;->run()V",
+          "instruction_index": 110,
+          "classification": "CORRELATION"
+        },
+        {
+          "kind": "VALUE_PARAMETER_FROM_FIELD",
+          "method": "Lcom/bmwgroup/connected/core/services/accessory/bcl/BclWorker$2;->run()V",
+          "instruction_index": 111,
+          "classification": "CORRELATION"
+        },
+        {
+          "kind": "FIELD_LOAD",
+          "method": "Lcom/bmwgroup/connected/core/services/accessory/bcl/BclWorker$2;->run()V",
+          "instruction_index": 119,
+          "classification": "CORRELATION"
+        },
+        {
+          "kind": "VALUE_PARAMETER_FROM_FIELD",
+          "method": "Lcom/bmwgroup/connected/core/services/accessory/bcl/BclWorker$2;->run()V",
+          "instruction_index": 120,
+          "classification": "CORRELATION"
+        },
+        {
+          "kind": "VALUE_PARAMETER_FROM_FIELD",
+          "method": "Lcom/bmwgroup/connected/core/services/accessory/bcl/BclWorker$2;->run()V",
+          "instruction_index": 123,
+          "classification": "CORRELATION"
+        },
+        {
+          "kind": "FIELD_LOAD",
+          "method": "Lcom/bmwgroup/connected/core/services/accessory/bcl/BclWorker$2;->run()V",
+          "instruction_index": 151,
+          "classification": "CORRELATION"
+        },
+        {
+          "kind": "VALUE_PARAMETER_FROM_FIELD",
+          "method": "Lcom/bmwgroup/connected/core/services/accessory/bcl/BclWorker$2;->run()V",
+          "instruction_index": 152,
+          "classification": "CORRELATION"
+        },
+        {
+          "kind": "VALUE_PARAMETER_FROM_FIELD",
+          "method": "Lcom/bmwgroup/connected/core/services/accessory/bcl/BclWorker$2;->run()V",
+          "instruction_index": 155,
+          "classification": "CORRELATION"
+        }
+      ],
+      "consumer_kinds": [
+        "BRANCH_ON_FIELD_VALUE",
+        "COLLECTION_INSERT_FROM_FIELD",
+        "FIELD_LOAD",
+        "ROUNDTRIP_FROM_FIELD",
+        "VALUE_PARAMETER_FROM_FIELD"
+      ],
+      "lineage": [
+        "BYTES → Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Packet;->decodeSrcPort([B)S",
+        "REGISTER → FIELD_STORE mSrcPort S",
+        "CONSUMER FIELD_LOAD @ Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection$2;->run()V",
+        "CONSUMER BRANCH_ON_FIELD_VALUE @ Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection$2;->run()V",
+        "CONSUMER VALUE_PARAMETER_FROM_FIELD @ Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection$2;->run()V",
+        "CONSUMER FIELD_LOAD @ Lcom/bmwgroup/connected/core/services/accessory/bcl/BclWorker$2;->run()V",
+        "CONSUMER VALUE_PARAMETER_FROM_FIELD @ Lcom/bmwgroup/connected/core/services/accessory/bcl/BclWorker$2;->run()V",
+        "CONSUMER FIELD_LOAD @ Lcom/bmwgroup/connected/core/services/accessory/bcl/BclWorker$2;->run()V",
+        "CONSUMER VALUE_PARAMETER_FROM_FIELD @ Lcom/bmwgroup/connected/core/services/accessory/bcl/BclWorker$2;->run()V",
+        "CONSUMER FIELD_LOAD @ Lcom/bmwgroup/connected/core/services/accessory/bcl/BclWorker$2;->run()V"
+      ]
+    },
+    {
+      "value_id": "VALUE-V006",
+      "source_method": "Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection;->readPacket(Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Packet;)V",
+      "source_kind": "DECODE_RETURN_PRIMITIVE",
+      "source_api": "Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Packet;->decodeDestPort([B)S",
+      "primitive_type": "primitive",
+      "stored_field": "Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Packet;->mDestPort S",
+      "store_instruction_index": 21,
+      "classification": "FACT",
+      "protocol_semantics": "UNKNOWN",
+      "semantic_label": null,
+      "value_class": "V5_ROUNDTRIP",
+      "t6_stage": "T6.5_ROUNDTRIP",
+      "consumers": [
+        {
+          "kind": "FIELD_LOAD",
+          "method": "Lcom/bmwgroup/connected/core/services/accessory/bcl/BclWorker$2;->run()V",
+          "instruction_index": 38,
+          "classification": "CORRELATION"
+        },
+        {
+          "kind": "VALUE_PARAMETER_FROM_FIELD",
+          "method": "Lcom/bmwgroup/connected/core/services/accessory/bcl/BclWorker$2;->run()V",
+          "instruction_index": 39,
+          "classification": "CORRELATION"
+        },
+        {
+          "kind": "FIELD_LOAD",
+          "method": "Lcom/bmwgroup/connected/core/services/accessory/bcl/BclWorker$2;->run()V",
+          "instruction_index": 56,
+          "classification": "CORRELATION"
+        },
+        {
+          "kind": "BRANCH_ON_FIELD_VALUE",
+          "method": "Lcom/bmwgroup/connected/core/services/accessory/bcl/BclWorker$2;->run()V",
+          "instruction_index": 57,
+          "classification": "CORRELATION"
+        },
+        {
+          "kind": "VALUE_PARAMETER_FROM_FIELD",
+          "method": "Lcom/bmwgroup/connected/core/services/accessory/bcl/BclWorker$2;->run()V",
+          "instruction_index": 59,
+          "classification": "CORRELATION"
+        },
+        {
+          "kind": "VALUE_PARAMETER_FROM_FIELD",
+          "method": "Lcom/bmwgroup/connected/core/services/accessory/bcl/BclWorker$2;->run()V",
+          "instruction_index": 62,
+          "classification": "CORRELATION"
+        },
+        {
+          "kind": "BRANCH_ON_FIELD_VALUE",
+          "method": "Lcom/bmwgroup/connected/core/services/accessory/bcl/BclWorker$2;->run()V",
+          "instruction_index": 64,
+          "classification": "CORRELATION"
+        },
+        {
+          "kind": "VALUE_PARAMETER_FROM_FIELD",
+          "method": "Lcom/bmwgroup/connected/core/services/accessory/bcl/BclWorker$2;->run()V",
+          "instruction_index": 73,
+          "classification": "CORRELATION"
+        },
+        {
+          "kind": "VALUE_PARAMETER_FROM_FIELD",
+          "method": "Lcom/bmwgroup/connected/core/services/accessory/bcl/BclWorker$2;->run()V",
+          "instruction_index": 80,
+          "classification": "CORRELATION"
+        },
+        {
+          "kind": "VALUE_PARAMETER_FROM_FIELD",
+          "method": "Lcom/bmwgroup/connected/core/services/accessory/bcl/BclWorker$2;->run()V",
+          "instruction_index": 82,
+          "classification": "CORRELATION"
+        },
+        {
+          "kind": "VALUE_PARAMETER_FROM_FIELD",
+          "method": "Lcom/bmwgroup/connected/core/services/accessory/bcl/BclWorker$2;->run()V",
+          "instruction_index": 84,
+          "classification": "CORRELATION"
+        },
+        {
+          "kind": "VALUE_PARAMETER_FROM_FIELD",
+          "method": "Lcom/bmwgroup/connected/core/services/accessory/bcl/BclWorker$2;->run()V",
+          "instruction_index": 98,
+          "classification": "CORRELATION"
+        },
+        {
+          "kind": "ROUNDTRIP_FROM_FIELD",
+          "method": "Lcom/bmwgroup/connected/core/services/accessory/bcl/BclWorker$2;->run()V",
+          "instruction_index": 98,
+          "classification": "CORRELATION"
+        },
+        {
+          "kind": "VALUE_PARAMETER_FROM_FIELD",
+          "method": "Lcom/bmwgroup/connected/core/services/accessory/bcl/BclWorker$2;->run()V",
+          "instruction_index": 112,
+          "classification": "CORRELATION"
+        },
+        {
+          "kind": "VALUE_PARAMETER_FROM_FIELD",
+          "method": "Lcom/bmwgroup/connected/core/services/accessory/bcl/BclWorker$2;->run()V",
+          "instruction_index": 123,
+          "classification": "CORRELATION"
+        },
+        {
+          "kind": "FIELD_LOAD",
+          "method": "Lcom/bmwgroup/connected/core/services/accessory/bcl/BclWorker$2;->run()V",
+          "instruction_index": 147,
+          "classification": "CORRELATION"
+        },
+        {
+          "kind": "VALUE_PARAMETER_FROM_FIELD",
+          "method": "Lcom/bmwgroup/connected/core/services/accessory/bcl/BclWorker$2;->run()V",
+          "instruction_index": 148,
+          "classification": "CORRELATION"
+        },
+        {
+          "kind": "FIELD_LOAD",
+          "method": "Lcom/bmwgroup/connected/core/services/accessory/bcl/BclWorker$2;->run()V",
+          "instruction_index": 171,
+          "classification": "CORRELATION"
+        },
+        {
+          "kind": "BRANCH_ON_FIELD_VALUE",
+          "method": "Lcom/bmwgroup/connected/core/services/accessory/bcl/BclWorker$2;->run()V",
+          "instruction_index": 172,
+          "classification": "CORRELATION"
+        },
+        {
+          "kind": "VALUE_PARAMETER_FROM_FIELD",
+          "method": "Lcom/bmwgroup/connected/core/services/accessory/bcl/BclWorker$2;->run()V",
+          "instruction_index": 177,
+          "classification": "CORRELATION"
+        }
+      ],
+      "consumer_kinds": [
+        "BRANCH_ON_FIELD_VALUE",
+        "FIELD_LOAD",
+        "ROUNDTRIP_FROM_FIELD",
+        "VALUE_PARAMETER_FROM_FIELD"
+      ],
+      "lineage": [
+        "BYTES → Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Packet;->decodeDestPort([B)S",
+        "REGISTER → FIELD_STORE mDestPort S",
+        "CONSUMER FIELD_LOAD @ Lcom/bmwgroup/connected/core/services/accessory/bcl/BclWorker$2;->run()V",
+        "CONSUMER VALUE_PARAMETER_FROM_FIELD @ Lcom/bmwgroup/connected/core/services/accessory/bcl/BclWorker$2;->run()V",
+        "CONSUMER FIELD_LOAD @ Lcom/bmwgroup/connected/core/services/accessory/bcl/BclWorker$2;->run()V",
+        "CONSUMER BRANCH_ON_FIELD_VALUE @ Lcom/bmwgroup/connected/core/services/accessory/bcl/BclWorker$2;->run()V",
+        "CONSUMER VALUE_PARAMETER_FROM_FIELD @ Lcom/bmwgroup/connected/core/services/accessory/bcl/BclWorker$2;->run()V",
+        "CONSUMER VALUE_PARAMETER_FROM_FIELD @ Lcom/bmwgroup/connected/core/services/accessory/bcl/BclWorker$2;->run()V",
+        "CONSUMER BRANCH_ON_FIELD_VALUE @ Lcom/bmwgroup/connected/core/services/accessory/bcl/BclWorker$2;->run()V",
+        "CONSUMER VALUE_PARAMETER_FROM_FIELD @ Lcom/bmwgroup/connected/core/services/accessory/bcl/BclWorker$2;->run()V"
+      ]
+    },
+    {
+      "value_id": "VALUE-V007",
+      "source_method": "Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection;->readPacket(Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Packet;)V",
+      "source_kind": "DECODE_RETURN_PRIMITIVE",
+      "source_api": "Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Packet;->decodeDataLen([B)S",
+      "primitive_type": "primitive",
+      "stored_field": "Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Packet;->mDataLen S",
+      "store_instruction_index": 24,
+      "classification": "FACT",
+      "protocol_semantics": "UNKNOWN",
+      "semantic_label": null,
+      "value_class": "V5_ROUNDTRIP",
+      "t6_stage": "T6.5_ROUNDTRIP",
+      "consumers": [
+        {
+          "kind": "FIELD_LOAD",
+          "method": "Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection;->readPacket(Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Packet;)V",
+          "instruction_index": 25,
+          "classification": "CORRELATION"
+        },
+        {
+          "kind": "BRANCH_ON_FIELD_VALUE",
+          "method": "Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection;->readPacket(Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Packet;)V",
+          "instruction_index": 26,
+          "classification": "CORRELATION"
+        },
+        {
+          "kind": "FIELD_LOAD",
+          "method": "Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection;->readPacket(Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Packet;)V",
+          "instruction_index": 27,
+          "classification": "CORRELATION"
+        },
+        {
+          "kind": "FIELD_LOAD",
+          "method": "Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection;->readPacket(Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Packet;)V",
+          "instruction_index": 31,
+          "classification": "CORRELATION"
+        },
+        {
+          "kind": "VALUE_PARAMETER_FROM_FIELD",
+          "method": "Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection;->readPacket(Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Packet;)V",
+          "instruction_index": 32,
+          "classification": "CORRELATION"
+        },
+        {
+          "kind": "FIELD_LOAD",
+          "method": "Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection;->readPacket(Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Packet;)V",
+          "instruction_index": 34,
+          "classification": "CORRELATION"
+        },
+        {
+          "kind": "BRANCH_ON_FIELD_VALUE",
+          "method": "Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection;->readPacket(Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Packet;)V",
+          "instruction_index": 35,
+          "classification": "CORRELATION"
+        },
+        {
+          "kind": "VALUE_PARAMETER_FROM_FIELD",
+          "method": "Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection;->readPacket(Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Packet;)V",
+          "instruction_index": 37,
+          "classification": "CORRELATION"
+        },
+        {
+          "kind": "VALUE_PARAMETER_FROM_FIELD",
+          "method": "Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection;->readPacket(Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Packet;)V",
+          "instruction_index": 41,
+          "classification": "CORRELATION"
+        },
+        {
+          "kind": "VALUE_PARAMETER_FROM_FIELD",
+          "method": "Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection;->readPacket(Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Packet;)V",
+          "instruction_index": 43,
+          "classification": "CORRELATION"
+        },
+        {
+          "kind": "FIELD_LOAD",
+          "method": "Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection;->readPacket(Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Packet;)V",
+          "instruction_index": 45,
+          "classification": "CORRELATION"
+        },
+        {
+          "kind": "VALUE_PARAMETER_FROM_FIELD",
+          "method": "Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection;->readPacket(Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Packet;)V",
+          "instruction_index": 46,
+          "classification": "CORRELATION"
+        },
+        {
+          "kind": "VALUE_PARAMETER_FROM_FIELD",
+          "method": "Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection;->readPacket(Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Packet;)V",
+          "instruction_index": 46,
+          "classification": "CORRELATION"
+        },
+        {
+          "kind": "VALUE_PARAMETER_FROM_FIELD",
+          "method": "Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection;->readPacket(Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Packet;)V",
+          "instruction_index": 49,
+          "classification": "CORRELATION"
+        },
+        {
+          "kind": "VALUE_PARAMETER_FROM_FIELD",
+          "method": "Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection;->readPacket(Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Packet;)V",
+          "instruction_index": 49,
+          "classification": "CORRELATION"
+        },
+        {
+          "kind": "VALUE_PARAMETER_FROM_FIELD",
+          "method": "Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection;->readPacket(Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Packet;)V",
+          "instruction_index": 51,
+          "classification": "CORRELATION"
+        },
+        {
+          "kind": "VALUE_PARAMETER_FROM_FIELD",
+          "method": "Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection;->readPacket(Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Packet;)V",
+          "instruction_index": 53,
+          "classification": "CORRELATION"
+        },
+        {
+          "kind": "FIELD_LOAD",
+          "method": "Lcom/bmwgroup/connected/core/services/accessory/bcl/BclWorker$2;->run()V",
+          "instruction_index": 44,
+          "classification": "CORRELATION"
+        },
+        {
+          "kind": "VALUE_PARAMETER_FROM_FIELD",
+          "method": "Lcom/bmwgroup/connected/core/services/accessory/bcl/BclWorker$2;->run()V",
+          "instruction_index": 45,
+          "classification": "CORRELATION"
+        },
+        {
+          "kind": "FIELD_LOAD",
+          "method": "Lcom/bmwgroup/connected/core/services/accessory/bcl/BclWorker$2;->run()V",
+          "instruction_index": 95,
+          "classification": "CORRELATION"
+        }
+      ],
+      "consumer_kinds": [
+        "BRANCH_ON_FIELD_VALUE",
+        "FIELD_LOAD",
+        "ROUNDTRIP_FROM_FIELD",
+        "VALUE_PARAMETER_FROM_FIELD"
+      ],
+      "lineage": [
+        "BYTES → Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Packet;->decodeDataLen([B)S",
+        "REGISTER → FIELD_STORE mDataLen S",
+        "CONSUMER FIELD_LOAD @ Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection;->readPacket(Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Packet;)V",
+        "CONSUMER BRANCH_ON_FIELD_VALUE @ Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection;->readPacket(Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Packet;)V",
+        "CONSUMER FIELD_LOAD @ Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection;->readPacket(Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Packet;)V",
+        "CONSUMER FIELD_LOAD @ Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection;->readPacket(Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Packet;)V",
+        "CONSUMER VALUE_PARAMETER_FROM_FIELD @ Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection;->readPacket(Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Packet;)V",
+        "CONSUMER FIELD_LOAD @ Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection;->readPacket(Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Packet;)V",
+        "CONSUMER BRANCH_ON_FIELD_VALUE @ Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection;->readPacket(Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Packet;)V",
+        "CONSUMER VALUE_PARAMETER_FROM_FIELD @ Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection;->readPacket(Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Packet;)V"
+      ]
+    },
+    {
+      "value_id": "VALUE-V008",
+      "source_method": "Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection;->readPacket(Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Packet;)V",
+      "source_kind": "DECODE_RETURN_PRIMITIVE",
+      "source_api": "Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Packet;->decodeDataLen([B)S",
+      "primitive_type": "primitive",
+      "stored_field": "Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Packet;->mData [B",
+      "store_instruction_index": 29,
+      "classification": "FACT",
+      "protocol_semantics": "UNKNOWN",
+      "semantic_label": null,
+      "value_class": "V5_ROUNDTRIP",
+      "t6_stage": "T6.5_ROUNDTRIP",
+      "consumers": [
+        {
+          "kind": "FIELD_LOAD",
+          "method": "Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection$2;->run()V",
+          "instruction_index": 10,
+          "classification": "CORRELATION"
+        },
+        {
+          "kind": "BRANCH_ON_FIELD_VALUE",
+          "method": "Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection$2;->run()V",
+          "instruction_index": 11,
+          "classification": "CORRELATION"
+        },
+        {
+          "kind": "VALUE_PARAMETER_FROM_FIELD",
+          "method": "Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection$2;->run()V",
+          "instruction_index": 31,
+          "classification": "CORRELATION"
+        },
+        {
+          "kind": "VALUE_PARAMETER_FROM_FIELD",
+          "method": "Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection$2;->run()V",
+          "instruction_index": 52,
+          "classification": "CORRELATION"
+        },
+        {
+          "kind": "FIELD_LOAD",
+          "method": "Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection$2;->run()V",
+          "instruction_index": 68,
+          "classification": "CORRELATION"
+        },
+        {
+          "kind": "VALUE_PARAMETER_FROM_FIELD",
+          "method": "Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection$2;->run()V",
+          "instruction_index": 69,
+          "classification": "CORRELATION"
+        },
+        {
+          "kind": "FIELD_LOAD",
+          "method": "Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection$2;->run()V",
+          "instruction_index": 87,
+          "classification": "CORRELATION"
+        },
+        {
+          "kind": "VALUE_PARAMETER_FROM_FIELD",
+          "method": "Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection$2;->run()V",
+          "instruction_index": 88,
+          "classification": "CORRELATION"
+        },
+        {
+          "kind": "FIELD_LOAD",
+          "method": "Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection$2;->run()V",
+          "instruction_index": 92,
+          "classification": "CORRELATION"
+        },
+        {
+          "kind": "VALUE_PARAMETER_FROM_FIELD",
+          "method": "Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection$2;->run()V",
+          "instruction_index": 93,
+          "classification": "CORRELATION"
+        },
+        {
+          "kind": "VALUE_PARAMETER_FROM_FIELD",
+          "method": "Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection$2;->run()V",
+          "instruction_index": 98,
+          "classification": "CORRELATION"
+        },
+        {
+          "kind": "VALUE_PARAMETER_FROM_FIELD",
+          "method": "Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection$2;->run()V",
+          "instruction_index": 100,
+          "classification": "CORRELATION"
+        },
+        {
+          "kind": "FIELD_LOAD",
+          "method": "Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection$2;->run()V",
+          "instruction_index": 102,
+          "classification": "CORRELATION"
+        },
+        {
+          "kind": "VALUE_PARAMETER_FROM_FIELD",
+          "method": "Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection$2;->run()V",
+          "instruction_index": 103,
+          "classification": "CORRELATION"
+        },
+        {
+          "kind": "VALUE_PARAMETER_FROM_FIELD",
+          "method": "Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection$2;->run()V",
+          "instruction_index": 105,
+          "classification": "CORRELATION"
+        },
+        {
+          "kind": "VALUE_PARAMETER_FROM_FIELD",
+          "method": "Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection$2;->run()V",
+          "instruction_index": 105,
+          "classification": "CORRELATION"
+        },
+        {
+          "kind": "VALUE_PARAMETER_FROM_FIELD",
+          "method": "Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection$2;->run()V",
+          "instruction_index": 107,
+          "classification": "CORRELATION"
+        },
+        {
+          "kind": "VALUE_PARAMETER_FROM_FIELD",
+          "method": "Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection$2;->run()V",
+          "instruction_index": 110,
+          "classification": "CORRELATION"
+        },
+        {
+          "kind": "FIELD_LOAD",
+          "method": "Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection;->readPacket(Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Packet;)V",
+          "instruction_index": 30,
+          "classification": "CORRELATION"
+        },
+        {
+          "kind": "VALUE_PARAMETER_FROM_FIELD",
+          "method": "Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection;->readPacket(Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Packet;)V",
+          "instruction_index": 32,
+          "classification": "CORRELATION"
+        }
+      ],
+      "consumer_kinds": [
+        "BRANCH_ON_FIELD_VALUE",
+        "FIELD_LOAD",
+        "ROUNDTRIP_FROM_FIELD",
+        "VALUE_PARAMETER_FROM_FIELD"
+      ],
+      "lineage": [
+        "BYTES → Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Packet;->decodeDataLen([B)S",
+        "REGISTER → FIELD_STORE mData [B",
+        "CONSUMER FIELD_LOAD @ Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection$2;->run()V",
+        "CONSUMER BRANCH_ON_FIELD_VALUE @ Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection$2;->run()V",
+        "CONSUMER VALUE_PARAMETER_FROM_FIELD @ Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection$2;->run()V",
+        "CONSUMER VALUE_PARAMETER_FROM_FIELD @ Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection$2;->run()V",
+        "CONSUMER FIELD_LOAD @ Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection$2;->run()V",
+        "CONSUMER VALUE_PARAMETER_FROM_FIELD @ Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection$2;->run()V",
+        "CONSUMER FIELD_LOAD @ Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection$2;->run()V",
+        "CONSUMER VALUE_PARAMETER_FROM_FIELD @ Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection$2;->run()V"
+      ]
+    },
+    {
+      "value_id": "VALUE-V009",
+      "source_method": "Lcom/bmwgroup/connected/core/services/accessory/bcl/BclWorker$2;->run()V",
+      "source_kind": "DECODE_RETURN_PRIMITIVE",
+      "source_api": "Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/DataAck;->decodeAcceptedBytes([B)I",
+      "primitive_type": "primitive",
+      "register": "v3",
+      "instruction_index": 136,
+      "stored_field": null,
+      "classification": "FACT",
+      "protocol_semantics": "UNKNOWN",
+      "semantic_label": null,
+      "value_class": "V3_CONTROL_FLOW",
+      "t6_stage": "T6.3_CONTROL_FLOW",
+      "consumers": [],
+      "consumer_kinds": [],
+      "lineage": [
+        "BYTES → Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/DataAck;->decodeAcceptedBytes([B)I",
+        "REGISTER v3",
+        "NO_FIELD_STORE"
+      ]
+    },
+    {
+      "value_id": "VALUE-V010",
+      "source_method": "Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Packet;->decodeCommand([B)Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Command;",
+      "source_kind": "DECODE_RETURN_PRIMITIVE",
+      "source_api": "Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Packet;->decodeSopOffset([B)I",
+      "primitive_type": "primitive",
+      "register": "v0",
+      "instruction_index": 0,
+      "stored_field": null,
+      "classification": "FACT",
+      "protocol_semantics": "UNKNOWN",
+      "semantic_label": null,
+      "value_class": "V2_CONSUMED",
+      "t6_stage": "T6.2_VALUE_CONSUMER",
+      "consumers": [],
+      "consumer_kinds": [],
+      "lineage": [
+        "BYTES → Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Packet;->decodeSopOffset([B)I",
+        "REGISTER v0",
+        "NO_FIELD_STORE"
+      ]
+    },
+    {
+      "value_id": "VALUE-V011",
+      "source_method": "Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Packet;->decodeCommand([B)Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Command;",
+      "source_kind": "BYTEBUFFER_GET",
+      "source_api": "Ljava/nio/ByteBuffer;->getShort()S",
+      "primitive_type": "short",
+      "register": "v0",
+      "instruction_index": 6,
+      "stored_field": null,
+      "classification": "FACT",
+      "protocol_semantics": "UNKNOWN",
+      "semantic_label": null,
+      "value_class": "V2_CONSUMED",
+      "t6_stage": "T6.2_VALUE_CONSUMER",
+      "consumers": [],
+      "consumer_kinds": [],
+      "lineage": [
+        "BYTES → Ljava/nio/ByteBuffer;->getShort()S",
+        "REGISTER v0",
+        "NO_FIELD_STORE"
+      ]
+    },
+    {
+      "value_id": "VALUE-V012",
+      "source_method": "Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Packet;->decodeDataLen([B)S",
+      "source_kind": "DECODE_RETURN_PRIMITIVE",
+      "source_api": "Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Packet;->decodeSopOffset([B)I",
+      "primitive_type": "primitive",
+      "register": "v0",
+      "instruction_index": 0,
+      "stored_field": null,
+      "classification": "FACT",
+      "protocol_semantics": "UNKNOWN",
+      "semantic_label": null,
+      "value_class": "V2_CONSUMED",
+      "t6_stage": "T6.2_VALUE_CONSUMER",
+      "consumers": [],
+      "consumer_kinds": [],
+      "lineage": [
+        "BYTES → Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Packet;->decodeSopOffset([B)I",
+        "REGISTER v0",
+        "NO_FIELD_STORE"
+      ]
+    },
+    {
+      "value_id": "VALUE-V013",
+      "source_method": "Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Packet;->decodeDataLen([B)S",
+      "source_kind": "BYTEBUFFER_GET",
+      "source_api": "Ljava/nio/ByteBuffer;->getShort()S",
+      "primitive_type": "short",
+      "register": "v0",
+      "instruction_index": 6,
+      "stored_field": null,
+      "classification": "FACT",
+      "protocol_semantics": "UNKNOWN",
+      "semantic_label": null,
+      "value_class": "V2_CONSUMED",
+      "t6_stage": "T6.2_VALUE_CONSUMER",
+      "consumers": [],
+      "consumer_kinds": [],
+      "lineage": [
+        "BYTES → Ljava/nio/ByteBuffer;->getShort()S",
+        "REGISTER v0",
+        "NO_FIELD_STORE"
+      ]
+    },
+    {
+      "value_id": "VALUE-V014",
+      "source_method": "Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Packet;->decodeDestPort([B)S",
+      "source_kind": "DECODE_RETURN_PRIMITIVE",
+      "source_api": "Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Packet;->decodeSopOffset([B)I",
+      "primitive_type": "primitive",
+      "register": "v0",
+      "instruction_index": 0,
+      "stored_field": null,
+      "classification": "FACT",
+      "protocol_semantics": "UNKNOWN",
+      "semantic_label": null,
+      "value_class": "V2_CONSUMED",
+      "t6_stage": "T6.2_VALUE_CONSUMER",
+      "consumers": [],
+      "consumer_kinds": [],
+      "lineage": [
+        "BYTES → Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Packet;->decodeSopOffset([B)I",
+        "REGISTER v0",
+        "NO_FIELD_STORE"
+      ]
+    },
+    {
+      "value_id": "VALUE-V015",
+      "source_method": "Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Packet;->decodeDestPort([B)S",
+      "source_kind": "BYTEBUFFER_GET",
+      "source_api": "Ljava/nio/ByteBuffer;->getShort()S",
+      "primitive_type": "short",
+      "register": "v0",
+      "instruction_index": 6,
+      "stored_field": null,
+      "classification": "FACT",
+      "protocol_semantics": "UNKNOWN",
+      "semantic_label": null,
+      "value_class": "V2_CONSUMED",
+      "t6_stage": "T6.2_VALUE_CONSUMER",
+      "consumers": [],
+      "consumer_kinds": [],
+      "lineage": [
+        "BYTES → Ljava/nio/ByteBuffer;->getShort()S",
+        "REGISTER v0",
+        "NO_FIELD_STORE"
+      ]
+    },
+    {
+      "value_id": "VALUE-V016",
+      "source_method": "Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Packet;->decodeSopOffset([B)I",
+      "source_kind": "BYTEBUFFER_GET",
+      "source_api": "Ljava/nio/ByteBuffer;->getInt()I",
+      "primitive_type": "int",
+      "register": "v2",
+      "instruction_index": 4,
+      "stored_field": null,
+      "classification": "FACT",
+      "protocol_semantics": "UNKNOWN",
+      "semantic_label": null,
+      "value_class": "V3_CONTROL_FLOW",
+      "t6_stage": "T6.3_CONTROL_FLOW",
+      "consumers": [],
+      "consumer_kinds": [],
+      "lineage": [
+        "BYTES → Ljava/nio/ByteBuffer;->getInt()I",
+        "REGISTER v2",
+        "NO_FIELD_STORE"
+      ]
+    },
+    {
+      "value_id": "VALUE-V017",
+      "source_method": "Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Packet;->decodeSrcPort([B)S",
+      "source_kind": "DECODE_RETURN_PRIMITIVE",
+      "source_api": "Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Packet;->decodeSopOffset([B)I",
+      "primitive_type": "primitive",
+      "register": "v0",
+      "instruction_index": 0,
+      "stored_field": null,
+      "classification": "FACT",
+      "protocol_semantics": "UNKNOWN",
+      "semantic_label": null,
+      "value_class": "V2_CONSUMED",
+      "t6_stage": "T6.2_VALUE_CONSUMER",
+      "consumers": [],
+      "consumer_kinds": [],
+      "lineage": [
+        "BYTES → Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Packet;->decodeSopOffset([B)I",
+        "REGISTER v0",
+        "NO_FIELD_STORE"
+      ]
+    },
+    {
+      "value_id": "VALUE-V018",
+      "source_method": "Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Packet;->decodeSrcPort([B)S",
+      "source_kind": "BYTEBUFFER_GET",
+      "source_api": "Ljava/nio/ByteBuffer;->getShort()S",
+      "primitive_type": "short",
+      "register": "v0",
+      "instruction_index": 6,
+      "stored_field": null,
+      "classification": "FACT",
+      "protocol_semantics": "UNKNOWN",
+      "semantic_label": null,
+      "value_class": "V2_CONSUMED",
+      "t6_stage": "T6.2_VALUE_CONSUMER",
+      "consumers": [],
+      "consumer_kinds": [],
+      "lineage": [
+        "BYTES → Ljava/nio/ByteBuffer;->getShort()S",
+        "REGISTER v0",
+        "NO_FIELD_STORE"
+      ]
+    },
+    {
+      "value_id": "VALUE-V019",
+      "source_method": "Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Packet;->getPacketInfo([B)Ljava/lang/String;",
+      "source_kind": "DECODE_RETURN_PRIMITIVE",
+      "source_api": "Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Packet;->decodeSopOffset([B)I",
+      "primitive_type": "primitive",
+      "register": "v3",
+      "instruction_index": 4,
+      "stored_field": null,
+      "classification": "FACT",
+      "protocol_semantics": "UNKNOWN",
+      "semantic_label": null,
+      "value_class": "V2_CONSUMED",
+      "t6_stage": "T6.2_VALUE_CONSUMER",
+      "consumers": [],
+      "consumer_kinds": [],
+      "lineage": [
+        "BYTES → Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Packet;->decodeSopOffset([B)I",
+        "REGISTER v3",
+        "NO_FIELD_STORE"
+      ]
+    },
+    {
+      "value_id": "VALUE-V020",
+      "source_method": "Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Packet;->getPacketInfo([B)Ljava/lang/String;",
+      "source_kind": "DECODE_RETURN_OBJECT",
+      "source_api": "Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Packet;->decodeCommand([B)Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Command",
+      "primitive_type": "object",
+      "register": "v3",
+      "instruction_index": 10,
+      "stored_field": null,
+      "classification": "FACT",
+      "protocol_semantics": "UNKNOWN",
+      "semantic_label": null,
+      "value_class": "V2_CONSUMED",
+      "t6_stage": "T6.2_VALUE_CONSUMER",
+      "consumers": [],
+      "consumer_kinds": [],
+      "lineage": [
+        "BYTES → Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Packet;->decodeCommand([B)Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Command",
+        "REGISTER v3",
+        "NO_FIELD_STORE"
+      ]
+    },
+    {
+      "value_id": "VALUE-V021",
+      "source_method": "Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Packet;->getPacketInfo([B)Ljava/lang/String;",
+      "source_kind": "DECODE_RETURN_PRIMITIVE",
+      "source_api": "Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Packet;->decodeSrcPort([B)S",
+      "primitive_type": "primitive",
+      "register": "v3",
+      "instruction_index": 16,
+      "stored_field": null,
+      "classification": "FACT",
+      "protocol_semantics": "UNKNOWN",
+      "semantic_label": null,
+      "value_class": "V2_CONSUMED",
+      "t6_stage": "T6.2_VALUE_CONSUMER",
+      "consumers": [],
+      "consumer_kinds": [],
+      "lineage": [
+        "BYTES → Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Packet;->decodeSrcPort([B)S",
+        "REGISTER v3",
+        "NO_FIELD_STORE"
+      ]
+    },
+    {
+      "value_id": "VALUE-V022",
+      "source_method": "Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Packet;->getPacketInfo([B)Ljava/lang/String;",
+      "source_kind": "DECODE_RETURN_PRIMITIVE",
+      "source_api": "Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Packet;->decodeDestPort([B)S",
+      "primitive_type": "primitive",
+      "register": "v3",
+      "instruction_index": 22,
+      "stored_field": null,
+      "classification": "FACT",
+      "protocol_semantics": "UNKNOWN",
+      "semantic_label": null,
+      "value_class": "V2_CONSUMED",
+      "t6_stage": "T6.2_VALUE_CONSUMER",
+      "consumers": [],
+      "consumer_kinds": [],
+      "lineage": [
+        "BYTES → Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Packet;->decodeDestPort([B)S",
+        "REGISTER v3",
+        "NO_FIELD_STORE"
+      ]
+    },
+    {
+      "value_id": "VALUE-V023",
+      "source_method": "Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Packet;->getPacketInfo([B)Ljava/lang/String;",
+      "source_kind": "DECODE_RETURN_PRIMITIVE",
+      "source_api": "Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Packet;->decodeDataLen([B)S",
+      "primitive_type": "primitive",
+      "register": "v3",
+      "instruction_index": 28,
+      "stored_field": null,
+      "classification": "FACT",
+      "protocol_semantics": "UNKNOWN",
+      "semantic_label": null,
+      "value_class": "V2_CONSUMED",
+      "t6_stage": "T6.2_VALUE_CONSUMER",
+      "consumers": [],
+      "consumer_kinds": [],
+      "lineage": [
+        "BYTES → Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Packet;->decodeDataLen([B)S",
+        "REGISTER v3",
+        "NO_FIELD_STORE"
+      ]
+    },
+    {
+      "value_id": "VALUE-V024",
+      "source_method": "Lcom/bmwgroup/connected/sdk/internal/connectivity/transport/DeviceManagerLoginThread;->run()V",
+      "source_kind": "ARRAY_LOAD",
+      "source_api": "aget-byte",
+      "primitive_type": "byte",
+      "register": "v5",
+      "instruction_index": 29,
+      "stored_field": null,
+      "classification": "FACT",
+      "protocol_semantics": "UNKNOWN",
+      "semantic_label": null,
+      "value_class": "V0_SOURCE_ONLY",
+      "t6_stage": "T6.0_STRUCTURED_VALUE",
+      "consumers": [],
+      "consumer_kinds": [],
+      "lineage": [
+        "BYTES → aget-byte",
+        "REGISTER v5",
+        "NO_FIELD_STORE"
+      ]
+    }
+  ],
+  "stored_fields": [
+    "Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection;->mHuBufsize I",
+    "Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection;->mInstanceId S",
+    "Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection;->mVersion S",
+    "Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Packet;->mCommand Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Command;",
+    "Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Packet;->mData [B",
+    "Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Packet;->mDataLen S",
+    "Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Packet;->mDestPort S",
+    "Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Packet;->mSrcPort S"
+  ],
+  "field_consumers_sample": [
+    {
+      "kind": "FIELD_LOAD",
+      "field": "Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Packet;->mData [B",
+      "field_short": "mData [B",
+      "register": "v3",
+      "method": "Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection$2;->run()V",
+      "instruction_index": 10,
+      "instruction": "iget-object v3, v2, Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Packet;->mData [B",
+      "classification": "CORRELATION",
+      "protocol_semantics": "UNKNOWN",
+      "note": "Load of field descriptor previously stored from byte-derived value; same instance not proven",
+      "t6_stage": "T6.2_VALUE_CONSUMER"
+    },
+    {
+      "kind": "BRANCH_ON_FIELD_VALUE",
+      "opcode": "if-nez",
+      "registers": [
+        "v3"
+      ],
+      "fields": [
+        "Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Packet;->mData [B"
+      ],
+      "method": "Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection$2;->run()V",
+      "instruction_index": 11,
+      "instruction": "if-nez v3, +041h",
+      "classification": "CORRELATION",
+      "protocol_semantics": "UNKNOWN",
+      "note": "Branch on loaded field previously associated with byte-derived store",
+      "t6_stage": "T6.3_CONTROL_FLOW"
+    },
+    {
+      "kind": "VALUE_PARAMETER_FROM_FIELD",
+      "field": "Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Packet;->mData [B",
+      "arg_position": 2,
+      "callee": "Lcom/bmwgroup/connected/internal/util/Logger;->e(Ljava/lang/Throwable; Ljava/lang/String; [Ljava/lang/Object;)V",
+      "method": "Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection$2;->run()V",
+      "instruction_index": 31,
+      "classification": "CORRELATION",
+      "protocol_semantics": "UNKNOWN",
+      "t6_stage": "T6.2_VALUE_CONSUMER"
+    },
+    {
+      "kind": "VALUE_PARAMETER_FROM_FIELD",
+      "field": "Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Packet;->mData [B",
+      "arg_position": 0,
+      "callee": "Lcom/bmwgroup/connected/internal/util/Logger;->d(Ljava/lang/String; [Ljava/lang/Object;)V",
+      "method": "Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection$2;->run()V",
+      "instruction_index": 52,
+      "classification": "CORRELATION",
+      "protocol_semantics": "UNKNOWN",
+      "t6_stage": "T6.2_VALUE_CONSUMER"
+    },
+    {
+      "kind": "FIELD_LOAD",
+      "field": "Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Packet;->mCommand Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Command;",
+      "field_short": "mCommand Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Command;",
+      "register": "v3",
+      "method": "Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection$2;->run()V",
+      "instruction_index": 53,
+      "instruction": "iget-object v3, v2, Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Packet;->mCommand Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Command;",
+      "classification": "CORRELATION",
+      "protocol_semantics": "UNKNOWN",
+      "note": "Load of field descriptor previously stored from byte-derived value; same instance not proven",
+      "t6_stage": "T6.2_VALUE_CONSUMER"
+    },
+    {
+      "kind": "BRANCH_ON_FIELD_VALUE",
+      "opcode": "if-eq",
+      "registers": [
+        "v3"
+      ],
+      "fields": [
+        "Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Packet;->mCommand Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Command;"
+      ],
+      "method": "Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection$2;->run()V",
+      "instruction_index": 55,
+      "instruction": "if-eq v3, v4, +018h",
+      "classification": "CORRELATION",
+      "protocol_semantics": "UNKNOWN",
+      "note": "Branch on loaded field previously associated with byte-derived store",
+      "t6_stage": "T6.3_CONTROL_FLOW"
+    },
+    {
+      "kind": "FIELD_LOAD",
+      "field": "Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Packet;->mCommand Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Command;",
+      "field_short": "mCommand Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Command;",
+      "register": "v3",
+      "method": "Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection$2;->run()V",
+      "instruction_index": 56,
+      "instruction": "iget-object v3, v2, Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Packet;->mCommand Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Command;",
+      "classification": "CORRELATION",
+      "protocol_semantics": "UNKNOWN",
+      "note": "Load of field descriptor previously stored from byte-derived value; same instance not proven",
+      "t6_stage": "T6.2_VALUE_CONSUMER"
+    },
+    {
+      "kind": "BRANCH_ON_FIELD_VALUE",
+      "opcode": "if-eqz",
+      "registers": [
+        "v3"
+      ],
+      "fields": [
+        "Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Packet;->mCommand Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Command;"
+      ],
+      "method": "Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection$2;->run()V",
+      "instruction_index": 57,
+      "instruction": "if-eqz v3, -05fh",
+      "classification": "CORRELATION",
+      "protocol_semantics": "UNKNOWN",
+      "note": "Branch on loaded field previously associated with byte-derived store",
+      "t6_stage": "T6.3_CONTROL_FLOW"
+    },
+    {
+      "kind": "FIELD_LOAD",
+      "field": "Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Packet;->mCommand Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Command;",
+      "field_short": "mCommand Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Command;",
+      "register": "v6",
+      "method": "Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection$2;->run()V",
+      "instruction_index": 61,
+      "instruction": "iget-object v6, v2, Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Packet;->mCommand Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Command;",
+      "classification": "CORRELATION",
+      "protocol_semantics": "UNKNOWN",
+      "note": "Load of field descriptor previously stored from byte-derived value; same instance not proven",
+      "t6_stage": "T6.2_VALUE_CONSUMER"
+    },
+    {
+      "kind": "VALUE_PARAMETER_FROM_FIELD",
+      "field": "Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Packet;->mCommand Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Command;",
+      "arg_position": 0,
+      "callee": "Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Command;->toString()Ljava/lang/String",
+      "method": "Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection$2;->run()V",
+      "instruction_index": 62,
+      "classification": "CORRELATION",
+      "protocol_semantics": "UNKNOWN",
+      "t6_stage": "T6.2_VALUE_CONSUMER"
+    },
+    {
+      "kind": "VALUE_PARAMETER_FROM_FIELD",
+      "field": "Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Packet;->mCommand Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Command;",
+      "arg_position": 0,
+      "callee": "Lcom/bmwgroup/connected/internal/util/Logger;->e(Ljava/lang/String; [Ljava/lang/Object;)V",
+      "method": "Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection$2;->run()V",
+      "instruction_index": 65,
+      "classification": "CORRELATION",
+      "protocol_semantics": "UNKNOWN",
+      "t6_stage": "T6.2_VALUE_CONSUMER"
+    },
+    {
+      "kind": "FIELD_LOAD",
+      "field": "Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Packet;->mData [B",
+      "field_short": "mData [B",
+      "register": "v4",
+      "method": "Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection$2;->run()V",
+      "instruction_index": 68,
+      "instruction": "iget-object v4, v2, Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Packet;->mData [B",
+      "classification": "CORRELATION",
+      "protocol_semantics": "UNKNOWN",
+      "note": "Load of field descriptor previously stored from byte-derived value; same instance not proven",
+      "t6_stage": "T6.2_VALUE_CONSUMER"
+    },
+    {
+      "kind": "VALUE_PARAMETER_FROM_FIELD",
+      "field": "Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Packet;->mData [B",
+      "arg_position": 0,
+      "callee": "Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Info;->decodeVersion([B)S",
+      "method": "Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection$2;->run()V",
+      "instruction_index": 69,
+      "classification": "CORRELATION",
+      "protocol_semantics": "UNKNOWN",
+      "t6_stage": "T6.2_VALUE_CONSUMER"
+    },
+    {
+      "kind": "STATE_MUTATION_FROM_FIELD",
+      "source_field": "Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Packet;->mData [B",
+      "dest_field": "Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection;->mVersion S",
+      "method": "Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection$2;->run()V",
+      "instruction_index": 71,
+      "instruction": "iput-short v4, v3, Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection;->mVersion S",
+      "classification": "CORRELATION",
+      "protocol_semantics": "UNKNOWN",
+      "t6_stage": "T6.4_APPLICATION_ACTION"
+    },
+    {
+      "kind": "FIELD_LOAD",
+      "field": "Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection;->mVersion S",
+      "field_short": "mVersion S",
+      "register": "v3",
+      "method": "Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection$2;->run()V",
+      "instruction_index": 75,
+      "instruction": "iget-short v3, v3, Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection;->mVersion S",
+      "classification": "CORRELATION",
+      "protocol_semantics": "UNKNOWN",
+      "note": "Load of field descriptor previously stored from byte-derived value; same instance not proven",
+      "t6_stage": "T6.2_VALUE_CONSUMER"
+    },
+    {
+      "kind": "BRANCH_ON_FIELD_VALUE",
+      "opcode": "if-le",
+      "registers": [
+        "v3"
+      ],
+      "fields": [
+        "Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection;->mVersion S"
+      ],
+      "method": "Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection$2;->run()V",
+      "instruction_index": 76,
+      "instruction": "if-le v3, v7, +006h",
+      "classification": "CORRELATION",
+      "protocol_semantics": "UNKNOWN",
+      "note": "Branch on loaded field previously associated with byte-derived store",
+      "t6_stage": "T6.3_CONTROL_FLOW"
+    },
+    {
+      "kind": "FIELD_LOAD",
+      "field": "Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection;->mVersion S",
+      "field_short": "mVersion S",
+      "register": "v3",
+      "method": "Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection$2;->run()V",
+      "instruction_index": 80,
+      "instruction": "iget-short v3, v3, Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection;->mVersion S",
+      "classification": "CORRELATION",
+      "protocol_semantics": "UNKNOWN",
+      "note": "Load of field descriptor previously stored from byte-derived value; same instance not proven",
+      "t6_stage": "T6.2_VALUE_CONSUMER"
+    },
+    {
+      "kind": "BRANCH_ON_FIELD_VALUE",
+      "opcode": "if-ne",
+      "registers": [
+        "v3"
+      ],
+      "fields": [
+        "Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection;->mVersion S"
+      ],
+      "method": "Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection$2;->run()V",
+      "instruction_index": 81,
+      "instruction": "if-ne v3, v7, +00ah",
+      "classification": "CORRELATION",
+      "protocol_semantics": "UNKNOWN",
+      "note": "Branch on loaded field previously associated with byte-derived store",
+      "t6_stage": "T6.3_CONTROL_FLOW"
+    },
+    {
+      "kind": "FIELD_LOAD",
+      "field": "Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Packet;->mSrcPort S",
+      "field_short": "mSrcPort S",
+      "register": "v4",
+      "method": "Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection$2;->run()V",
+      "instruction_index": 83,
+      "instruction": "iget-short v4, v2, Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Packet;->mSrcPort S",
+      "classification": "CORRELATION",
+      "protocol_semantics": "UNKNOWN",
+      "note": "Load of field descriptor previously stored from byte-derived value; same instance not proven",
+      "t6_stage": "T6.2_VALUE_CONSUMER"
+    },
+    {
+      "kind": "BRANCH_ON_FIELD_VALUE",
+      "opcode": "if-ne",
+      "registers": [
+        "v4"
+      ],
+      "fields": [
+        "Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Packet;->mSrcPort S"
+      ],
+      "method": "Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection$2;->run()V",
+      "instruction_index": 84,
+      "instruction": "if-ne v4, v0, +04fh",
+      "classification": "CORRELATION",
+      "protocol_semantics": "UNKNOWN",
+      "note": "Branch on loaded field previously associated with byte-derived store",
+      "t6_stage": "T6.3_CONTROL_FLOW"
+    },
+    {
+      "kind": "FIELD_LOAD",
+      "field": "Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Packet;->mData [B",
+      "field_short": "mData [B",
+      "register": "v3",
+      "method": "Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection$2;->run()V",
+      "instruction_index": 87,
+      "instruction": "iget-object v3, v2, Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Packet;->mData [B",
+      "classification": "CORRELATION",
+      "protocol_semantics": "UNKNOWN",
+      "note": "Load of field descriptor previously stored from byte-derived value; same instance not proven",
+      "t6_stage": "T6.2_VALUE_CONSUMER"
+    },
+    {
+      "kind": "VALUE_PARAMETER_FROM_FIELD",
+      "field": "Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Packet;->mData [B",
+      "arg_position": 0,
+      "callee": "Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Info;->decodeInstanceId([B)S",
+      "method": "Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection$2;->run()V",
+      "instruction_index": 88,
+      "classification": "CORRELATION",
+      "protocol_semantics": "UNKNOWN",
+      "t6_stage": "T6.2_VALUE_CONSUMER"
+    },
+    {
+      "kind": "STATE_MUTATION_FROM_FIELD",
+      "source_field": "Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Packet;->mData [B",
+      "dest_field": "Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection;->mInstanceId S",
+      "method": "Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection$2;->run()V",
+      "instruction_index": 90,
+      "instruction": "iput-short v3, v0, Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection;->mInstanceId S",
+      "classification": "CORRELATION",
+      "protocol_semantics": "UNKNOWN",
+      "t6_stage": "T6.4_APPLICATION_ACTION"
+    },
+    {
+      "kind": "FIELD_LOAD",
+      "field": "Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Packet;->mData [B",
+      "field_short": "mData [B",
+      "register": "v3",
+      "method": "Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection$2;->run()V",
+      "instruction_index": 92,
+      "instruction": "iget-object v3, v2, Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Packet;->mData [B",
+      "classification": "CORRELATION",
+      "protocol_semantics": "UNKNOWN",
+      "note": "Load of field descriptor previously stored from byte-derived value; same instance not proven",
+      "t6_stage": "T6.2_VALUE_CONSUMER"
+    },
+    {
+      "kind": "VALUE_PARAMETER_FROM_FIELD",
+      "field": "Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Packet;->mData [B",
+      "arg_position": 0,
+      "callee": "Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Info;->decodeBuffersize([B)I",
+      "method": "Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection$2;->run()V",
+      "instruction_index": 93,
+      "classification": "CORRELATION",
+      "protocol_semantics": "UNKNOWN",
+      "t6_stage": "T6.2_VALUE_CONSUMER"
+    },
+    {
+      "kind": "STATE_MUTATION_FROM_FIELD",
+      "source_field": "Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Packet;->mData [B",
+      "dest_field": "Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection;->mHuBufsize I",
+      "method": "Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection$2;->run()V",
+      "instruction_index": 95,
+      "instruction": "iput v3, v0, Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection;->mHuBufsize I",
+      "classification": "CORRELATION",
+      "protocol_semantics": "UNKNOWN",
+      "t6_stage": "T6.4_APPLICATION_ACTION"
+    },
+    {
+      "kind": "VALUE_PARAMETER_FROM_FIELD",
+      "field": "Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Packet;->mData [B",
+      "arg_position": 0,
+      "callee": "Ljava/lang/StringBuilder;-><init>()V",
+      "method": "Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection$2;->run()V",
+      "instruction_index": 98,
+      "classification": "CORRELATION",
+      "protocol_semantics": "UNKNOWN",
+      "t6_stage": "T6.2_VALUE_CONSUMER"
+    },
+    {
+      "kind": "VALUE_PARAMETER_FROM_FIELD",
+      "field": "Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Packet;->mData [B",
+      "arg_position": 0,
+      "callee": "Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder",
+      "method": "Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection$2;->run()V",
+      "instruction_index": 100,
+      "classification": "CORRELATION",
+      "protocol_semantics": "UNKNOWN",
+      "t6_stage": "T6.2_VALUE_CONSUMER"
+    },
+    {
+      "kind": "VALUE_PARAMETER_FROM_FIELD",
+      "field": "Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Packet;->mSrcPort S",
+      "arg_position": 1,
+      "callee": "Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder",
+      "method": "Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection$2;->run()V",
+      "instruction_index": 100,
+      "classification": "CORRELATION",
+      "protocol_semantics": "UNKNOWN",
+      "t6_stage": "T6.2_VALUE_CONSUMER"
+    },
+    {
+      "kind": "FIELD_LOAD",
+      "field": "Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Packet;->mData [B",
+      "field_short": "mData [B",
+      "register": "v2",
+      "method": "Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection$2;->run()V",
+      "instruction_index": 102,
+      "instruction": "iget-object v2, v2, Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Packet;->mData [B",
+      "classification": "CORRELATION",
+      "protocol_semantics": "UNKNOWN",
+      "note": "Load of field descriptor previously stored from byte-derived value; same instance not proven",
+      "t6_stage": "T6.2_VALUE_CONSUMER"
+    },
+    {
+      "kind": "VALUE_PARAMETER_FROM_FIELD",
+      "field": "Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Packet;->mData [B",
+      "arg_position": 0,
+      "callee": "Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Info;->getPacketInfo([B)Ljava/lang/String",
+      "method": "Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection$2;->run()V",
+      "instruction_index": 103,
+      "classification": "CORRELATION",
+      "protocol_semantics": "UNKNOWN",
+      "t6_stage": "T6.2_VALUE_CONSUMER"
+    },
+    {
+      "kind": "VALUE_PARAMETER_FROM_FIELD",
+      "field": "Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Packet;->mData [B",
+      "arg_position": 0,
+      "callee": "Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder",
+      "method": "Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection$2;->run()V",
+      "instruction_index": 105,
+      "classification": "CORRELATION",
+      "protocol_semantics": "UNKNOWN",
+      "t6_stage": "T6.2_VALUE_CONSUMER"
+    },
+    {
+      "kind": "VALUE_PARAMETER_FROM_FIELD",
+      "field": "Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Packet;->mData [B",
+      "arg_position": 1,
+      "callee": "Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder",
+      "method": "Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection$2;->run()V",
+      "instruction_index": 105,
+      "classification": "CORRELATION",
+      "protocol_semantics": "UNKNOWN",
+      "t6_stage": "T6.2_VALUE_CONSUMER"
+    },
+    {
+      "kind": "VALUE_PARAMETER_FROM_FIELD",
+      "field": "Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Packet;->mData [B",
+      "arg_position": 0,
+      "callee": "Ljava/lang/StringBuilder;->toString()Ljava/lang/String",
+      "method": "Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection$2;->run()V",
+      "instruction_index": 107,
+      "classification": "CORRELATION",
+      "protocol_semantics": "UNKNOWN",
+      "t6_stage": "T6.2_VALUE_CONSUMER"
+    },
+    {
+      "kind": "VALUE_PARAMETER_FROM_FIELD",
+      "field": "Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Packet;->mData [B",
+      "arg_position": 1,
+      "callee": "Lcom/bmwgroup/connected/internal/util/Logger;->d(Ljava/lang/String; [Ljava/lang/Object;)V",
+      "method": "Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection$2;->run()V",
+      "instruction_index": 110,
+      "classification": "CORRELATION",
+      "protocol_semantics": "UNKNOWN",
+      "t6_stage": "T6.2_VALUE_CONSUMER"
+    },
+    {
+      "kind": "STATE_MUTATION_FROM_FIELD",
+      "source_field": "Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Packet;->mData [B",
+      "dest_field": "Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection;->mHandshakeThread Ljava/lang/Thread;",
+      "method": "Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection$2;->run()V",
+      "instruction_index": 119,
+      "instruction": "iput-object v2, v0, Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection;->mHandshakeThread Ljava/lang/Thread;",
+      "classification": "CORRELATION",
+      "protocol_semantics": "UNKNOWN",
+      "t6_stage": "T6.4_APPLICATION_ACTION"
+    },
+    {
+      "kind": "FIELD_LOAD",
+      "field": "Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Packet;->mCommand Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Command;",
+      "field_short": "mCommand Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Command;",
+      "register": "v5",
+      "method": "Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection;->readAndCheckPacket(S S)V",
+      "instruction_index": 31,
+      "instruction": "iget-object v5, v0, Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Packet;->mCommand Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Command;",
+      "classification": "CORRELATION",
+      "protocol_semantics": "UNKNOWN",
+      "note": "Load of field descriptor previously stored from byte-derived value; same instance not proven",
+      "t6_stage": "T6.2_VALUE_CONSUMER"
+    },
+    {
+      "kind": "FIELD_LOAD",
+      "field": "Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Packet;->mCommand Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Command;",
+      "field_short": "mCommand Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Command;",
+      "register": "v0",
+      "method": "Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection;->readAndCheckPacket(S S)V",
+      "instruction_index": 42,
+      "instruction": "iget-object v0, v0, Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Packet;->mCommand Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Command;",
+      "classification": "CORRELATION",
+      "protocol_semantics": "UNKNOWN",
+      "note": "Load of field descriptor previously stored from byte-derived value; same instance not proven",
+      "t6_stage": "T6.2_VALUE_CONSUMER"
+    },
+    {
+      "kind": "BRANCH_ON_FIELD_VALUE",
+      "opcode": "if-ne",
+      "registers": [
+        "v0"
+      ],
+      "fields": [
+        "Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Packet;->mCommand Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Command;"
+      ],
+      "method": "Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection;->readAndCheckPacket(S S)V",
+      "instruction_index": 44,
+      "instruction": "if-ne v0, v1, -050h",
+      "classification": "CORRELATION",
+      "protocol_semantics": "UNKNOWN",
+      "note": "Branch on loaded field previously associated with byte-derived store",
+      "t6_stage": "T6.3_CONTROL_FLOW"
+    },
+    {
+      "kind": "STATE_MUTATION_FROM_FIELD",
+      "source_field": "Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Packet;->mCommand Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Command;",
+      "dest_field": "Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection;->mFastFollowerDetected Z",
+      "method": "Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection;->readAndCheckPacket(S S)V",
+      "instruction_index": 46,
+      "instruction": "iput-boolean v0, v7, Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection;->mFastFollowerDetected Z",
+      "classification": "CORRELATION",
+      "protocol_semantics": "UNKNOWN",
+      "t6_stage": "T6.4_APPLICATION_ACTION"
+    },
+    {
+      "kind": "VALUE_PARAMETER_FROM_FIELD",
+      "field": "Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Packet;->mCommand Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Command;",
+      "arg_position": 0,
+      "callee": "Ljava/lang/Object;->notifyAll()V",
+      "method": "Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection;->readAndCheckPacket(S S)V",
+      "instruction_index": 50,
+      "classification": "CORRELATION",
+      "protocol_semantics": "UNKNOWN",
+      "t6_stage": "T6.2_VALUE_CONSUMER"
+    },
+    {
+      "kind": "VALUE_PARAMETER_FROM_FIELD",
+      "field": "Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Packet;->mCommand Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Command;",
+      "arg_position": 1,
+      "callee": "Lcom/bmwgroup/connected/internal/util/Logger;->w(Ljava/lang/Throwable; Ljava/lang/String; [Ljava/lang/Object;)V",
+      "method": "Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection;->readAndCheckPacket(S S)V",
+      "instruction_index": 60,
+      "classification": "CORRELATION",
+      "protocol_semantics": "UNKNOWN",
+      "t6_stage": "T6.2_VALUE_CONSUMER"
+    },
+    {
+      "kind": "FIELD_LOAD",
+      "field": "Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection;->mVersion S",
+      "field_short": "mVersion S",
+      "register": "v1",
+      "method": "Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection;->write([B Z)V",
+      "instruction_index": 4,
+      "instruction": "iget-short v1, v10, Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection;->mVersion S",
+      "classification": "CORRELATION",
+      "protocol_semantics": "UNKNOWN",
+      "note": "Load of field descriptor previously stored from byte-derived value; same instance not proven",
+      "t6_stage": "T6.2_VALUE_CONSUMER"
+    },
+    {
+      "kind": "FIELD_LOAD",
+      "field": "Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection;->mVersion S",
+      "field_short": "mVersion S",
+      "register": "v3",
+      "method": "Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection;->write([B Z)V",
+      "instruction_index": 10,
+      "instruction": "iget-short v3, v10, Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection;->mVersion S",
+      "classification": "CORRELATION",
+      "protocol_semantics": "UNKNOWN",
+      "note": "Load of field descriptor previously stored from byte-derived value; same instance not proven",
+      "t6_stage": "T6.2_VALUE_CONSUMER"
+    },
+    {
+      "kind": "BRANCH_ON_FIELD_VALUE",
+      "opcode": "if-eq",
+      "registers": [
+        "v3"
+      ],
+      "fields": [
+        "Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection;->mVersion S"
+      ],
+      "method": "Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection;->write([B Z)V",
+      "instruction_index": 13,
+      "instruction": "if-eq v2, v3, +048h",
+      "classification": "CORRELATION",
+      "protocol_semantics": "UNKNOWN",
+      "note": "Branch on loaded field previously associated with byte-derived store",
+      "t6_stage": "T6.3_CONTROL_FLOW"
+    },
+    {
+      "kind": "FIELD_LOAD",
+      "field": "Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection;->mVersion S",
+      "field_short": "mVersion S",
+      "register": "v5",
+      "method": "Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection;->write([B Z)V",
+      "instruction_index": 19,
+      "instruction": "iget-short v5, v10, Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection;->mVersion S",
+      "classification": "CORRELATION",
+      "protocol_semantics": "UNKNOWN",
+      "note": "Load of field descriptor previously stored from byte-derived value; same instance not proven",
+      "t6_stage": "T6.2_VALUE_CONSUMER"
+    },
+    {
+      "kind": "VALUE_PARAMETER_FROM_FIELD",
+      "field": "Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection;->mVersion S",
+      "arg_position": 0,
+      "callee": "Ljava/lang/Object;->wait(J)V",
+      "method": "Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection;->write([B Z)V",
+      "instruction_index": 28,
+      "classification": "CORRELATION",
+      "protocol_semantics": "UNKNOWN",
+      "t6_stage": "T6.2_VALUE_CONSUMER"
+    },
+    {
+      "kind": "VALUE_PARAMETER_FROM_FIELD",
+      "field": "Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection;->mVersion S",
+      "arg_position": 2,
+      "callee": "Ljava/lang/Object;->wait(J)V",
+      "method": "Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection;->write([B Z)V",
+      "instruction_index": 28,
+      "classification": "CORRELATION",
+      "protocol_semantics": "UNKNOWN",
+      "t6_stage": "T6.2_VALUE_CONSUMER"
+    },
+    {
+      "kind": "VALUE_PARAMETER_FROM_FIELD",
+      "field": "Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection;->mVersion S",
+      "arg_position": 0,
+      "callee": "Ljava/lang/String;->format(Ljava/lang/String; [Ljava/lang/Object;)Ljava/lang/String",
+      "method": "Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection;->write([B Z)V",
+      "instruction_index": 44,
+      "classification": "CORRELATION",
+      "protocol_semantics": "UNKNOWN",
+      "t6_stage": "T6.2_VALUE_CONSUMER"
+    },
+    {
+      "kind": "VALUE_PARAMETER_FROM_FIELD",
+      "field": "Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection;->mVersion S",
+      "arg_position": 1,
+      "callee": "Ljava/io/IOException;-><init>(Ljava/lang/String;)V",
+      "method": "Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection;->write([B Z)V",
+      "instruction_index": 46,
+      "classification": "CORRELATION",
+      "protocol_semantics": "UNKNOWN",
+      "t6_stage": "T6.2_VALUE_CONSUMER"
+    },
+    {
+      "kind": "VALUE_PARAMETER_FROM_FIELD",
+      "field": "Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection;->mVersion S",
+      "arg_position": 2,
+      "callee": "Lcom/bmwgroup/connected/core/services/accessory/AccessorySocket;->write([B I I)V",
+      "method": "Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection;->write([B Z)V",
+      "instruction_index": 60,
+      "classification": "CORRELATION",
+      "protocol_semantics": "UNKNOWN",
+      "t6_stage": "T6.2_VALUE_CONSUMER"
+    },
+    {
+      "kind": "ROUNDTRIP_FROM_FIELD",
+      "field": "Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection;->mVersion S",
+      "callee": "Lcom/bmwgroup/connected/core/services/accessory/AccessorySocket;->write([B I I)V",
+      "method": "Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection;->write([B Z)V",
+      "instruction_index": 60,
+      "classification": "CORRELATION",
+      "protocol_semantics": "UNKNOWN",
+      "t6_stage": "T6.5_ROUNDTRIP"
+    },
+    {
+      "kind": "VALUE_PARAMETER_FROM_FIELD",
+      "field": "Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection;->mVersion S",
+      "arg_position": 2,
+      "callee": "Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection;->reportBytesWritten(J)V",
+      "method": "Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection;->write([B Z)V",
+      "instruction_index": 69,
+      "classification": "CORRELATION",
+      "protocol_semantics": "UNKNOWN",
+      "t6_stage": "T6.2_VALUE_CONSUMER"
+    },
+    {
+      "kind": "FIELD_LOAD",
+      "field": "Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection;->mVersion S",
+      "field_short": "mVersion S",
+      "register": "v1",
+      "method": "Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection;->write([B Z)V",
+      "instruction_index": 71,
+      "instruction": "iget-short v1, v10, Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection;->mVersion S",
+      "classification": "CORRELATION",
+      "protocol_semantics": "UNKNOWN",
+      "note": "Load of field descriptor previously stored from byte-derived value; same instance not proven",
+      "t6_stage": "T6.2_VALUE_CONSUMER"
+    },
+    {
+      "kind": "FIELD_LOAD",
+      "field": "Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection;->mVersion S",
+      "field_short": "mVersion S",
+      "register": "v3",
+      "method": "Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection;->write([B Z)V",
+      "instruction_index": 89,
+      "instruction": "iget-short v3, v10, Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection;->mVersion S",
+      "classification": "CORRELATION",
+      "protocol_semantics": "UNKNOWN",
+      "note": "Load of field descriptor previously stored from byte-derived value; same instance not proven",
+      "t6_stage": "T6.2_VALUE_CONSUMER"
+    },
+    {
+      "kind": "VALUE_PARAMETER_FROM_FIELD",
+      "field": "Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection;->mVersion S",
+      "arg_position": 1,
+      "callee": "Lcom/bmwgroup/connected/core/services/accessory/AccessorySocket;->write([B I I)V",
+      "method": "Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection;->write([B Z)V",
+      "instruction_index": 99,
+      "classification": "CORRELATION",
+      "protocol_semantics": "UNKNOWN",
+      "t6_stage": "T6.2_VALUE_CONSUMER"
+    },
+    {
+      "kind": "ROUNDTRIP_FROM_FIELD",
+      "field": "Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection;->mVersion S",
+      "callee": "Lcom/bmwgroup/connected/core/services/accessory/AccessorySocket;->write([B I I)V",
+      "method": "Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection;->write([B Z)V",
+      "instruction_index": 99,
+      "classification": "CORRELATION",
+      "protocol_semantics": "UNKNOWN",
+      "t6_stage": "T6.5_ROUNDTRIP"
+    },
+    {
+      "kind": "VALUE_PARAMETER_FROM_FIELD",
+      "field": "Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection;->mVersion S",
+      "arg_position": 3,
+      "callee": "Lcom/bmwgroup/connected/core/services/accessory/AccessorySocket;->write([B I I)V",
+      "method": "Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection;->write([B Z)V",
+      "instruction_index": 99,
+      "classification": "CORRELATION",
+      "protocol_semantics": "UNKNOWN",
+      "t6_stage": "T6.2_VALUE_CONSUMER"
+    },
+    {
+      "kind": "ROUNDTRIP_FROM_FIELD",
+      "field": "Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection;->mVersion S",
+      "callee": "Lcom/bmwgroup/connected/core/services/accessory/AccessorySocket;->write([B I I)V",
+      "method": "Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection;->write([B Z)V",
+      "instruction_index": 99,
+      "classification": "CORRELATION",
+      "protocol_semantics": "UNKNOWN",
+      "t6_stage": "T6.5_ROUNDTRIP"
+    },
+    {
+      "kind": "FIELD_LOAD",
+      "field": "Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Packet;->mDataLen S",
+      "field_short": "mDataLen S",
+      "register": "v0",
+      "method": "Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection;->readPacket(Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Packet;)V",
+      "instruction_index": 25,
+      "instruction": "iget-short v0, v6, Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Packet;->mDataLen S",
+      "classification": "CORRELATION",
+      "protocol_semantics": "UNKNOWN",
+      "note": "Load of field descriptor previously stored from byte-derived value; same instance not proven",
+      "t6_stage": "T6.2_VALUE_CONSUMER"
+    },
+    {
+      "kind": "BRANCH_ON_FIELD_VALUE",
+      "opcode": "if-lez",
+      "registers": [
+        "v0"
+      ],
+      "fields": [
+        "Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Packet;->mDataLen S"
+      ],
+      "method": "Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection;->readPacket(Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Packet;)V",
+      "instruction_index": 26,
+      "instruction": "if-lez v0, +018h",
+      "classification": "CORRELATION",
+      "protocol_semantics": "UNKNOWN",
+      "note": "Branch on loaded field previously associated with byte-derived store",
+      "t6_stage": "T6.3_CONTROL_FLOW"
+    },
+    {
+      "kind": "FIELD_LOAD",
+      "field": "Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Packet;->mDataLen S",
+      "field_short": "mDataLen S",
+      "register": "v0",
+      "method": "Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection;->readPacket(Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Packet;)V",
+      "instruction_index": 27,
+      "instruction": "iget-short v0, v6, Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Packet;->mDataLen S",
+      "classification": "CORRELATION",
+      "protocol_semantics": "UNKNOWN",
+      "note": "Load of field descriptor previously stored from byte-derived value; same instance not proven",
+      "t6_stage": "T6.2_VALUE_CONSUMER"
+    },
+    {
+      "kind": "STATE_MUTATION_FROM_FIELD",
+      "source_field": "Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Packet;->mDataLen S",
+      "dest_field": "Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Packet;->mData [B",
+      "method": "Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection;->readPacket(Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Packet;)V",
+      "instruction_index": 29,
+      "instruction": "iput-object v0, v6, Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Packet;->mData [B",
+      "classification": "CORRELATION",
+      "protocol_semantics": "UNKNOWN",
+      "t6_stage": "T6.4_APPLICATION_ACTION"
+    },
+    {
+      "kind": "FIELD_LOAD",
+      "field": "Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Packet;->mData [B",
+      "field_short": "mData [B",
+      "register": "v0",
+      "method": "Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection;->readPacket(Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Packet;)V",
+      "instruction_index": 30,
+      "instruction": "iget-object v0, v6, Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Packet;->mData [B",
+      "classification": "CORRELATION",
+      "protocol_semantics": "UNKNOWN",
+      "note": "Load of field descriptor previously stored from byte-derived value; same instance not proven",
+      "t6_stage": "T6.2_VALUE_CONSUMER"
+    },
+    {
+      "kind": "FIELD_LOAD",
+      "field": "Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Packet;->mDataLen S",
+      "field_short": "mDataLen S",
+      "register": "v1",
+      "method": "Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection;->readPacket(Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Packet;)V",
+      "instruction_index": 31,
+      "instruction": "iget-short v1, v6, Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Packet;->mDataLen S",
+      "classification": "CORRELATION",
+      "protocol_semantics": "UNKNOWN",
+      "note": "Load of field descriptor previously stored from byte-derived value; same instance not proven",
+      "t6_stage": "T6.2_VALUE_CONSUMER"
+    },
+    {
+      "kind": "VALUE_PARAMETER_FROM_FIELD",
+      "field": "Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Packet;->mData [B",
+      "arg_position": 1,
+      "callee": "Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection;->internalread([B I)I",
+      "method": "Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection;->readPacket(Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Packet;)V",
+      "instruction_index": 32,
+      "classification": "CORRELATION",
+      "protocol_semantics": "UNKNOWN",
+      "t6_stage": "T6.2_VALUE_CONSUMER"
+    },
+    {
+      "kind": "VALUE_PARAMETER_FROM_FIELD",
+      "field": "Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Packet;->mDataLen S",
+      "arg_position": 2,
+      "callee": "Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection;->internalread([B I)I",
+      "method": "Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection;->readPacket(Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Packet;)V",
+      "instruction_index": 32,
+      "classification": "CORRELATION",
+      "protocol_semantics": "UNKNOWN",
+      "t6_stage": "T6.2_VALUE_CONSUMER"
+    },
+    {
+      "kind": "FIELD_LOAD",
+      "field": "Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Packet;->mDataLen S",
+      "field_short": "mDataLen S",
+      "register": "v1",
+      "method": "Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection;->readPacket(Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Packet;)V",
+      "instruction_index": 34,
+      "instruction": "iget-short v1, v6, Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Packet;->mDataLen S",
+      "classification": "CORRELATION",
+      "protocol_semantics": "UNKNOWN",
+      "note": "Load of field descriptor previously stored from byte-derived value; same instance not proven",
+      "t6_stage": "T6.2_VALUE_CONSUMER"
+    },
+    {
+      "kind": "BRANCH_ON_FIELD_VALUE",
+      "opcode": "if-ne",
+      "registers": [
+        "v0",
+        "v1"
+      ],
+      "fields": [
+        "Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Packet;->mData [B",
+        "Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Packet;->mDataLen S"
+      ],
+      "method": "Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection;->readPacket(Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Packet;)V",
+      "instruction_index": 35,
+      "instruction": "if-ne v0, v1, +007h",
+      "classification": "CORRELATION",
+      "protocol_semantics": "UNKNOWN",
+      "note": "Branch on loaded field previously associated with byte-derived store",
+      "t6_stage": "T6.3_CONTROL_FLOW"
+    },
+    {
+      "kind": "VALUE_PARAMETER_FROM_FIELD",
+      "field": "Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Packet;->mData [B",
+      "arg_position": 1,
+      "callee": "Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection;->reportBytesRead(J)V",
+      "method": "Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection;->readPacket(Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Packet;)V",
+      "instruction_index": 37,
+      "classification": "CORRELATION",
+      "protocol_semantics": "UNKNOWN",
+      "t6_stage": "T6.2_VALUE_CONSUMER"
+    },
+    {
+      "kind": "VALUE_PARAMETER_FROM_FIELD",
+      "field": "Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Packet;->mDataLen S",
+      "arg_position": 2,
+      "callee": "Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection;->reportBytesRead(J)V",
+      "method": "Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection;->readPacket(Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Packet;)V",
+      "instruction_index": 37,
+      "classification": "CORRELATION",
+      "protocol_semantics": "UNKNOWN",
+      "t6_stage": "T6.2_VALUE_CONSUMER"
+    },
+    {
+      "kind": "VALUE_PARAMETER_FROM_FIELD",
+      "field": "Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Packet;->mDataLen S",
+      "arg_position": 0,
+      "callee": "Ljava/lang/StringBuilder;-><init>()V",
+      "method": "Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection;->readPacket(Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Packet;)V",
+      "instruction_index": 41,
+      "classification": "CORRELATION",
+      "protocol_semantics": "UNKNOWN",
+      "t6_stage": "T6.2_VALUE_CONSUMER"
+    },
+    {
+      "kind": "VALUE_PARAMETER_FROM_FIELD",
+      "field": "Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Packet;->mDataLen S",
+      "arg_position": 0,
+      "callee": "Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder",
+      "method": "Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection;->readPacket(Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Packet;)V",
+      "instruction_index": 43,
+      "classification": "CORRELATION",
+      "protocol_semantics": "UNKNOWN",
+      "t6_stage": "T6.2_VALUE_CONSUMER"
+    },
+    {
+      "kind": "FIELD_LOAD",
+      "field": "Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Packet;->mDataLen S",
+      "field_short": "mDataLen S",
+      "register": "v2",
+      "method": "Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection;->readPacket(Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Packet;)V",
+      "instruction_index": 45,
+      "instruction": "iget-short v2, v6, Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Packet;->mDataLen S",
+      "classification": "CORRELATION",
+      "protocol_semantics": "UNKNOWN",
+      "note": "Load of field descriptor previously stored from byte-derived value; same instance not proven",
+      "t6_stage": "T6.2_VALUE_CONSUMER"
+    },
+    {
+      "kind": "VALUE_PARAMETER_FROM_FIELD",
+      "field": "Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Packet;->mDataLen S",
+      "arg_position": 0,
+      "callee": "Ljava/lang/StringBuilder;->append(I)Ljava/lang/StringBuilder",
+      "method": "Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection;->readPacket(Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Packet;)V",
+      "instruction_index": 46,
+      "classification": "CORRELATION",
+      "protocol_semantics": "UNKNOWN",
+      "t6_stage": "T6.2_VALUE_CONSUMER"
+    },
+    {
+      "kind": "VALUE_PARAMETER_FROM_FIELD",
+      "field": "Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Packet;->mDataLen S",
+      "arg_position": 1,
+      "callee": "Ljava/lang/StringBuilder;->append(I)Ljava/lang/StringBuilder",
+      "method": "Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection;->readPacket(Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Packet;)V",
+      "instruction_index": 46,
+      "classification": "CORRELATION",
+      "protocol_semantics": "UNKNOWN",
+      "t6_stage": "T6.2_VALUE_CONSUMER"
+    },
+    {
+      "kind": "VALUE_PARAMETER_FROM_FIELD",
+      "field": "Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Packet;->mDataLen S",
+      "arg_position": 0,
+      "callee": "Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder",
+      "method": "Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection;->readPacket(Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Packet;)V",
+      "instruction_index": 49,
+      "classification": "CORRELATION",
+      "protocol_semantics": "UNKNOWN",
+      "t6_stage": "T6.2_VALUE_CONSUMER"
+    },
+    {
+      "kind": "VALUE_PARAMETER_FROM_FIELD",
+      "field": "Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Packet;->mDataLen S",
+      "arg_position": 1,
+      "callee": "Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder",
+      "method": "Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection;->readPacket(Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Packet;)V",
+      "instruction_index": 49,
+      "classification": "CORRELATION",
+      "protocol_semantics": "UNKNOWN",
+      "t6_stage": "T6.2_VALUE_CONSUMER"
+    },
+    {
+      "kind": "VALUE_PARAMETER_FROM_FIELD",
+      "field": "Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Packet;->mDataLen S",
+      "arg_position": 0,
+      "callee": "Ljava/lang/StringBuilder;->toString()Ljava/lang/String",
+      "method": "Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection;->readPacket(Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Packet;)V",
+      "instruction_index": 51,
+      "classification": "CORRELATION",
+      "protocol_semantics": "UNKNOWN",
+      "t6_stage": "T6.2_VALUE_CONSUMER"
+    },
+    {
+      "kind": "VALUE_PARAMETER_FROM_FIELD",
+      "field": "Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Packet;->mData [B",
+      "arg_position": 0,
+      "callee": "Ljava/lang/IllegalStateException;-><init>(Ljava/lang/String;)V",
+      "method": "Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection;->readPacket(Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Packet;)V",
+      "instruction_index": 53,
+      "classification": "CORRELATION",
+      "protocol_semantics": "UNKNOWN",
+      "t6_stage": "T6.2_VALUE_CONSUMER"
+    }
+  ],
+  "path_comm_provenance": {
+    "baseline_v14_path_comm": 12,
+    "current_path_comm": 12,
+    "changed": false,
+    "provenance_note": "v1.4 PATH-COMM=12 from READ_LENGTH correction + interface seed expansion (analyzer expansion, not APK change).",
+    "v15_note": "v1.5 does not silently rewrite PATH-COMM. Application-flow analysis is additive. Any PATH-COMM delta must cite seed expansion / READ_LENGTH / new analysis — not APK change.",
+    "analyzer_expansion_vs_apk": "PATH-COMM growth from v1.3→v1.4 was analyzer expansion, not new APK bytes."
+  },
+  "negative_control_check": {
+    "paths": [
+      "PATH-000009",
+      "PATH-000010",
+      "PATH-000011",
+      "PATH-000012",
+      "PATH-000013"
+    ],
+    "status": "PASS_IF_NO_TRANSPORT_BUFFER_FLOW",
+    "note": "Application-flow must not invent T3/T5/T6 for CASE-F / PATH-011"
+  },
+  "answers": {
+    "1_structured_values_from_s4": {
+      "catalog_count": 24,
+      "sample_ids": [
+        "VALUE-V001",
+        "VALUE-V002",
+        "VALUE-V003",
+        "VALUE-V004",
+        "VALUE-V005",
+        "VALUE-V006",
+        "VALUE-V007",
+        "VALUE-V008",
+        "VALUE-V009",
+        "VALUE-V010",
+        "VALUE-V011",
+        "VALUE-V012"
+      ],
+      "note": "Neutral VALUE-V### IDs; no semantic naming"
+    },
+    "2_written_to_fields": 8,
+    "3_later_loaded": 63,
+    "4_passed_to_methods": 191,
+    "5_returned": 5,
+    "6_influence_branches": 36,
+    "7_application_state_mutations": 6,
+    "8_collections_maps": 2,
+    "9_object_construction": 2,
+    "10_output_dataflow": 13,
+    "11_true_roundtrip_correlations": true,
+    "12_where_lineage_ends": [
+      "Intra-method: return / last use / overwrite",
+      "Cross-method: field descriptor CORRELATION without proven instance",
+      "Call-graph / retention boundary beyond expanded seed set"
+    ],
+    "13_true_apk_ends": [
+      "Some values are logging-only consumers",
+      "Some branches compare to constants without further static sink"
+    ],
+    "14_analyzer_bounds": [
+      "Bounded method retention / seed expansion",
+      "No full SSA; register overwrite ends local lineage",
+      "Interface/instance identity across Packet args is CORRELATION"
+    ],
+    "15_new_facts": [
+      "STRUCTURED_VALUE from ByteBuffer.get*/aget/decode return",
+      "FIELD_STORE_FROM_BYTES instruction-level",
+      "BRANCH_ON_VALUE / BRANCH_ON_FIELD_VALUE"
+    ],
+    "16_new_correlations": [
+      "Field store descriptor → later iget consumers",
+      "Byte-derived field → setState / further decode on mData",
+      "Optional ROUNDTRIP_FROM_FIELD when encode/write reached"
+    ],
+    "17_allowed_inferences": [
+      "End-to-end application-flow path composition is INFERENCE",
+      "Method-name search indicators (decode/setState) never protocol proof"
+    ],
+    "18_unknowns": [
+      "protocol_semantics",
+      "meaning of compared constants",
+      "peer/HU identity",
+      "runtime session / which Packet instance"
+    ],
+    "19_path_comm_changed": false,
+    "20_path_comm_why": "v1.5 does not silently rewrite PATH-COMM. Application-flow analysis is additive. Any PATH-COMM delta must cite seed expansion / READ_LENGTH / new analysis — not APK change.",
+    "21_protocol_semantics_unknown": true,
+    "22_application_level_evidence_chain": true,
+    "value_class_counts": {
+      "V5_ROUNDTRIP": 6,
+      "V1_FIELD_STATE": 2,
+      "V3_CONTROL_FLOW": 2,
+      "V2_CONSUMED": 13,
+      "V0_SOURCE_ONLY": 1
+    },
+    "path_comm_provenance": {
+      "baseline_v14_path_comm": 12,
+      "current_path_comm": 12,
+      "changed": false,
+      "provenance_note": "v1.4 PATH-COMM=12 from READ_LENGTH correction + interface seed expansion (analyzer expansion, not APK change).",
+      "v15_note": "v1.5 does not silently rewrite PATH-COMM. Application-flow analysis is additive. Any PATH-COMM delta must cite seed expansion / READ_LENGTH / new analysis — not APK change.",
+      "analyzer_expansion_vs_apk": "PATH-COMM growth from v1.3→v1.4 was analyzer expansion, not new APK bytes."
+    },
+    "limits_unchanged": {
+      "max_field_hops": 2,
+      "raised": false
+    },
+    "negative_controls": {
+      "CASE_F": [
+        "PATH-000009",
+        "PATH-000010",
+        "PATH-000012",
+        "PATH-000013"
+      ],
+      "CASE_D": [
+        "PATH-000011"
+      ],
+      "must_not_gain_structured_value_from_transport": true
+    }
+  },
+  "protocol_semantics": "UNKNOWN",
+  "interpretation": "v1.5 closes Structured Value → Application Flow with FACT/CORRELATION edges. It does not close Application Flow → Protocol Semantics."
+}

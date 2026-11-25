@@ -1,0 +1,12 @@
+{
+  "frozen_from": "v1.3",
+  "engine_expected": "1.4.0",
+  "v13_path_comm": 6,
+  "v13_t5": 0,
+  "plan_sha256": "1ab8aa22e174dcb8f3e7a57284be5f11239df05493c882dbbb72d7b46578f559",
+  "max_field_hops": 2,
+  "protocol": "UNKNOWN",
+  "note": "v14-baseline freezes v1.3 artefacts; semantic closure is additive under output/v14-semantic-closure",
+  "v14_path_comm": 12,
+  "v15_freeze": "v1.4 artefacts frozen under v15-baseline"
+}

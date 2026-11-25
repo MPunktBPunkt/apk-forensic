@@ -1,0 +1,23 @@
+{
+  "app": "Serial Bluetooth Terminal",
+  "developer": "Kai Morich",
+  "version_name": "1.52",
+  "version_code": 94,
+  "package": "de.kai_morich.serial_bluetooth_terminal",
+  "source": "APKMirror",
+  "url": "https://www.apkmirror.com/apk/kai-morich/serial-bluetooth-terminal/serial-bluetooth-terminal-1-52-release/",
+  "sha256": "e44ab3b93e1701fcca67869169ba49ef2e918416d28928a56a135e8bff343192",
+  "size_bytes": 1764418,
+  "engine": "1.6.0",
+  "plan": "bluetooth_rfcomm",
+  "rfcomm_targets": 1,
+  "bluetooth_paths": 1,
+  "evidence_paths": 4,
+  "communication_paths": 2,
+  "structured_values": 12,
+  "field_stores": 8,
+  "field_loads": 14,
+  "protocol": "UNKNOWN",
+  "runtime_wire": "INPUT_MISSING",
+  "strongest": "BluetoothDevice \u2192 createRfcommSocketToServiceRecord(SPP UUID) \u2192 connect \u2192 read/write"
+}

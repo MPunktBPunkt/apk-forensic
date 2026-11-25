@@ -1,0 +1,25 @@
+{
+  "capture_id": "RUNTIME_CAPTURE_ATTEMPT_20261125T0734Z",
+  "verdict": "INPUT_MISSING",
+  "engine": "1.6.1",
+  "generated_utc": "2026-11-25T06:36:27.106398+00:00",
+  "static_target": {
+    "value_id": "VALUE-V001",
+    "apk_file": "artifacts/de.bmw.connected-6.0.0.4962.apk",
+    "package_name": "de.bmw.connected",
+    "version_name": "6.0.0.4962",
+    "version_code": 4962,
+    "sha256": "b1135e357b62a1f54b3b791609684cb54a184fa29c0e65a3f80e58ee22f496bd",
+    "source_method": "Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection$2;->run()V",
+    "source_api": "Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Info;->decodeVersion([B)S",
+    "descriptor": "([B)S",
+    "class_jvm": "com.bmwgroup.connected.core.services.accessory.bcl.packet.Info",
+    "method_name": "decodeVersion",
+    "stored_field": "Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection;->mVersion S",
+    "value_class": "V5_ROUNDTRIP",
+    "static_classification": "FACT",
+    "protocol_semantics": "UNKNOWN",
+    "static_report": "output/v15-application-flow/APPLICATION_FLOW_EVIDENCE_REPORT.json",
+    "note_package": "VALUE-V001 baseline comes from de.bmw.connected 6.0.0.4962 (Connected), not de.bmw.connected.mobile20.row (MyBMW). Hook target must match this APK/process."
+  }
+}

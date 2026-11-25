@@ -1,0 +1,1067 @@
+{
+  "enabled": true,
+  "schema": "apk_forensics.communication_evidence.v1",
+  "methods_analyzed": 5,
+  "counts": {
+    "read_sites": 1,
+    "write_sites": 1,
+    "buffer_operations": 2,
+    "decoder_candidates": 0,
+    "serializer_candidates": 0,
+    "message_constructions": 1,
+    "primitive_decoding": 0,
+    "string_decoding": 6,
+    "byte_processing": 0,
+    "state_mutations": 0,
+    "object_constructions": 0,
+    "read_lengths": 1
+  },
+  "paths": [
+    {
+      "path_id": "comm-6ba27e0f6ec7",
+      "display_id": "PATH-COMM-000001",
+      "kind": "INBOUND_DECODE",
+      "direction": "INBOUND",
+      "start": "Ljava/io/InputStream;->read([B)I",
+      "end": "Ljava/io/IOException;-><init>(Ljava/lang/String;)V",
+      "steps": [
+        {
+          "node_id": "cnode-284609fd33fd",
+          "node_type": "INPUT_READ",
+          "label": "Ljava/io/InputStream;->read([B)I",
+          "classification": "FACT",
+          "confidence": "high",
+          "protocol_semantics": "UNKNOWN"
+        },
+        {
+          "node_id": "cnode-799e4f6f5525",
+          "node_type": "BYTE_ARRAY",
+          "label": "new-array [B:v1",
+          "classification": "FACT",
+          "confidence": "high",
+          "protocol_semantics": "UNKNOWN"
+        },
+        {
+          "node_id": "cnode-b09bda88d0df",
+          "node_type": "COPY",
+          "label": "Ljava/util/Arrays;->copyOf([B I)[B",
+          "classification": "FACT",
+          "confidence": "high",
+          "protocol_semantics": "UNKNOWN"
+        },
+        {
+          "node_id": "cnode-ffedc52f8074",
+          "node_type": "MESSAGE_OBJECT",
+          "label": "Ljava/io/IOException;-><init>(Ljava/lang/String;)V",
+          "classification": "FACT",
+          "confidence": "high",
+          "protocol_semantics": "UNKNOWN"
+        }
+      ],
+      "classification": "INFERENCE",
+      "confidence": "medium",
+      "protocol_semantics": "UNKNOWN",
+      "method_name_semantics": {
+        "method_name": "run",
+        "method_name_evidence": "FACT",
+        "protocol_semantics": "UNKNOWN",
+        "notes": [
+          "Method names are DEX identifiers only.",
+          "Names such as doBclHandshake / Etch / RHMI do not prove protocol semantics."
+        ],
+        "hint_tokens_detected": false
+      },
+      "boundaries": [
+        {
+          "boundary_id": "cbnd-5cccc5507ea4",
+          "reason": "UNKNOWN_HELPER",
+          "last_proven": "Lvz;->f(Ljava/util/Date; [B)V",
+          "detail": "La00;->run()V",
+          "classification": "UNKNOWN",
+          "method": "La00;->run()V"
+        },
+        {
+          "boundary_id": "cbnd-11219aa63e99",
+          "reason": "UNKNOWN_HELPER",
+          "last_proven": "Lvz;->d(Ljava/util/Date; Ljava/lang/Exception;)V",
+          "detail": "La00;->run()V",
+          "classification": "UNKNOWN",
+          "method": "La00;->run()V"
+        },
+        {
+          "boundary_id": "cbnd-d743fcd2a056",
+          "reason": "UNKNOWN_HELPER",
+          "last_proven": "Landroid/bluetooth/BluetoothSocket;->close()V",
+          "detail": "La00;->run()V",
+          "classification": "UNKNOWN",
+          "method": "La00;->run()V"
+        },
+        {
+          "boundary_id": "cbnd-9ec68679e927",
+          "reason": "UNKNOWN_HELPER",
+          "last_proven": "Lvz;->a(Ljava/util/Date; Ljava/lang/Exception;)V",
+          "detail": "La00;->run()V",
+          "classification": "UNKNOWN",
+          "method": "La00;->run()V"
+        }
+      ],
+      "source_method": "La00;->run()V",
+      "runtime_execution_proven": false,
+      "wire_correlation_available": false,
+      "notes": [
+        "Individual steps keep their classifications.",
+        "End-to-end communication path is INFERENCE when composed of multiple FACT/CORRELATION steps.",
+        "Protocol semantics remain UNKNOWN without independent evidence."
+      ],
+      "ranking_score": 53,
+      "coverage": {
+        "status": "BOUNDARY",
+        "reason": "UNKNOWN_HELPER",
+        "depth_reached": 4,
+        "resource_limited": false,
+        "analysis_boundary": true,
+        "termination_reason": "UNKNOWN_HELPER"
+      },
+      "coverage_status": "BOUNDARY",
+      "termination_reason": "UNKNOWN_HELPER",
+      "depth_reached": 4,
+      "resource_limited": false,
+      "analysis_boundary": true
+    },
+    {
+      "path_id": "comm-6051db14c98c",
+      "display_id": "PATH-COMM-000002",
+      "kind": "OUTBOUND_BUFFER_WRITE",
+      "direction": "OUTBOUND",
+      "start": "byte[]:v2",
+      "end": "Ljava/io/OutputStream;->write([B)V",
+      "steps": [
+        {
+          "node_id": "cnode-95f91e94c478",
+          "node_type": "BYTE_ARRAY",
+          "label": "byte[]:v2",
+          "classification": "FACT",
+          "confidence": "medium",
+          "protocol_semantics": "UNKNOWN"
+        },
+        {
+          "node_id": "cnode-e3fa390f7c72",
+          "node_type": "OUTPUT_WRITE",
+          "label": "Ljava/io/OutputStream;->write([B)V",
+          "classification": "FACT",
+          "confidence": "high",
+          "protocol_semantics": "UNKNOWN"
+        }
+      ],
+      "classification": "INFERENCE",
+      "confidence": "medium",
+      "protocol_semantics": "UNKNOWN",
+      "method_name_semantics": {
+        "method_name": "e",
+        "method_name_evidence": "FACT",
+        "protocol_semantics": "UNKNOWN",
+        "notes": [
+          "Method names are DEX identifiers only.",
+          "Names such as doBclHandshake / Etch / RHMI do not prove protocol semantics."
+        ],
+        "hint_tokens_detected": false
+      },
+      "boundaries": [],
+      "source_method": "La00;->e([B)V",
+      "runtime_execution_proven": false,
+      "wire_correlation_available": false,
+      "notes": [
+        "Individual steps keep their classifications.",
+        "End-to-end communication path is INFERENCE when composed of multiple FACT/CORRELATION steps.",
+        "Protocol semantics remain UNKNOWN without independent evidence."
+      ],
+      "ranking_score": 30,
+      "coverage": {
+        "status": "COMPLETE",
+        "reason": null,
+        "depth_reached": 2,
+        "resource_limited": false,
+        "analysis_boundary": false,
+        "termination_reason": null
+      },
+      "coverage_status": "COMPLETE",
+      "termination_reason": null,
+      "depth_reached": 2,
+      "resource_limited": false,
+      "analysis_boundary": false
+    }
+  ],
+  "boundaries": [
+    {
+      "boundary_id": "cbnd-5cccc5507ea4",
+      "reason": "UNKNOWN_HELPER",
+      "last_proven": "Lvz;->f(Ljava/util/Date; [B)V",
+      "detail": "La00;->run()V",
+      "classification": "UNKNOWN",
+      "method": "La00;->run()V"
+    },
+    {
+      "boundary_id": "cbnd-11219aa63e99",
+      "reason": "UNKNOWN_HELPER",
+      "last_proven": "Lvz;->d(Ljava/util/Date; Ljava/lang/Exception;)V",
+      "detail": "La00;->run()V",
+      "classification": "UNKNOWN",
+      "method": "La00;->run()V"
+    },
+    {
+      "boundary_id": "cbnd-d743fcd2a056",
+      "reason": "UNKNOWN_HELPER",
+      "last_proven": "Landroid/bluetooth/BluetoothSocket;->close()V",
+      "detail": "La00;->run()V",
+      "classification": "UNKNOWN",
+      "method": "La00;->run()V"
+    },
+    {
+      "boundary_id": "cbnd-9ec68679e927",
+      "reason": "UNKNOWN_HELPER",
+      "last_proven": "Lvz;->a(Ljava/util/Date; Ljava/lang/Exception;)V",
+      "detail": "La00;->run()V",
+      "classification": "UNKNOWN",
+      "method": "La00;->run()V"
+    },
+    {
+      "boundary_id": "cbnd-fafccac69091",
+      "reason": "UNKNOWN_HELPER",
+      "last_proven": "Lbg0;->D(I I Ljava/lang/Object;)Ljava/lang/Object",
+      "detail": "Lbg0;->t(Ljava/lang/Object; [B I I I Lve0;)I",
+      "classification": "UNKNOWN",
+      "method": "Lbg0;->t(Ljava/lang/Object; [B I I I Lve0;)I"
+    },
+    {
+      "boundary_id": "cbnd-70f2194caa4a",
+      "reason": "UNKNOWN_HELPER",
+      "last_proven": "Lbg0;->n(I I Ljava/lang/Object; Ljava/lang/Object;)V",
+      "detail": "Lbg0;->t(Ljava/lang/Object; [B I I I Lve0;)I",
+      "classification": "UNKNOWN",
+      "method": "Lbg0;->t(Ljava/lang/Object; [B I I I Lve0;)I"
+    },
+    {
+      "boundary_id": "cbnd-a0ae9333f0c5",
+      "reason": "UNKNOWN_HELPER",
+      "last_proven": "Ljava/lang/Long;->valueOf(J)Ljava/lang/Long",
+      "detail": "Lbg0;->t(Ljava/lang/Object; [B I I I Lve0;)I",
+      "classification": "UNKNOWN",
+      "method": "Lbg0;->t(Ljava/lang/Object; [B I I I Lve0;)I"
+    },
+    {
+      "boundary_id": "cbnd-dcfbbe704154",
+      "reason": "UNKNOWN_HELPER",
+      "last_proven": "Lsun/misc/Unsafe;->putInt(Ljava/lang/Object; J I)V",
+      "detail": "Lbg0;->t(Ljava/lang/Object; [B I I I Lve0;)I",
+      "classification": "UNKNOWN",
+      "method": "Lbg0;->t(Ljava/lang/Object; [B I I I Lve0;)I"
+    },
+    {
+      "boundary_id": "cbnd-921fed0cbad3",
+      "reason": "UNKNOWN_HELPER",
+      "last_proven": "Lre0;->a(I)Z",
+      "detail": "Lbg0;->t(Ljava/lang/Object; [B I I I Lve0;)I",
+      "classification": "UNKNOWN",
+      "method": "Lbg0;->t(Ljava/lang/Object; [B I I I Lve0;)I"
+    }
+  ],
+  "per_method": [
+    {
+      "method": "La00;->e([B)V",
+      "read_sites": [],
+      "write_sites": [
+        {
+          "index": 5,
+          "text": "invoke-virtual v0, v2, Ljava/io/OutputStream;->write([B)V",
+          "raw": "Ljava/io/OutputStream;->write([B)V",
+          "classification": "FACT",
+          "confidence": "high",
+          "method": "La00;->e([B)V"
+        }
+      ],
+      "buffer_operations": [],
+      "decoder_candidates": [],
+      "serializer_candidates": [],
+      "message_constructions": [],
+      "primitive_decoding": [],
+      "string_decoding": [],
+      "byte_processing": [],
+      "state_mutations": [],
+      "object_constructions": [],
+      "read_lengths": [],
+      "nodes": [
+        {
+          "node_type": "OUTPUT_WRITE",
+          "label": "Ljava/io/OutputStream;->write([B)V",
+          "method": "La00;->e([B)V",
+          "instruction_index": 5,
+          "instruction": "invoke-virtual v0, v2, Ljava/io/OutputStream;->write([B)V",
+          "classification": "FACT",
+          "confidence": "high",
+          "node_id": "cnode-e3fa390f7c72"
+        },
+        {
+          "node_type": "BYTE_ARRAY",
+          "label": "byte[]:v2",
+          "method": "La00;->e([B)V",
+          "instruction_index": 5,
+          "register": "v2",
+          "classification": "FACT",
+          "confidence": "medium",
+          "node_id": "cnode-95f91e94c478"
+        }
+      ],
+      "edges": [
+        {
+          "edge_id": "cedge-ee1c11f79acc",
+          "from": "cnode-95f91e94c478",
+          "to": "cnode-e3fa390f7c72",
+          "edge_type": "WRITES_TO",
+          "classification": "FACT",
+          "confidence": "high"
+        }
+      ],
+      "boundaries": [],
+      "paths": [
+        {
+          "path_id": "comm-6051db14c98c",
+          "display_id": "PATH-COMM-000002",
+          "kind": "OUTBOUND_BUFFER_WRITE",
+          "direction": "OUTBOUND",
+          "start": "byte[]:v2",
+          "end": "Ljava/io/OutputStream;->write([B)V",
+          "steps": [
+            {
+              "node_id": "cnode-95f91e94c478",
+              "node_type": "BYTE_ARRAY",
+              "label": "byte[]:v2",
+              "classification": "FACT",
+              "confidence": "medium",
+              "protocol_semantics": "UNKNOWN"
+            },
+            {
+              "node_id": "cnode-e3fa390f7c72",
+              "node_type": "OUTPUT_WRITE",
+              "label": "Ljava/io/OutputStream;->write([B)V",
+              "classification": "FACT",
+              "confidence": "high",
+              "protocol_semantics": "UNKNOWN"
+            }
+          ],
+          "classification": "INFERENCE",
+          "confidence": "medium",
+          "protocol_semantics": "UNKNOWN",
+          "method_name_semantics": {
+            "method_name": "e",
+            "method_name_evidence": "FACT",
+            "protocol_semantics": "UNKNOWN",
+            "notes": [
+              "Method names are DEX identifiers only.",
+              "Names such as doBclHandshake / Etch / RHMI do not prove protocol semantics."
+            ],
+            "hint_tokens_detected": false
+          },
+          "boundaries": [],
+          "source_method": "La00;->e([B)V",
+          "runtime_execution_proven": false,
+          "wire_correlation_available": false,
+          "notes": [
+            "Individual steps keep their classifications.",
+            "End-to-end communication path is INFERENCE when composed of multiple FACT/CORRELATION steps.",
+            "Protocol semantics remain UNKNOWN without independent evidence."
+          ],
+          "ranking_score": 30
+        }
+      ],
+      "protocol_semantics": "UNKNOWN",
+      "method_name_semantics": {
+        "method_name": "e",
+        "method_name_evidence": "FACT",
+        "protocol_semantics": "UNKNOWN",
+        "notes": [
+          "Method names are DEX identifiers only.",
+          "Names such as doBclHandshake / Etch / RHMI do not prove protocol semantics."
+        ],
+        "hint_tokens_detected": false
+      },
+      "t5_definition": {
+        "requires": "Tracked byte[]/ByteBuffer identity has a FACT edge into at least one of: aget-byte/aget; ByteBuffer.wrap/get*/put*; String([B); or a parse/decode-named invoke that also receives the tracked buffer (dataflow_role).",
+        "excludes": "InputStream/AccessorySocket read()I or read([B)I *length* move-result (READ_LENGTH); method/class names alone; copy-only without further processing; protocol/message meaning claims.",
+        "sees_v13": "Transport wrapper read/write; BYTE_ARRAY arg; mis-tagged PRIMITIVE_DECODE from read length; PATH-COMM INBOUND_PRIMITIVE without real byte ops.",
+        "cannot_see_v13": "Interface consumers (AccessorySocket;->read in BclConnection); Packet.decode* ByteBuffer.getShort/getInt; aget-byte loops; state mutation onto Packet fields after decode."
+      }
+    },
+    {
+      "method": "La00;->run()V",
+      "read_sites": [
+        {
+          "index": 22,
+          "text": "invoke-virtual v2, v1, Ljava/io/InputStream;->read([B)I",
+          "raw": "Ljava/io/InputStream;->read([B)I",
+          "classification": "FACT",
+          "confidence": "high",
+          "method": "La00;->run()V"
+        }
+      ],
+      "write_sites": [],
+      "buffer_operations": [
+        {
+          "op": "COPY",
+          "raw": "Ljava/util/Arrays;->copyOf([B I)[B",
+          "classification": "FACT"
+        }
+      ],
+      "decoder_candidates": [],
+      "serializer_candidates": [],
+      "message_constructions": [
+        {
+          "constructor": "Ljava/io/IOException;-><init>(Ljava/lang/String;)V",
+          "classification": "FACT",
+          "protocol_semantics": "UNKNOWN",
+          "method_name_semantics": {
+            "method_name": "IOException",
+            "method_name_evidence": "FACT",
+            "protocol_semantics": "UNKNOWN",
+            "notes": [
+              "Method names are DEX identifiers only.",
+              "Names such as doBclHandshake / Etch / RHMI do not prove protocol semantics."
+            ],
+            "hint_tokens_detected": false
+          }
+        }
+      ],
+      "primitive_decoding": [],
+      "string_decoding": [],
+      "byte_processing": [],
+      "state_mutations": [],
+      "object_constructions": [],
+      "read_lengths": [
+        {
+          "method": "La00;->run()V",
+          "api": "Ljava/io/InputStream;->read([B)I",
+          "register": "v2",
+          "classification": "FACT",
+          "evidence_role": "READ_LENGTH_NOT_DECODE"
+        }
+      ],
+      "nodes": [
+        {
+          "node_type": "BYTE_ARRAY",
+          "label": "new-array [B:v1",
+          "method": "La00;->run()V",
+          "instruction_index": 18,
+          "register": "v1",
+          "classification": "FACT",
+          "confidence": "high",
+          "node_id": "cnode-799e4f6f5525"
+        },
+        {
+          "node_type": "INPUT_READ",
+          "label": "Ljava/io/InputStream;->read([B)I",
+          "method": "La00;->run()V",
+          "instruction_index": 22,
+          "instruction": "invoke-virtual v2, v1, Ljava/io/InputStream;->read([B)I",
+          "classification": "FACT",
+          "confidence": "high",
+          "node_id": "cnode-284609fd33fd"
+        },
+        {
+          "node_type": "BYTE_ARRAY",
+          "label": "byte[]:v1",
+          "method": "La00;->run()V",
+          "instruction_index": 22,
+          "register": "v1",
+          "classification": "FACT",
+          "confidence": "high",
+          "node_id": "cnode-4c20a4bff661"
+        },
+        {
+          "node_type": "READ_LENGTH",
+          "label": "Ljava/io/InputStream;->read([B)I",
+          "method": "La00;->run()V",
+          "instruction_index": 22,
+          "register": "v2",
+          "classification": "FACT",
+          "confidence": "high",
+          "note": "Scalar result of read is length/count, not decoded buffer content",
+          "node_id": "cnode-e3b81ee99a91"
+        },
+        {
+          "node_type": "COPY",
+          "label": "Ljava/util/Arrays;->copyOf([B I)[B",
+          "method": "La00;->run()V",
+          "instruction_index": 25,
+          "classification": "FACT",
+          "confidence": "high",
+          "node_id": "cnode-b09bda88d0df"
+        },
+        {
+          "node_type": "MESSAGE_OBJECT",
+          "label": "Ljava/io/IOException;-><init>(Ljava/lang/String;)V",
+          "method": "La00;->run()V",
+          "instruction_index": 37,
+          "classification": "FACT",
+          "confidence": "high",
+          "protocol_semantics": "UNKNOWN",
+          "node_id": "cnode-ffedc52f8074"
+        }
+      ],
+      "edges": [
+        {
+          "edge_id": "cedge-f85cbd546a46",
+          "from": "cnode-284609fd33fd",
+          "to": "cnode-4c20a4bff661",
+          "edge_type": "WRITES_TO",
+          "classification": "FACT",
+          "confidence": "high"
+        },
+        {
+          "edge_id": "cedge-b31e062eda15",
+          "from": "cnode-284609fd33fd",
+          "to": "cnode-e3b81ee99a91",
+          "edge_type": "RETURNS_LENGTH",
+          "classification": "FACT",
+          "confidence": "high"
+        },
+        {
+          "edge_id": "cedge-09253b8914fc",
+          "from": "cnode-4c20a4bff661",
+          "to": "cnode-b09bda88d0df",
+          "edge_type": "COPY",
+          "classification": "FACT",
+          "confidence": "high"
+        },
+        {
+          "edge_id": "cedge-fd824ae4a8db",
+          "from": "cnode-b09bda88d0df",
+          "to": "cnode-ffedc52f8074",
+          "edge_type": "CONSTRUCTS",
+          "classification": "CORRELATION",
+          "confidence": "high"
+        }
+      ],
+      "boundaries": [
+        {
+          "boundary_id": "cbnd-5cccc5507ea4",
+          "reason": "UNKNOWN_HELPER",
+          "last_proven": "Lvz;->f(Ljava/util/Date; [B)V",
+          "detail": "La00;->run()V",
+          "classification": "UNKNOWN",
+          "method": "La00;->run()V"
+        },
+        {
+          "boundary_id": "cbnd-11219aa63e99",
+          "reason": "UNKNOWN_HELPER",
+          "last_proven": "Lvz;->d(Ljava/util/Date; Ljava/lang/Exception;)V",
+          "detail": "La00;->run()V",
+          "classification": "UNKNOWN",
+          "method": "La00;->run()V"
+        },
+        {
+          "boundary_id": "cbnd-d743fcd2a056",
+          "reason": "UNKNOWN_HELPER",
+          "last_proven": "Landroid/bluetooth/BluetoothSocket;->close()V",
+          "detail": "La00;->run()V",
+          "classification": "UNKNOWN",
+          "method": "La00;->run()V"
+        },
+        {
+          "boundary_id": "cbnd-9ec68679e927",
+          "reason": "UNKNOWN_HELPER",
+          "last_proven": "Lvz;->a(Ljava/util/Date; Ljava/lang/Exception;)V",
+          "detail": "La00;->run()V",
+          "classification": "UNKNOWN",
+          "method": "La00;->run()V"
+        }
+      ],
+      "paths": [
+        {
+          "path_id": "comm-6ba27e0f6ec7",
+          "display_id": "PATH-COMM-000001",
+          "kind": "INBOUND_DECODE",
+          "direction": "INBOUND",
+          "start": "Ljava/io/InputStream;->read([B)I",
+          "end": "Ljava/io/IOException;-><init>(Ljava/lang/String;)V",
+          "steps": [
+            {
+              "node_id": "cnode-284609fd33fd",
+              "node_type": "INPUT_READ",
+              "label": "Ljava/io/InputStream;->read([B)I",
+              "classification": "FACT",
+              "confidence": "high",
+              "protocol_semantics": "UNKNOWN"
+            },
+            {
+              "node_id": "cnode-799e4f6f5525",
+              "node_type": "BYTE_ARRAY",
+              "label": "new-array [B:v1",
+              "classification": "FACT",
+              "confidence": "high",
+              "protocol_semantics": "UNKNOWN"
+            },
+            {
+              "node_id": "cnode-b09bda88d0df",
+              "node_type": "COPY",
+              "label": "Ljava/util/Arrays;->copyOf([B I)[B",
+              "classification": "FACT",
+              "confidence": "high",
+              "protocol_semantics": "UNKNOWN"
+            },
+            {
+              "node_id": "cnode-ffedc52f8074",
+              "node_type": "MESSAGE_OBJECT",
+              "label": "Ljava/io/IOException;-><init>(Ljava/lang/String;)V",
+              "classification": "FACT",
+              "confidence": "high",
+              "protocol_semantics": "UNKNOWN"
+            }
+          ],
+          "classification": "INFERENCE",
+          "confidence": "medium",
+          "protocol_semantics": "UNKNOWN",
+          "method_name_semantics": {
+            "method_name": "run",
+            "method_name_evidence": "FACT",
+            "protocol_semantics": "UNKNOWN",
+            "notes": [
+              "Method names are DEX identifiers only.",
+              "Names such as doBclHandshake / Etch / RHMI do not prove protocol semantics."
+            ],
+            "hint_tokens_detected": false
+          },
+          "boundaries": [
+            {
+              "boundary_id": "cbnd-5cccc5507ea4",
+              "reason": "UNKNOWN_HELPER",
+              "last_proven": "Lvz;->f(Ljava/util/Date; [B)V",
+              "detail": "La00;->run()V",
+              "classification": "UNKNOWN",
+              "method": "La00;->run()V"
+            },
+            {
+              "boundary_id": "cbnd-11219aa63e99",
+              "reason": "UNKNOWN_HELPER",
+              "last_proven": "Lvz;->d(Ljava/util/Date; Ljava/lang/Exception;)V",
+              "detail": "La00;->run()V",
+              "classification": "UNKNOWN",
+              "method": "La00;->run()V"
+            },
+            {
+              "boundary_id": "cbnd-d743fcd2a056",
+              "reason": "UNKNOWN_HELPER",
+              "last_proven": "Landroid/bluetooth/BluetoothSocket;->close()V",
+              "detail": "La00;->run()V",
+              "classification": "UNKNOWN",
+              "method": "La00;->run()V"
+            },
+            {
+              "boundary_id": "cbnd-9ec68679e927",
+              "reason": "UNKNOWN_HELPER",
+              "last_proven": "Lvz;->a(Ljava/util/Date; Ljava/lang/Exception;)V",
+              "detail": "La00;->run()V",
+              "classification": "UNKNOWN",
+              "method": "La00;->run()V"
+            }
+          ],
+          "source_method": "La00;->run()V",
+          "runtime_execution_proven": false,
+          "wire_correlation_available": false,
+          "notes": [
+            "Individual steps keep their classifications.",
+            "End-to-end communication path is INFERENCE when composed of multiple FACT/CORRELATION steps.",
+            "Protocol semantics remain UNKNOWN without independent evidence."
+          ],
+          "ranking_score": 53
+        }
+      ],
+      "protocol_semantics": "UNKNOWN",
+      "method_name_semantics": {
+        "method_name": "run",
+        "method_name_evidence": "FACT",
+        "protocol_semantics": "UNKNOWN",
+        "notes": [
+          "Method names are DEX identifiers only.",
+          "Names such as doBclHandshake / Etch / RHMI do not prove protocol semantics."
+        ],
+        "hint_tokens_detected": false
+      },
+      "t5_definition": {
+        "requires": "Tracked byte[]/ByteBuffer identity has a FACT edge into at least one of: aget-byte/aget; ByteBuffer.wrap/get*/put*; String([B); or a parse/decode-named invoke that also receives the tracked buffer (dataflow_role).",
+        "excludes": "InputStream/AccessorySocket read()I or read([B)I *length* move-result (READ_LENGTH); method/class names alone; copy-only without further processing; protocol/message meaning claims.",
+        "sees_v13": "Transport wrapper read/write; BYTE_ARRAY arg; mis-tagged PRIMITIVE_DECODE from read length; PATH-COMM INBOUND_PRIMITIVE without real byte ops.",
+        "cannot_see_v13": "Interface consumers (AccessorySocket;->read in BclConnection); Packet.decode* ByteBuffer.getShort/getInt; aget-byte loops; state mutation onto Packet fields after decode."
+      }
+    },
+    {
+      "method": "Landroidx/activity/b;->b()V",
+      "read_sites": [],
+      "write_sites": [],
+      "buffer_operations": [],
+      "decoder_candidates": [],
+      "serializer_candidates": [],
+      "message_constructions": [],
+      "primitive_decoding": [],
+      "string_decoding": [],
+      "byte_processing": [],
+      "state_mutations": [],
+      "object_constructions": [],
+      "read_lengths": [],
+      "nodes": [],
+      "edges": [],
+      "boundaries": [],
+      "paths": [],
+      "protocol_semantics": "UNKNOWN",
+      "method_name_semantics": {
+        "method_name": "b",
+        "method_name_evidence": "FACT",
+        "protocol_semantics": "UNKNOWN",
+        "notes": [
+          "Method names are DEX identifiers only.",
+          "Names such as doBclHandshake / Etch / RHMI do not prove protocol semantics."
+        ],
+        "hint_tokens_detected": false
+      },
+      "t5_definition": {
+        "requires": "Tracked byte[]/ByteBuffer identity has a FACT edge into at least one of: aget-byte/aget; ByteBuffer.wrap/get*/put*; String([B); or a parse/decode-named invoke that also receives the tracked buffer (dataflow_role).",
+        "excludes": "InputStream/AccessorySocket read()I or read([B)I *length* move-result (READ_LENGTH); method/class names alone; copy-only without further processing; protocol/message meaning claims.",
+        "sees_v13": "Transport wrapper read/write; BYTE_ARRAY arg; mis-tagged PRIMITIVE_DECODE from read length; PATH-COMM INBOUND_PRIMITIVE without real byte ops.",
+        "cannot_see_v13": "Interface consumers (AccessorySocket;->read in BclConnection); Packet.decode* ByteBuffer.getShort/getInt; aget-byte loops; state mutation onto Packet fields after decode."
+      }
+    },
+    {
+      "method": "Lbg0;->f(Ljava/lang/Object; [B I I Lve0;)V",
+      "read_sites": [],
+      "write_sites": [],
+      "buffer_operations": [],
+      "decoder_candidates": [],
+      "serializer_candidates": [],
+      "message_constructions": [],
+      "primitive_decoding": [],
+      "string_decoding": [],
+      "byte_processing": [],
+      "state_mutations": [],
+      "object_constructions": [],
+      "read_lengths": [],
+      "nodes": [],
+      "edges": [],
+      "boundaries": [],
+      "paths": [],
+      "protocol_semantics": "UNKNOWN",
+      "method_name_semantics": {
+        "method_name": "f",
+        "method_name_evidence": "FACT",
+        "protocol_semantics": "UNKNOWN",
+        "notes": [
+          "Method names are DEX identifiers only.",
+          "Names such as doBclHandshake / Etch / RHMI do not prove protocol semantics."
+        ],
+        "hint_tokens_detected": false
+      },
+      "t5_definition": {
+        "requires": "Tracked byte[]/ByteBuffer identity has a FACT edge into at least one of: aget-byte/aget; ByteBuffer.wrap/get*/put*; String([B); or a parse/decode-named invoke that also receives the tracked buffer (dataflow_role).",
+        "excludes": "InputStream/AccessorySocket read()I or read([B)I *length* move-result (READ_LENGTH); method/class names alone; copy-only without further processing; protocol/message meaning claims.",
+        "sees_v13": "Transport wrapper read/write; BYTE_ARRAY arg; mis-tagged PRIMITIVE_DECODE from read length; PATH-COMM INBOUND_PRIMITIVE without real byte ops.",
+        "cannot_see_v13": "Interface consumers (AccessorySocket;->read in BclConnection); Packet.decode* ByteBuffer.getShort/getInt; aget-byte loops; state mutation onto Packet fields after decode."
+      }
+    },
+    {
+      "method": "Lbg0;->t(Ljava/lang/Object; [B I I I Lve0;)I",
+      "read_sites": [],
+      "write_sites": [],
+      "buffer_operations": [
+        {
+          "op": "COPY",
+          "raw": "Ljava/util/Arrays;->copyOf([I I)[I",
+          "classification": "FACT"
+        }
+      ],
+      "decoder_candidates": [],
+      "serializer_candidates": [],
+      "message_constructions": [],
+      "primitive_decoding": [],
+      "string_decoding": [
+        {
+          "method": "Lbg0;->t(Ljava/lang/Object; [B I I I Lve0;)I",
+          "api": "Ljava/lang/String;-><init>([B I I Ljava/nio/charset/Charset;)V",
+          "classification": "FACT"
+        },
+        {
+          "method": "Lbg0;->t(Ljava/lang/Object; [B I I I Lve0;)I",
+          "api": "Ljava/lang/String;-><init>([B I I Ljava/nio/charset/Charset;)V",
+          "classification": "FACT"
+        },
+        {
+          "method": "Lbg0;->t(Ljava/lang/Object; [B I I I Lve0;)I",
+          "api": "Ljava/lang/String;-><init>([B I I Ljava/nio/charset/Charset;)V",
+          "classification": "FACT"
+        },
+        {
+          "method": "Lbg0;->t(Ljava/lang/Object; [B I I I Lve0;)I",
+          "api": "Ljava/lang/String;-><init>([B I I Ljava/nio/charset/Charset;)V",
+          "classification": "FACT"
+        },
+        {
+          "method": "Lbg0;->t(Ljava/lang/Object; [B I I I Lve0;)I",
+          "api": "Ljava/lang/String;-><init>([B I I Ljava/nio/charset/Charset;)V",
+          "classification": "FACT"
+        },
+        {
+          "method": "Lbg0;->t(Ljava/lang/Object; [B I I I Lve0;)I",
+          "api": "Ljava/lang/String;-><init>([B I I Ljava/nio/charset/Charset;)V",
+          "classification": "FACT"
+        }
+      ],
+      "byte_processing": [],
+      "state_mutations": [],
+      "object_constructions": [],
+      "read_lengths": [],
+      "nodes": [
+        {
+          "node_type": "STRING_DECODE",
+          "label": "Ljava/lang/String;-><init>([B I I Ljava/nio/charset/Charset;)V",
+          "method": "Lbg0;->t(Ljava/lang/Object; [B I I I Lve0;)I",
+          "instruction_index": 546,
+          "classification": "FACT",
+          "confidence": "high",
+          "node_id": "cnode-356c569e320d"
+        },
+        {
+          "node_type": "STRING_DECODE",
+          "label": "Ljava/lang/String;-><init>([B I I Ljava/nio/charset/Charset;)V",
+          "method": "Lbg0;->t(Ljava/lang/Object; [B I I I Lve0;)I",
+          "instruction_index": 1195,
+          "classification": "FACT",
+          "confidence": "high",
+          "node_id": "cnode-173b73cea993"
+        },
+        {
+          "node_type": "STRING_DECODE",
+          "label": "Ljava/lang/String;-><init>([B I I Ljava/nio/charset/Charset;)V",
+          "method": "Lbg0;->t(Ljava/lang/Object; [B I I I Lve0;)I",
+          "instruction_index": 1212,
+          "classification": "FACT",
+          "confidence": "high",
+          "node_id": "cnode-abaa6bbfcd20"
+        },
+        {
+          "node_type": "STRING_DECODE",
+          "label": "Ljava/lang/String;-><init>([B I I Ljava/nio/charset/Charset;)V",
+          "method": "Lbg0;->t(Ljava/lang/Object; [B I I I Lve0;)I",
+          "instruction_index": 1236,
+          "classification": "FACT",
+          "confidence": "high",
+          "node_id": "cnode-df2b91860296"
+        },
+        {
+          "node_type": "STRING_DECODE",
+          "label": "Ljava/lang/String;-><init>([B I I Ljava/nio/charset/Charset;)V",
+          "method": "Lbg0;->t(Ljava/lang/Object; [B I I I Lve0;)I",
+          "instruction_index": 1257,
+          "classification": "FACT",
+          "confidence": "high",
+          "node_id": "cnode-ed70c7eb785a"
+        },
+        {
+          "node_type": "COPY",
+          "label": "Ljava/util/Arrays;->copyOf([I I)[I",
+          "method": "Lbg0;->t(Ljava/lang/Object; [B I I I Lve0;)I",
+          "instruction_index": 1326,
+          "classification": "FACT",
+          "confidence": "high",
+          "node_id": "cnode-9ea4625162cc"
+        },
+        {
+          "node_type": "STRING_DECODE",
+          "label": "Ljava/lang/String;-><init>([B I I Ljava/nio/charset/Charset;)V",
+          "method": "Lbg0;->t(Ljava/lang/Object; [B I I I Lve0;)I",
+          "instruction_index": 1714,
+          "classification": "FACT",
+          "confidence": "high",
+          "node_id": "cnode-498436323b5b"
+        }
+      ],
+      "edges": [],
+      "boundaries": [
+        {
+          "boundary_id": "cbnd-fafccac69091",
+          "reason": "UNKNOWN_HELPER",
+          "last_proven": "Lbg0;->D(I I Ljava/lang/Object;)Ljava/lang/Object",
+          "detail": "Lbg0;->t(Ljava/lang/Object; [B I I I Lve0;)I",
+          "classification": "UNKNOWN",
+          "method": "Lbg0;->t(Ljava/lang/Object; [B I I I Lve0;)I"
+        },
+        {
+          "boundary_id": "cbnd-70f2194caa4a",
+          "reason": "UNKNOWN_HELPER",
+          "last_proven": "Lbg0;->n(I I Ljava/lang/Object; Ljava/lang/Object;)V",
+          "detail": "Lbg0;->t(Ljava/lang/Object; [B I I I Lve0;)I",
+          "classification": "UNKNOWN",
+          "method": "Lbg0;->t(Ljava/lang/Object; [B I I I Lve0;)I"
+        },
+        {
+          "boundary_id": "cbnd-a0ae9333f0c5",
+          "reason": "UNKNOWN_HELPER",
+          "last_proven": "Ljava/lang/Long;->valueOf(J)Ljava/lang/Long",
+          "detail": "Lbg0;->t(Ljava/lang/Object; [B I I I Lve0;)I",
+          "classification": "UNKNOWN",
+          "method": "Lbg0;->t(Ljava/lang/Object; [B I I I Lve0;)I"
+        },
+        {
+          "boundary_id": "cbnd-dcfbbe704154",
+          "reason": "UNKNOWN_HELPER",
+          "last_proven": "Lsun/misc/Unsafe;->putInt(Ljava/lang/Object; J I)V",
+          "detail": "Lbg0;->t(Ljava/lang/Object; [B I I I Lve0;)I",
+          "classification": "UNKNOWN",
+          "method": "Lbg0;->t(Ljava/lang/Object; [B I I I Lve0;)I"
+        },
+        {
+          "boundary_id": "cbnd-921fed0cbad3",
+          "reason": "UNKNOWN_HELPER",
+          "last_proven": "Lre0;->a(I)Z",
+          "detail": "Lbg0;->t(Ljava/lang/Object; [B I I I Lve0;)I",
+          "classification": "UNKNOWN",
+          "method": "Lbg0;->t(Ljava/lang/Object; [B I I I Lve0;)I"
+        }
+      ],
+      "paths": [],
+      "protocol_semantics": "UNKNOWN",
+      "method_name_semantics": {
+        "method_name": "t",
+        "method_name_evidence": "FACT",
+        "protocol_semantics": "UNKNOWN",
+        "notes": [
+          "Method names are DEX identifiers only.",
+          "Names such as doBclHandshake / Etch / RHMI do not prove protocol semantics."
+        ],
+        "hint_tokens_detected": false
+      },
+      "t5_definition": {
+        "requires": "Tracked byte[]/ByteBuffer identity has a FACT edge into at least one of: aget-byte/aget; ByteBuffer.wrap/get*/put*; String([B); or a parse/decode-named invoke that also receives the tracked buffer (dataflow_role).",
+        "excludes": "InputStream/AccessorySocket read()I or read([B)I *length* move-result (READ_LENGTH); method/class names alone; copy-only without further processing; protocol/message meaning claims.",
+        "sees_v13": "Transport wrapper read/write; BYTE_ARRAY arg; mis-tagged PRIMITIVE_DECODE from read length; PATH-COMM INBOUND_PRIMITIVE without real byte ops.",
+        "cannot_see_v13": "Interface consumers (AccessorySocket;->read in BclConnection); Packet.decode* ByteBuffer.getShort/getInt; aget-byte loops; state mutation onto Packet fields after decode."
+      }
+    }
+  ],
+  "t5_definition": {
+    "requires": "Tracked byte[]/ByteBuffer identity has a FACT edge into at least one of: aget-byte/aget; ByteBuffer.wrap/get*/put*; String([B); or a parse/decode-named invoke that also receives the tracked buffer (dataflow_role).",
+    "excludes": "InputStream/AccessorySocket read()I or read([B)I *length* move-result (READ_LENGTH); method/class names alone; copy-only without further processing; protocol/message meaning claims.",
+    "sees_v13": "Transport wrapper read/write; BYTE_ARRAY arg; mis-tagged PRIMITIVE_DECODE from read length; PATH-COMM INBOUND_PRIMITIVE without real byte ops.",
+    "cannot_see_v13": "Interface consumers (AccessorySocket;->read in BclConnection); Packet.decode* ByteBuffer.getShort/getInt; aget-byte loops; state mutation onto Packet fields after decode."
+  },
+  "summary": {
+    "communication_paths": 2,
+    "inbound_paths": 1,
+    "outbound_paths": 1,
+    "read_sites": 1,
+    "write_sites": 1,
+    "decoder_candidates": 0,
+    "serializer_candidates": 0,
+    "message_constructions": 1,
+    "byte_processing": 0,
+    "state_mutations": 0,
+    "boundaries": 9,
+    "strongest_path_id": "PATH-COMM-000001",
+    "strongest_classification": "INFERENCE",
+    "protocol_semantics": "UNKNOWN",
+    "runtime_execution": "UNKNOWN",
+    "wire_correlation": "UNKNOWN",
+    "coverage": {
+      "complete": 1,
+      "truncated": 0,
+      "boundary": 1,
+      "unresolved": 0,
+      "no_continuation": 0,
+      "primary_truncation": null
+    }
+  },
+  "limitations": [
+    "Communication analysis is bounded static dataflow only.",
+    "Method names never establish protocol identity.",
+    "No wire bytes, runtime execution, or peer identity is proven.",
+    "Transport evidence classifications are not rewritten by this step.",
+    "READ_LENGTH (read move-result) is not byte-content decoding (v1.4)."
+  ],
+  "transport_link": {
+    "evidence_graph_enabled": true,
+    "transport_path_ids": [
+      "PATH-000001",
+      "PATH-000002",
+      "PATH-000003",
+      "PATH-000004"
+    ],
+    "rfcomm_targets": 1,
+    "note": "Communication analysis does not reclassify transport evidence."
+  },
+  "provenance": {
+    "mode": "offline_postprocess",
+    "source_dataset": "/home/martin/projects/apk-forensics/artifacts/de.kai_morich.serial_bluetooth_terminal-1.52.apk",
+    "source_engine_version": "1.6.0",
+    "source_plan_sha256": "0a211deda9574bf9c68b9dbf286d5b88479c76d72d629311aabe5b65a81d07aa",
+    "source_artifact_sha256": "e44ab3b93e1701fcca67869169ba49ef2e918416d28928a56a135e8bff343192",
+    "postprocessing_version": "1.6.0",
+    "method_retention": {
+      "candidate_methods": 5,
+      "retained_methods": 5,
+      "discarded_methods": 0,
+      "discard_reason": null,
+      "cap": 200,
+      "capped": false,
+      "limit_kind": "analyzer",
+      "note": "Retention cap is an analyzer bound, not a native/reflection APK boundary.",
+      "seed_expansion": {
+        "enabled": true,
+        "max_extra": 80,
+        "added": [],
+        "scanned_methods": 9013,
+        "note": "Expansion follows concrete invoke refs to AccessorySocket/Packet/BclConnection buffer APIs — not method-name protocol claims.",
+        "added_count": 0
+      }
+    }
+  },
+  "configuration": {
+    "max_buffer_hops": 5,
+    "max_parser_hops": 3,
+    "max_message_hops": 3,
+    "max_method_hops": 3,
+    "max_dataflow_paths": 100,
+    "interprocedural": true
+  },
+  "coverage": {
+    "paths_total": 2,
+    "complete": 1,
+    "truncated": 0,
+    "boundary": 1,
+    "unresolved": 0,
+    "no_continuation": 0,
+    "truncation_reasons": {},
+    "boundary_reasons": {
+      "UNKNOWN_HELPER": 1
+    },
+    "primary_truncation": null,
+    "primary_boundary": "UNKNOWN_HELPER",
+    "note": "Coverage status does not reclassify FACT/INFERENCE/UNKNOWN evidence. Resource warning is not evidence failure."
+  },
+  "method_retention": {
+    "candidate_methods": 5,
+    "retained_methods": 5,
+    "discarded_methods": 0,
+    "discard_reason": null,
+    "cap": 200,
+    "capped": false,
+    "limit_kind": "analyzer",
+    "note": "Retention cap is an analyzer bound, not a native/reflection APK boundary.",
+    "seed_expansion": {
+      "enabled": true,
+      "max_extra": 80,
+      "added": [],
+      "scanned_methods": 9013,
+      "note": "Expansion follows concrete invoke refs to AccessorySocket/Packet/BclConnection buffer APIs — not method-name protocol claims.",
+      "added_count": 0
+    }
+  },
+  "warnings": [
+    "v1.4 seed expansion added 0 interface/buffer consumer methods."
+  ],
+  "status": "complete"
+}

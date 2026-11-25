@@ -1,0 +1,23 @@
+{
+  "schema": "apk_forensics.runtime_evidence.v1",
+  "status": "INPUT_MISSING",
+  "events": [],
+  "counts": {
+    "events": 0
+  },
+  "source": null,
+  "provenance": {
+    "capture_id": "RUNTIME_CAPTURE_ATTEMPT_20261125T0734Z",
+    "attempted": true,
+    "instrumentation": null,
+    "process": null,
+    "package": "de.bmw.connected",
+    "reason": [
+      "adb devices empty — no Android device/emulator attached",
+      "Frida not installed (CLI/module absent)",
+      "No BMW Connected APK process available to attach",
+      "Simulation of decodeVersion events forbidden"
+    ]
+  },
+  "note": "Empty events array is intentional. Do not treat as successful capture."
+}

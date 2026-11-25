@@ -1,0 +1,253 @@
+{
+  "schema": "apk_forensics.static_runtime_correlation_report.v1",
+  "counts": {
+    "static_values": 12,
+    "runtime_events": 0,
+    "wire_packets": 10,
+    "static_runtime": 12,
+    "runtime_wire": 0,
+    "end_to_end": 0,
+    "exact": 0,
+    "strong": 0,
+    "ambiguous": 0,
+    "rejected": 0,
+    "unknown": 12
+  },
+  "links": [
+    {
+      "id": "SR-VALUE-V001-NONE",
+      "link_type": "STATIC_RUNTIME_LINK",
+      "static_id": "VALUE-V001",
+      "static_method": "Lbg0;->t(Ljava/lang/Object; [B I I I Lve0;)I",
+      "runtime_id": null,
+      "correlation_keys": [],
+      "correlation_rule": "no_runtime_evidence",
+      "strength": "UNKNOWN",
+      "result": "UNKNOWN",
+      "classification": "UNKNOWN",
+      "protocol_semantics": "UNKNOWN",
+      "notes": [
+        "NO_EXTERNAL_EVIDENCE"
+      ]
+    },
+    {
+      "id": "SR-VALUE-V002-NONE",
+      "link_type": "STATIC_RUNTIME_LINK",
+      "static_id": "VALUE-V002",
+      "static_method": "Lbg0;->t(Ljava/lang/Object; [B I I I Lve0;)I",
+      "runtime_id": null,
+      "correlation_keys": [],
+      "correlation_rule": "no_runtime_evidence",
+      "strength": "UNKNOWN",
+      "result": "UNKNOWN",
+      "classification": "UNKNOWN",
+      "protocol_semantics": "UNKNOWN",
+      "notes": [
+        "NO_EXTERNAL_EVIDENCE"
+      ]
+    },
+    {
+      "id": "SR-VALUE-V003-NONE",
+      "link_type": "STATIC_RUNTIME_LINK",
+      "static_id": "VALUE-V003",
+      "static_method": "Lbg0;->t(Ljava/lang/Object; [B I I I Lve0;)I",
+      "runtime_id": null,
+      "correlation_keys": [],
+      "correlation_rule": "no_runtime_evidence",
+      "strength": "UNKNOWN",
+      "result": "UNKNOWN",
+      "classification": "UNKNOWN",
+      "protocol_semantics": "UNKNOWN",
+      "notes": [
+        "NO_EXTERNAL_EVIDENCE"
+      ]
+    },
+    {
+      "id": "SR-VALUE-V004-NONE",
+      "link_type": "STATIC_RUNTIME_LINK",
+      "static_id": "VALUE-V004",
+      "static_method": "Lbg0;->t(Ljava/lang/Object; [B I I I Lve0;)I",
+      "runtime_id": null,
+      "correlation_keys": [],
+      "correlation_rule": "no_runtime_evidence",
+      "strength": "UNKNOWN",
+      "result": "UNKNOWN",
+      "classification": "UNKNOWN",
+      "protocol_semantics": "UNKNOWN",
+      "notes": [
+        "NO_EXTERNAL_EVIDENCE"
+      ]
+    },
+    {
+      "id": "SR-VALUE-V005-NONE",
+      "link_type": "STATIC_RUNTIME_LINK",
+      "static_id": "VALUE-V005",
+      "static_method": "Lbg0;->t(Ljava/lang/Object; [B I I I Lve0;)I",
+      "runtime_id": null,
+      "correlation_keys": [],
+      "correlation_rule": "no_runtime_evidence",
+      "strength": "UNKNOWN",
+      "result": "UNKNOWN",
+      "classification": "UNKNOWN",
+      "protocol_semantics": "UNKNOWN",
+      "notes": [
+        "NO_EXTERNAL_EVIDENCE"
+      ]
+    },
+    {
+      "id": "SR-VALUE-V006-NONE",
+      "link_type": "STATIC_RUNTIME_LINK",
+      "static_id": "VALUE-V006",
+      "static_method": "Lbg0;->t(Ljava/lang/Object; [B I I I Lve0;)I",
+      "runtime_id": null,
+      "correlation_keys": [],
+      "correlation_rule": "no_runtime_evidence",
+      "strength": "UNKNOWN",
+      "result": "UNKNOWN",
+      "classification": "UNKNOWN",
+      "protocol_semantics": "UNKNOWN",
+      "notes": [
+        "NO_EXTERNAL_EVIDENCE"
+      ]
+    },
+    {
+      "id": "SR-VALUE-V007-NONE",
+      "link_type": "STATIC_RUNTIME_LINK",
+      "static_id": "VALUE-V007",
+      "static_method": "Lbg0;->t(Ljava/lang/Object; [B I I I Lve0;)I",
+      "runtime_id": null,
+      "correlation_keys": [],
+      "correlation_rule": "no_runtime_evidence",
+      "strength": "UNKNOWN",
+      "result": "UNKNOWN",
+      "classification": "UNKNOWN",
+      "protocol_semantics": "UNKNOWN",
+      "notes": [
+        "NO_EXTERNAL_EVIDENCE"
+      ]
+    },
+    {
+      "id": "SR-VALUE-V008-NONE",
+      "link_type": "STATIC_RUNTIME_LINK",
+      "static_id": "VALUE-V008",
+      "static_method": "Lbg0;->t(Ljava/lang/Object; [B I I I Lve0;)I",
+      "runtime_id": null,
+      "correlation_keys": [],
+      "correlation_rule": "no_runtime_evidence",
+      "strength": "UNKNOWN",
+      "result": "UNKNOWN",
+      "classification": "UNKNOWN",
+      "protocol_semantics": "UNKNOWN",
+      "notes": [
+        "NO_EXTERNAL_EVIDENCE"
+      ]
+    },
+    {
+      "id": "SR-VALUE-V009-NONE",
+      "link_type": "STATIC_RUNTIME_LINK",
+      "static_id": "VALUE-V009",
+      "static_method": "Lbg0;->t(Ljava/lang/Object; [B I I I Lve0;)I",
+      "runtime_id": null,
+      "correlation_keys": [],
+      "correlation_rule": "no_runtime_evidence",
+      "strength": "UNKNOWN",
+      "result": "UNKNOWN",
+      "classification": "UNKNOWN",
+      "protocol_semantics": "UNKNOWN",
+      "notes": [
+        "NO_EXTERNAL_EVIDENCE"
+      ]
+    },
+    {
+      "id": "SR-VALUE-V010-NONE",
+      "link_type": "STATIC_RUNTIME_LINK",
+      "static_id": "VALUE-V010",
+      "static_method": "Lbg0;->t(Ljava/lang/Object; [B I I I Lve0;)I",
+      "runtime_id": null,
+      "correlation_keys": [],
+      "correlation_rule": "no_runtime_evidence",
+      "strength": "UNKNOWN",
+      "result": "UNKNOWN",
+      "classification": "UNKNOWN",
+      "protocol_semantics": "UNKNOWN",
+      "notes": [
+        "NO_EXTERNAL_EVIDENCE"
+      ]
+    },
+    {
+      "id": "SR-VALUE-V011-NONE",
+      "link_type": "STATIC_RUNTIME_LINK",
+      "static_id": "VALUE-V011",
+      "static_method": "Lbg0;->t(Ljava/lang/Object; [B I I I Lve0;)I",
+      "runtime_id": null,
+      "correlation_keys": [],
+      "correlation_rule": "no_runtime_evidence",
+      "strength": "UNKNOWN",
+      "result": "UNKNOWN",
+      "classification": "UNKNOWN",
+      "protocol_semantics": "UNKNOWN",
+      "notes": [
+        "NO_EXTERNAL_EVIDENCE"
+      ]
+    },
+    {
+      "id": "SR-VALUE-V012-NONE",
+      "link_type": "STATIC_RUNTIME_LINK",
+      "static_id": "VALUE-V012",
+      "static_method": "Lbg0;->t(Ljava/lang/Object; [B I I I Lve0;)I",
+      "runtime_id": null,
+      "correlation_keys": [],
+      "correlation_rule": "no_runtime_evidence",
+      "strength": "UNKNOWN",
+      "result": "UNKNOWN",
+      "classification": "UNKNOWN",
+      "protocol_semantics": "UNKNOWN",
+      "notes": [
+        "NO_EXTERNAL_EVIDENCE"
+      ]
+    }
+  ],
+  "answers_subset": {
+    "1_static_methods_correlated": [],
+    "2_values_with_runtime": [],
+    "3_strength_counts": {
+      "UNKNOWN": 12,
+      "class:UNKNOWN": 12,
+      "result:UNKNOWN": 12
+    },
+    "4_unknown_static_values": [
+      "VALUE-V001",
+      "VALUE-V002",
+      "VALUE-V003",
+      "VALUE-V004",
+      "VALUE-V005",
+      "VALUE-V006",
+      "VALUE-V007",
+      "VALUE-V008",
+      "VALUE-V009",
+      "VALUE-V010",
+      "VALUE-V011",
+      "VALUE-V012"
+    ]
+  },
+  "guard": {
+    "estimate": {
+      "memory_mb": 8,
+      "runtime_seconds": 6,
+      "probes": 42,
+      "risk": "ok",
+      "reasons": [
+        "static=12",
+        "runtime_capped=0/0",
+        "wire_capped=10/10",
+        "timestamp_window_ms=50",
+        "strategy=indexed_buckets_not_cartesian"
+      ],
+      "max_correlations": 500
+    },
+    "decision": "OK",
+    "allow_resource_warning": false
+  },
+  "executed": true,
+  "protocol_semantics": "UNKNOWN"
+}

@@ -1,0 +1,150 @@
+{
+  "schema": "apk_forensics.wire_evidence.v1",
+  "status": "OK",
+  "packets": [
+    {
+      "id": "W-0001",
+      "type": "WIRE_PACKET",
+      "direction": "PHONE_TO_HU",
+      "length": 4,
+      "bytes_hex": "12345678",
+      "offset": 0,
+      "sequence": 1,
+      "timestamp_ms": 1795165204659,
+      "peer": "['127.0.0.1', 40026]",
+      "source_artifact": "/home/martin/projects/bt-analyzer/docs/evidence/LAB_B3_TCP_FULLAUTH_20261120T090004Z/raw/phone_to_hu.bin"
+    },
+    {
+      "id": "W-0002",
+      "type": "WIRE_PACKET",
+      "direction": "HU_TO_PHONE",
+      "length": 16,
+      "bytes_hex": "00040000000000080005000e00004000",
+      "offset": 0,
+      "sequence": 2,
+      "timestamp_ms": 1795165204659,
+      "peer": "['127.0.0.1', 40026]",
+      "source_artifact": "/home/martin/projects/bt-analyzer/docs/evidence/LAB_B3_TCP_FULLAUTH_20261120T090004Z/raw/hu_to_phone.bin"
+    },
+    {
+      "id": "W-0003",
+      "type": "WIRE_PACKET",
+      "direction": "PHONE_TO_HU",
+      "length": 10,
+      "bytes_hex": "00050000000000020004",
+      "offset": 4,
+      "sequence": 3,
+      "timestamp_ms": 1795165204659,
+      "peer": "['127.0.0.1', 40026]",
+      "source_artifact": "/home/martin/projects/bt-analyzer/docs/evidence/LAB_B3_TCP_FULLAUTH_20261120T090004Z/raw/phone_to_hu.bin"
+    },
+    {
+      "id": "W-0004",
+      "type": "WIRE_PACKET",
+      "direction": "HU_TO_PHONE",
+      "length": 12,
+      "bytes_hex": "00060000000000040000000a",
+      "offset": 16,
+      "sequence": 4,
+      "timestamp_ms": 1795165204659,
+      "peer": "['127.0.0.1', 40026]",
+      "source_artifact": "/home/martin/projects/bt-analyzer/docs/evidence/LAB_B3_TCP_FULLAUTH_20261120T090004Z/raw/hu_to_phone.bin"
+    },
+    {
+      "id": "W-0005",
+      "type": "WIRE_PACKET",
+      "direction": "PHONE_TO_HU",
+      "length": 226,
+      "bytes_hex": "0008000000000030002430653962393063342d636265312d343734322d383238332d6433363765396135363631390000000000000001000700011389138900000001000a0fa400000002000a0fa40092deadbeef0000008a0386304ba8bb02866306b4688700000000000003e986144a776f8b846c2d2d2d2d2d424547494e20504b4353372d2d2d2d2d0a4d494942496a414e42676b71686b6947397730424151454641414f43415138414d49494243674b4341514541305a335653354a4a6364733378666e4c414253494d0a2d2d2d2d2d454e4420504b4353372d2d2d2d2d0a81",
+      "offset": 14,
+      "sequence": 5,
+      "timestamp_ms": 1795165204659,
+      "peer": "['127.0.0.1', 40026]",
+      "source_artifact": "/home/martin/projects/bt-analyzer/docs/evidence/LAB_B3_TCP_FULLAUTH_20261120T090004Z/raw/phone_to_hu.bin"
+    },
+    {
+      "id": "W-0006",
+      "type": "WIRE_PACKET",
+      "direction": "HU_TO_PHONE",
+      "length": 12,
+      "bytes_hex": "000600000000000400000038",
+      "offset": 28,
+      "sequence": 6,
+      "timestamp_ms": 1795165204659,
+      "peer": "['127.0.0.1', 40026]",
+      "source_artifact": "/home/martin/projects/bt-analyzer/docs/evidence/LAB_B3_TCP_FULLAUTH_20261120T090004Z/raw/hu_to_phone.bin"
+    },
+    {
+      "id": "W-0007",
+      "type": "WIRE_PACKET",
+      "direction": "HU_TO_PHONE",
+      "length": 111,
+      "bytes_hex": "00060000000000040000000800060000000000040000000800060000000000040000009a0002000a0fa40043deadbeef0000003b03869c6372b803868104fdc28b1088ebb2faaaee061617b3991f3a984c8486eda8c9a68700000000000003e9866306b4688700000000000000c981",
+      "offset": 40,
+      "sequence": 7,
+      "timestamp_ms": 1795165204659,
+      "peer": "['127.0.0.1', 40026]",
+      "source_artifact": "/home/martin/projects/bt-analyzer/docs/evidence/LAB_B3_TCP_FULLAUTH_20261120T090004Z/raw/hu_to_phone.bin"
+    },
+    {
+      "id": "W-0008",
+      "type": "WIRE_PACKET",
+      "direction": "PHONE_TO_HU",
+      "length": 559,
+      "bytes_hex": "0002000a0fa40227deadbeef0000021f03867e002a4d02866306b4688700000000000003ea86144a776f8b85020088ebb2faaaee061617b3991f3a984c840000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000081",
+      "offset": 240,
+      "sequence": 8,
+      "timestamp_ms": 1795165204659,
+      "peer": "['127.0.0.1', 40026]",
+      "source_artifact": "/home/martin/projects/bt-analyzer/docs/evidence/LAB_B3_TCP_FULLAUTH_20261120T090004Z/raw/phone_to_hu.bin"
+    },
+    {
+      "id": "W-0009",
+      "type": "WIRE_PACKET",
+      "direction": "HU_TO_PHONE",
+      "length": 12,
+      "bytes_hex": "00060000000000040000022f",
+      "offset": 151,
+      "sequence": 9,
+      "timestamp_ms": 1795165204659,
+      "peer": "['127.0.0.1', 40026]",
+      "source_artifact": "/home/martin/projects/bt-analyzer/docs/evidence/LAB_B3_TCP_FULLAUTH_20261120T090004Z/raw/hu_to_phone.bin"
+    },
+    {
+      "id": "W-0010",
+      "type": "WIRE_PACKET",
+      "direction": "HU_TO_PHONE",
+      "length": 52,
+      "bytes_hex": "0002000a0fa4002cdeadbeef000000240386a6b0ffca0286eda8c9a68700000000000003ea866306b4688700000000000000ca81",
+      "offset": 163,
+      "sequence": 10,
+      "timestamp_ms": 1795165204659,
+      "peer": "['127.0.0.1', 40026]",
+      "source_artifact": "/home/martin/projects/bt-analyzer/docs/evidence/LAB_B3_TCP_FULLAUTH_20261120T090004Z/raw/hu_to_phone.bin"
+    }
+  ],
+  "counts": {
+    "packets": 10,
+    "by_direction": {
+      "HU_TO_PHONE": 6,
+      "PHONE_TO_HU": 4
+    },
+    "phone_to_hu_bytes": 799,
+    "hu_to_phone_bytes": 215,
+    "jsonl_byte_events": 10,
+    "stream_slice_complete": true
+  },
+  "source": "/home/martin/projects/bt-analyzer/docs/evidence/LAB_B3_TCP_FULLAUTH_20261120T090004Z",
+  "provenance": {
+    "claim": "LAB",
+    "normalization": "b3_capture_v1",
+    "inputs": [
+      "/home/martin/projects/bt-analyzer/docs/evidence/LAB_B3_TCP_FULLAUTH_20261120T090004Z/raw/phone_to_hu.bin",
+      "/home/martin/projects/bt-analyzer/docs/evidence/LAB_B3_TCP_FULLAUTH_20261120T090004Z/raw/hu_to_phone.bin",
+      "/home/martin/projects/bt-analyzer/docs/evidence/LAB_B3_TCP_FULLAUTH_20261120T090004Z/b3.jsonl"
+    ],
+    "protocol_semantics": "UNKNOWN",
+    "note": "Normalized from bt-analyzer B3 capture. External method/cmd labels are not copied into evidence types. This is Wire evidence — not APK FACT."
+  },
+  "normalization": "b3_capture_v1"
+}

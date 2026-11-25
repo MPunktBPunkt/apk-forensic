@@ -1,0 +1,125 @@
+{
+  "schema": "apk_forensics.path_semantic_closure.v1",
+  "table": [
+    {
+      "PATH": "PATH-000001",
+      "T0": true,
+      "T1": true,
+      "T2": true,
+      "T3": true,
+      "T4": false,
+      "T5": false,
+      "T6": false,
+      "Semantic": "S0_BUFFER_ONLY",
+      "Termination": "F_BUFFER_IDENTITY_BOUNDARY",
+      "Protocol": "UNKNOWN"
+    },
+    {
+      "PATH": "PATH-000002",
+      "T0": true,
+      "T1": true,
+      "T2": true,
+      "T3": true,
+      "T4": false,
+      "T5": false,
+      "T6": false,
+      "Semantic": "S0_BUFFER_ONLY",
+      "Termination": "F_BUFFER_IDENTITY_BOUNDARY",
+      "Protocol": "UNKNOWN"
+    },
+    {
+      "PATH": "PATH-000003",
+      "T0": true,
+      "T1": true,
+      "T2": true,
+      "T3": true,
+      "T4": false,
+      "T5": false,
+      "T6": false,
+      "Semantic": "S0_BUFFER_ONLY",
+      "Termination": "F_BUFFER_IDENTITY_BOUNDARY",
+      "Protocol": "UNKNOWN"
+    },
+    {
+      "PATH": "PATH-000004",
+      "T0": null,
+      "T1": null,
+      "T2": null,
+      "T3": null,
+      "T4": null,
+      "T5": null,
+      "T6": null,
+      "Semantic": "S0_BUFFER_ONLY",
+      "Termination": null,
+      "Protocol": "UNKNOWN"
+    }
+  ],
+  "paths": [
+    {
+      "path_id": "PATH-000001",
+      "kind": "COMBINED_COMMUNICATION_PATH",
+      "case_v13": "CASE_C_BUFFER_CLOSED_SEMANTICS_OPEN",
+      "stages": {
+        "T0": true,
+        "T1": true,
+        "T2": true,
+        "T3": true,
+        "T4": false,
+        "T5_byte_processing": false,
+        "T6_object_state": false
+      },
+      "semantic_class": "S0_BUFFER_ONLY",
+      "semantic_description": "Buffer proven; no byte processing beyond consumer/producer.",
+      "linked_path_comm_v13": [],
+      "evidence_sample": [],
+      "protocol_semantics": "UNKNOWN",
+      "termination": "F_BUFFER_IDENTITY_BOUNDARY"
+    },
+    {
+      "path_id": "PATH-000002",
+      "kind": "INPUT_PATH",
+      "case_v13": "CASE_C_BUFFER_CLOSED_SEMANTICS_OPEN",
+      "stages": {
+        "T0": true,
+        "T1": true,
+        "T2": true,
+        "T3": true,
+        "T4": false,
+        "T5_byte_processing": false,
+        "T6_object_state": false
+      },
+      "semantic_class": "S0_BUFFER_ONLY",
+      "semantic_description": "Buffer proven; no byte processing beyond consumer/producer.",
+      "linked_path_comm_v13": [],
+      "evidence_sample": [],
+      "protocol_semantics": "UNKNOWN",
+      "termination": "F_BUFFER_IDENTITY_BOUNDARY"
+    },
+    {
+      "path_id": "PATH-000003",
+      "kind": "OUTPUT_PATH",
+      "case_v13": "CASE_C_BUFFER_CLOSED_SEMANTICS_OPEN",
+      "stages": {
+        "T0": true,
+        "T1": true,
+        "T2": true,
+        "T3": true,
+        "T4": false,
+        "T5_byte_processing": false,
+        "T6_object_state": false
+      },
+      "semantic_class": "S0_BUFFER_ONLY",
+      "semantic_description": "Buffer proven; no byte processing beyond consumer/producer.",
+      "linked_path_comm_v13": [],
+      "evidence_sample": [],
+      "protocol_semantics": "UNKNOWN",
+      "termination": "F_BUFFER_IDENTITY_BOUNDARY"
+    },
+    {
+      "path_id": "PATH-000004",
+      "semantic_class": "S0_BUFFER_ONLY",
+      "T5_byte_processing": false,
+      "T6_object_state": false
+    }
+  ]
+}

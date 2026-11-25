@@ -1,0 +1,51 @@
+{
+  "schema": "apk_forensics.path_termination_analysis.v1",
+  "taxonomy": {
+    "A_TRUE_GRAPH_END": "Dataflow ends in analyzed code with no further static continuation.",
+    "B_RETURN_BOUNDARY": "Relevant value leaves via return.",
+    "C_PARAMETER_BOUNDARY": "Value passed as parameter; next consumer outside this path.",
+    "D_WRAPPER_BOUNDARY": "Wrapper abstracts further transport/buffer access.",
+    "E_OBJECT_IDENTITY_BOUNDARY": "Object identity cannot be followed safely.",
+    "F_BUFFER_IDENTITY_BOUNDARY": "Socket/stream known; concrete buffer/array identity lost.",
+    "G_METHOD_CALL_GRAPH_BOUNDARY": "Call/method outside allowed analysis bounds.",
+    "H_CYCLE_GUARD": "Stopped on a real object/field cycle.",
+    "I_AMBIGUOUS_ALIAS": "Multiple objects cannot be distinguished statically.",
+    "J_UNKNOWN_UNRESOLVED": "Evidence insufficient for a reliable assignment."
+  },
+  "rows": [
+    {
+      "path_id": "PATH-000001",
+      "highest_stage": "T3_BUFFER",
+      "termination": "F_BUFFER_IDENTITY_BOUNDARY",
+      "raw_reasons": [
+        "parameter_callee_unresolved"
+      ],
+      "case": "CASE_C_BUFFER_CLOSED_SEMANTICS_OPEN"
+    },
+    {
+      "path_id": "PATH-000002",
+      "highest_stage": "T3_BUFFER",
+      "termination": "F_BUFFER_IDENTITY_BOUNDARY",
+      "raw_reasons": [],
+      "case": "CASE_C_BUFFER_CLOSED_SEMANTICS_OPEN"
+    },
+    {
+      "path_id": "PATH-000003",
+      "highest_stage": "T3_BUFFER",
+      "termination": "F_BUFFER_IDENTITY_BOUNDARY",
+      "raw_reasons": [],
+      "case": "CASE_C_BUFFER_CLOSED_SEMANTICS_OPEN"
+    },
+    {
+      "path_id": "PATH-000004",
+      "highest_stage": "T0_SOCKET",
+      "termination": "A_TRUE_GRAPH_END",
+      "raw_reasons": [],
+      "case": "CASE_F_TRUE_END"
+    }
+  ],
+  "counts": {
+    "F_BUFFER_IDENTITY_BOUNDARY": 3,
+    "A_TRUE_GRAPH_END": 1
+  }
+}
