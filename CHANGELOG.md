@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.6.1
+
+- **CASE-B wire normalizer**: `normalize_b3_capture_to_wire_evidence` maps bt-analyzer B3 captures (`raw/phone_to_hu.bin`, `raw/hu_to_phone.bin`, optional `b3.jsonl`) → `wire_evidence.v1`
+- Tool: `tools/normalize_b3_wire_evidence.py` (no correlation-logic change; protocol labels not imported)
+- Cross-APK evaluation artefacts documented under `output/v16-cross-apk/` / `output/v16-wire-correlation/` (local reports; not required for install)
+- Without runtime, VALUE↔Wire join remains unexecuted (`INPUT_MISSING`); v1.5/v1.6 baselines unchanged
+
 ## 1.6.0
 
 - **Static ↔ Runtime/Wire evidence correlation**: offline join of v1.5 application-flow with optional runtime traces and wire captures

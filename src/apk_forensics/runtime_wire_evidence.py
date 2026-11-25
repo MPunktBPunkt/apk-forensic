@@ -297,6 +297,159 @@ def inventory_external_artefacts(roots: list[Path] | None = None) -> dict[str, A
     }
 
 
+def normalize_b3_capture_to_wire_evidence(
+    capture_dir: Path,
+    *,
+    include_stream_aggregates: bool = True,
+) -> dict[str, Any]:
+    """Deterministic CASE-B normalizer: bt-analyzer B3 capture dir → wire_evidence.v1.
+
+    Reads:
+      raw/phone_to_hu.bin, raw/hu_to_phone.bin
+      optional b3.jsonl ``bytes`` events (for directional slicing + offsets)
+
+    Does **not** invent protocol semantics. External labels (cmd_name/method) are
+    omitted from evidence types; only direction/bytes/length/offset/time/peer.
+    """
+    capture_dir = Path(capture_dir).resolve()
+    phone_bin = capture_dir / "raw" / "phone_to_hu.bin"
+    hu_bin = capture_dir / "raw" / "hu_to_phone.bin"
+    jsonl = capture_dir / "b3.jsonl"
+    if not phone_bin.is_file() and not hu_bin.is_file():
+        return {
+            "schema": WIRE_SCHEMA,
+            "status": "INPUT_MISSING",
+            "packets": [],
+            "counts": {"packets": 0},
+            "source": str(capture_dir),
+            "note": "No raw/phone_to_hu.bin or raw/hu_to_phone.bin in capture dir.",
+            "normalization": "b3_capture_v1",
+        }
+
+    streams: dict[str, bytes] = {}
+    if phone_bin.is_file():
+        streams["PHONE_TO_HU"] = phone_bin.read_bytes()
+    if hu_bin.is_file():
+        streams["HU_TO_PHONE"] = hu_bin.read_bytes()
+
+    # Optional absolute epoch from first relay_start ts
+    t0_ms: int | None = None
+    byte_events: list[dict[str, Any]] = []
+    peer = None
+    if jsonl.is_file():
+        for line in jsonl.read_text(encoding="utf-8", errors="replace").splitlines():
+            line = line.strip()
+            if not line:
+                continue
+            try:
+                ev = json.loads(line)
+            except json.JSONDecodeError:
+                continue
+            if ev.get("event") == "relay_start" and ev.get("ts") is not None and t0_ms is None:
+                try:
+                    t0_ms = int(float(ev["ts"]) * 1000)
+                except (TypeError, ValueError):
+                    t0_ms = None
+            if ev.get("event") == "accepted" and ev.get("peer") is not None:
+                peer = str(ev.get("peer"))
+            if ev.get("event") == "bytes" and ev.get("direction") and ev.get("n") is not None:
+                byte_events.append(ev)
+
+    dir_map = {
+        "phone->hu": "PHONE_TO_HU",
+        "phone_to_hu": "PHONE_TO_HU",
+        "hu->phone": "HU_TO_PHONE",
+        "hu_to_phone": "HU_TO_PHONE",
+    }
+    packets: list[dict[str, Any]] = []
+    cursors = {k: 0 for k in streams}
+    seq = 0
+    for ev in byte_events:
+        dlabel = dir_map.get(str(ev.get("direction")).strip().lower())
+        if not dlabel or dlabel not in streams:
+            continue
+        n = int(ev["n"])
+        buf = streams[dlabel]
+        off = cursors[dlabel]
+        if off + n > len(buf):
+            # cannot slice — skip rather than invent
+            continue
+        chunk = buf[off : off + n]
+        cursors[dlabel] = off + n
+        seq += 1
+        packets.append(
+            {
+                "id": f"W-{seq:04d}",
+                "type": "WIRE_PACKET",
+                "direction": dlabel,
+                "length": n,
+                "bytes_hex": chunk.hex(),
+                "offset": off,
+                "sequence": seq,
+                "timestamp_ms": t0_ms,
+                "peer": peer,
+                "source_artifact": str(capture_dir / "raw" / ("phone_to_hu.bin" if dlabel == "PHONE_TO_HU" else "hu_to_phone.bin")),
+            }
+        )
+
+    # If jsonl missing/incomplete, emit whole-stream aggregates (still real bytes).
+    if include_stream_aggregates:
+        for dlabel, buf in streams.items():
+            if not buf:
+                continue
+            # skip aggregate if we already sliced the full stream exactly
+            if cursors.get(dlabel, 0) == len(buf) and any(p["direction"] == dlabel for p in packets):
+                continue
+            seq += 1
+            packets.append(
+                {
+                    "id": f"W-STREAM-{dlabel}",
+                    "type": "WIRE_BYTES",
+                    "direction": dlabel,
+                    "length": len(buf),
+                    "bytes_hex": buf.hex(),
+                    "offset": 0,
+                    "sequence": seq,
+                    "timestamp_ms": t0_ms,
+                    "peer": peer,
+                    "source_artifact": str(
+                        capture_dir / "raw" / ("phone_to_hu.bin" if dlabel == "PHONE_TO_HU" else "hu_to_phone.bin")
+                    ),
+                    "note": "full_stream_aggregate",
+                }
+            )
+
+    sliced_ok = all(cursors.get(k, 0) == len(v) for k, v in streams.items() if v)
+    return {
+        "schema": WIRE_SCHEMA,
+        "status": "OK" if packets else "EMPTY",
+        "packets": packets,
+        "counts": {
+            "packets": len(packets),
+            "by_direction": _count_by(
+                [{"type": p.get("direction")} for p in packets],
+                "type",
+            ),
+            "phone_to_hu_bytes": len(streams.get("PHONE_TO_HU") or b""),
+            "hu_to_phone_bytes": len(streams.get("HU_TO_PHONE") or b""),
+            "jsonl_byte_events": len(byte_events),
+            "stream_slice_complete": sliced_ok,
+        },
+        "source": str(capture_dir),
+        "provenance": {
+            "claim": "LAB",
+            "normalization": "b3_capture_v1",
+            "inputs": [str(p) for p in (phone_bin, hu_bin, jsonl) if p.is_file()],
+            "protocol_semantics": "UNKNOWN",
+            "note": (
+                "Normalized from bt-analyzer B3 capture. External method/cmd labels are not "
+                "copied into evidence types. This is Wire evidence — not APK FACT."
+            ),
+        },
+        "normalization": "b3_capture_v1",
+    }
+
+
 def _count_by(items: list[dict[str, Any]], key: str) -> dict[str, int]:
     out: dict[str, int] = {}
     for it in items:

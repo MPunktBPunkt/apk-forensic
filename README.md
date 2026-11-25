@@ -1,6 +1,6 @@
 # apk-forensics
 
-Local, static APK forensics toolkit (v1.6.0).
+Local, static APK forensics toolkit (v1.6.1).
 
 It turns Android APKs into reproducible static fingerprints: hashes, ZIP inventory, manifest metadata (when available), DEX/native inventories, readable strings, UUID/port/API candidates, optional profile correlations, optional DEX context / Bluetooth RFCOMM path analysis with **bounded caller reconstruction**, **cross-method socket/stream object-flow**, a **canonical Transport Evidence Graph**, and a **Communication Evidence Graph** (bytes/buffers → decoder/encoder → message/object — without protocol guessing), plus **transport-to-byte evidence closure** and **buffer-to-semantics closure** (T5 byte processing / S0–S4 — without protocol guessing), **structured-value / application-flow closure**, and **static ↔ runtime/wire evidence correlation** (optional external traces/captures — without protocol guessing), **resource-estimate breakdown / estimate-vs-actual calibration** and **path coverage** (COMPLETE/TRUNCATED/BOUNDARY) kept separate from evidence classes, **ArtifactBundles**, controlled **workspace storage lifecycle**, a declarative **SearchPlan** layer, and an **AnalysisJob + Resource Guard** for deterministic preflight budgeting.
 
@@ -173,6 +173,13 @@ apk-forensics diagnose-runtime-correlation \
 ```
 
 Optional runtime/wire JSON only. Missing external artefacts → `INPUT_MISSING` / `NO_EXTERNAL_EVIDENCE` (never simulated). Correlates static `VALUE-V###` with observed execution and on-wire bytes — protocol semantics stay **UNKNOWN**.
+
+bt-analyzer B3 captures (`raw/phone_to_hu.bin`, `raw/hu_to_phone.bin`, optional `b3.jsonl`) can be normalized to `wire_evidence.v1` without changing correlation rules:
+
+```bash
+python tools/normalize_b3_wire_evidence.py /path/to/B3_CAPTURE \
+  --output ./output/v16-wire-correlation/wire.json
+```
 
 ### Structured-Value & Application-Flow Closure (v1.5)
 
