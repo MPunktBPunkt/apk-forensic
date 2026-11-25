@@ -1,8 +1,29 @@
 {
-  "capture_id": "RUNTIME_CAPTURE_ATTEMPT_20261125T0734Z",
+  "capture_id": "RUNTIME_CAPTURE_ATTEMPT_20261125T083913Z",
+  "prior_capture_id": "RUNTIME_CAPTURE_ATTEMPT_20261125T0734Z",
   "verdict": "INPUT_MISSING",
   "engine": "1.6.1",
-  "generated_utc": "2026-11-25T06:36:27.106398+00:00",
+  "generated_utc": "2026-11-25T08:39:18.545874+00:00",
+  "git": {
+    "branch": "main",
+    "commit": "8ea69d1747195141bde19381d2f19146379b946f",
+    "tracking": "origin/main",
+    "working_tree_before": "clean"
+  },
+  "first_unclosed_edge": {
+    "edge": "STATIC → RUNTIME",
+    "value_id": "VALUE-V001",
+    "static_method": "Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Info;->decodeVersion([B)S",
+    "boundary": "RUNTIME_LIMIT",
+    "result_class": "INPUT_MISSING",
+    "causes": [
+      "NO_DEVICE",
+      "NO_FRIDA",
+      "NO_PROCESS",
+      "NO_LIVE_SESSION",
+      "NO_INSTRUMENTATION_ACCESS"
+    ]
+  },
   "static_target": {
     "value_id": "VALUE-V001",
     "apk_file": "artifacts/de.bmw.connected-6.0.0.4962.apk",
@@ -19,7 +40,18 @@
     "value_class": "V5_ROUNDTRIP",
     "static_classification": "FACT",
     "protocol_semantics": "UNKNOWN",
-    "static_report": "output/v15-application-flow/APPLICATION_FLOW_EVIDENCE_REPORT.json",
+    "static_report": "output/v16-baseline/APPLICATION_FLOW_EVIDENCE_REPORT.json",
     "note_package": "VALUE-V001 baseline comes from de.bmw.connected 6.0.0.4962 (Connected), not de.bmw.connected.mobile20.row (MyBMW). Hook target must match this APK/process."
-  }
+  },
+  "wire_available_but_not_joined": {
+    "artefact": "output/v16-wire-correlation/wire_LAB_B3_TCP_FULLAUTH_20261120T090004Z.json",
+    "origin": "bt-analyzer LAB_B3_TCP_FULLAUTH_20261120T090004Z",
+    "source_path": "/home/martin/projects/bt-analyzer/docs/evidence/LAB_B3_TCP_FULLAUTH_20261120T090004Z",
+    "packets": 10,
+    "classification_vs_this_attempt": "SESSION_MISMATCH / NOT_APPLICABLE",
+    "reason": "No APK runtime capture exists for this attempt; LAB_B3 is a LABSIM relay session and must not be joined without independent same-session identity."
+  },
+  "code_change": false,
+  "v17": false,
+  "correlation_engine_changed": false
 }

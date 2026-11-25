@@ -1,0 +1,17 @@
+# Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Packet;->encode(Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Command; S S S [B)[B
+# dex=classes.dex code_present=True instr=15 access=['public', 'static'] code_offset=4419128
+0000  add-int/lit8 v0, v5, 8
+0001  invoke-static v0, Ljava/nio/ByteBuffer;->allocate(I)Ljava/nio/ByteBuffer;
+0002  move-result-object v0
+0003  iget v1, v2, Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Command;->mCode I
+0004  int-to-short v1, v1
+0005  invoke-virtual v0, v1, Ljava/nio/ByteBuffer;->putShort(S)Ljava/nio/ByteBuffer;
+0006  invoke-virtual v0, v3, Ljava/nio/ByteBuffer;->putShort(S)Ljava/nio/ByteBuffer;
+0007  invoke-virtual v0, v4, Ljava/nio/ByteBuffer;->putShort(S)Ljava/nio/ByteBuffer;
+0008  invoke-virtual v0, v5, Ljava/nio/ByteBuffer;->putShort(S)Ljava/nio/ByteBuffer;
+0009  if-lez v5, +006h
+0010  const/4 v1, 0
+0011  invoke-virtual v0, v6, v1, v5, Ljava/nio/ByteBuffer;->put([B I I)Ljava/nio/ByteBuffer;
+0012  invoke-virtual v0, Ljava/nio/ByteBuffer;->array()[B
+0013  move-result-object v0
+0014  return-object v0

@@ -1,0 +1,495 @@
+{
+  "schema": "apk_forensics.value_v001_forensic_analysis.v1",
+  "engine": "1.6.1",
+  "generated_utc": "2026-11-25T11:28:49.378292+00:00",
+  "git_commit": "8ea69d1747195141bde19381d2f19146379b946f",
+  "value_id": "VALUE-V001",
+  "status": "STATIC_ANALYSIS_COMPLETED",
+  "static_analysis_boundary": "REACHED",
+  "protocol_semantics": "UNKNOWN",
+  "runtime": {
+    "android_runtime": "INPUT_MISSING",
+    "target_process": "MISSING",
+    "runtime_events": 0,
+    "runtime_bytes": 0,
+    "runtime_wire_correlation": "NOT_EXECUTED",
+    "forbidden_claims_not_emitted": [
+      "RUNTIME_FACT",
+      "RUNTIME_CAPTURED",
+      "METHOD_EXECUTED",
+      "INPUT_BYTES_OBSERVED",
+      "VALUE_RUNTIME_CONFIRMED",
+      "VALUE_WIRE_CORRELATED"
+    ]
+  },
+  "method": {
+    "class": "com.bmwgroup.connected.core.services.accessory.bcl.packet.Info",
+    "class_dex": "Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Info;",
+    "name": "decodeVersion",
+    "descriptor": "([B)S",
+    "full": "Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Info;->decodeVersion([B)S",
+    "access_flags": ["public", "static"],
+    "apk": {
+      "file": "artifacts/de.bmw.connected-6.0.0.4962.apk",
+      "package_name": "de.bmw.connected",
+      "version_name": "6.0.0.4962",
+      "version_code": 4962,
+      "sha256": "b1135e357b62a1f54b3b791609684cb54a184fa29c0e65a3f80e58ee22f496bd"
+    },
+    "dex_entry": "classes.dex",
+    "dex_sha256_prefix": "80ca4defdaafd4d8",
+    "code_offset": 4418708,
+    "instruction_count": 7,
+    "code_present": true,
+    "identity_classification": "FACT",
+    "raw_dump": "output/v16-value-v001/raw/Lcom_bmwgroup_connected_core_services_accessory_bcl_packet_Info->decodeVersion([B)S.txt"
+  },
+  "decoder": {
+    "reconstruction_status": "YES",
+    "input": {
+      "parameter": "byte[] p0",
+      "register": "v2",
+      "null_check_in_method": false,
+      "length_check_in_method": false,
+      "note": "No explicit null/length guard inside decodeVersion; ByteBuffer.wrap/getShort may throw at runtime (not statically proven as handled here)."
+    },
+    "constants": {
+      "VERSION_OFFSET": {
+        "field": "Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Info;->VERSION_OFFSET I",
+        "value": 0,
+        "source": "Info.<clinit>: const/4 v0, 0; sput VERSION_OFFSET",
+        "classification": "FACT"
+      },
+      "INSTANCE_ID_OFFSET": {
+        "value": 2,
+        "classification": "FACT",
+        "note": "Adjacent Info field; not used by decodeVersion"
+      },
+      "BUFSIZE_OFFSET": {
+        "value": 4,
+        "classification": "FACT",
+        "note": "Adjacent Info field; not used by decodeVersion"
+      },
+      "slice_length": {
+        "value": 2,
+        "source": "const/4 v1, 2",
+        "classification": "FACT"
+      }
+    },
+    "byte_accesses": [
+      {
+        "form": "ByteBuffer.wrap(input, VERSION_OFFSET, 2).getShort()",
+        "equivalent_indices": ["input[0]", "input[1]"],
+        "offset": 0,
+        "length": 2,
+        "classification": "FACT"
+      }
+    ],
+    "transformations": [
+      {
+        "step": 1,
+        "op": "sget VERSION_OFFSET",
+        "classification": "FACT"
+      },
+      {
+        "step": 2,
+        "op": "const/4 length=2",
+        "classification": "FACT"
+      },
+      {
+        "step": 3,
+        "op": "ByteBuffer.wrap([B, offset, length)",
+        "api": "Ljava/nio/ByteBuffer;->wrap([B I I)Ljava/nio/ByteBuffer;",
+        "classification": "FACT"
+      },
+      {
+        "step": 4,
+        "op": "ByteBuffer.getShort()S",
+        "api": "Ljava/nio/ByteBuffer;->getShort()S",
+        "byte_order": {
+          "value": "BIG_ENDIAN",
+          "basis": "java.nio.ByteBuffer.wrap default order; no order() call in method",
+          "classification": "FACT"
+        },
+        "classification": "FACT"
+      },
+      {
+        "step": 5,
+        "op": "return short",
+        "classification": "FACT"
+      }
+    ],
+    "helpers": [
+      {
+        "api": "Ljava/nio/ByteBuffer;->wrap([B I I)Ljava/nio/ByteBuffer;",
+        "role": "slice input at VERSION_OFFSET length 2",
+        "resolution": "RESOLVED_PLATFORM_API",
+        "classification": "FACT"
+      },
+      {
+        "api": "Ljava/nio/ByteBuffer;->getShort()S",
+        "role": "read big-endian short from slice",
+        "resolution": "RESOLVED_PLATFORM_API",
+        "classification": "FACT"
+      }
+    ],
+    "return_calculation": {
+      "expression": "ByteBuffer.wrap(input, 0, 2).getShort()",
+      "return_type": "short",
+      "closed": true,
+      "classification": "FACT",
+      "protocol_meaning": "UNKNOWN"
+    },
+    "instructions": [
+      "0000  sget v0, Info;->VERSION_OFFSET I",
+      "0001  const/4 v1, 2",
+      "0002  invoke-static v2, v0, v1, ByteBuffer;->wrap([B I I)Ljava/nio/ByteBuffer;",
+      "0003  move-result-object v0",
+      "0004  invoke-virtual v0, ByteBuffer;->getShort()S",
+      "0005  move-result v0",
+      "0006  return v0"
+    ]
+  },
+  "input_provenance": {
+    "closed_to_transport_interface": true,
+    "closed_to_concrete_transport_impl": false,
+    "chain": [
+      {
+        "from": "Lcom/bmwgroup/connected/core/services/accessory/AccessorySocket;->read([B I I)I",
+        "to": "Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection;->internalread([B I)I",
+        "relation": "INTERFACE_INVOKE_READ_INTO_BUFFER",
+        "classification": "FACT",
+        "limit": "DYNAMIC_DISPATCH — concrete AccessorySocket implementation not uniquely resolved in this bounded static pass"
+      },
+      {
+        "from": "BclConnection.internalread([B I)I",
+        "to": "BclConnection.readPacket(Packet)V",
+        "relation": "CALLER_FILLS_HEADER_THEN_PAYLOAD",
+        "classification": "FACT",
+        "detail": "readPacket allocates 8-byte header, internalread(header,8); decodes header; if mDataLen>0 allocates Packet.mData[mDataLen] and internalread(mData, mDataLen)"
+      },
+      {
+        "from": "BclConnection.readPacket",
+        "to": "Packet.mData [B",
+        "relation": "FIELD_STORE byte[] payload",
+        "classification": "FACT"
+      },
+      {
+        "from": "Packet.mData [B",
+        "to": "BclConnection$2.run()V",
+        "relation": "FIELD_LOAD",
+        "instruction_index": 68,
+        "instruction": "iget-object v4, v2, Packet;->mData [B",
+        "classification": "FACT"
+      },
+      {
+        "from": "Packet.mData register v4",
+        "to": "Info.decodeVersion([B)S",
+        "relation": "PARAMETER",
+        "instruction_index": 69,
+        "instruction": "invoke-static v4, Info;->decodeVersion([B)S",
+        "classification": "FACT"
+      }
+    ],
+    "caller": {
+      "method": "Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection$2;->run()V",
+      "preconditions_observed": [
+        {
+          "check": "Packet.mData != null",
+          "instruction_index": 10,
+          "classification": "FACT"
+        },
+        {
+          "check": "Packet.mCommand == Command.HANDSHAKE (or null path)",
+          "instruction_index": 53,
+          "classification": "FACT",
+          "protocol_semantics": "UNKNOWN — enum/name is DEX identifier only"
+        }
+      ]
+    },
+    "transport_relation": {
+      "status": "PARTIAL",
+      "resolved": "AccessorySocket.read interface consumer via internalread",
+      "unresolved": "which concrete socket (BT RFCOMM / USB accessory / other) supplies the bytes for this VALUE instance",
+      "classification": "FACT for interface edge; UNKNOWN for concrete transport peer",
+      "must_not_claim": "Bluetooth payload as FACT for VALUE-V001 without additional evidence-graph closure"
+    },
+    "first_open_edge": {
+      "edge": "AccessorySocket.read([BII)I → concrete implementing class / transport peer",
+      "boundary_type": "DYNAMIC_DISPATCH",
+      "also": "RUNTIME_LIMIT for observed bytes",
+      "classification": "UNKNOWN",
+      "note": "BclConnection.internalread and BufferedBclConnection.internalread both exist; which override runs depends on receiver type (DYNAMIC_DISPATCH / subclass)."
+    }
+  },
+  "forward_flow": {
+    "store": {
+      "field": "Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection;->mVersion S",
+      "method": "Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection$2;->run()V",
+      "instruction_index": 71,
+      "instruction": "iput-short v4, v3, BclConnection;->mVersion S",
+      "classification": "FACT"
+    },
+    "post_store_mutations": [
+      {
+        "kind": "CLAMP",
+        "detail": "if (mVersion > 4) mVersion = 4  (const/4 v7,4; if-le; iput-short)",
+        "instruction_indices": [75, 76, 77, 78],
+        "classification": "FACT",
+        "protocol_semantics": "UNKNOWN"
+      },
+      {
+        "kind": "STATE_MUTATION",
+        "field": "mIsSingleSA Z",
+        "detail": "default false; set true when mVersion==4 AND Packet.mSrcPort==1",
+        "instruction_indices": [73, 80, 81, 83, 84, 85],
+        "classification": "FACT",
+        "protocol_semantics": "UNKNOWN"
+      },
+      {
+        "kind": "STATE_MUTATION",
+        "field": "setState(\"GOT_HANDSHAKE\")",
+        "instruction_indices": [112, 113],
+        "classification": "FACT",
+        "protocol_semantics": "UNKNOWN — string literal is identifier only"
+      }
+    ],
+    "consumers": {
+      "in_run": [
+        {"kind": "FIELD_LOAD", "instruction_index": 75, "classification": "FACT"},
+        {"kind": "BRANCH_ON_FIELD_VALUE", "opcode": "if-le", "instruction_index": 76, "classification": "FACT"},
+        {"kind": "FIELD_LOAD", "instruction_index": 80, "classification": "FACT"},
+        {"kind": "BRANCH_ON_FIELD_VALUE", "opcode": "if-ne", "instruction_index": 81, "classification": "FACT"}
+      ],
+      "in_write": [
+        {
+          "kind": "FIELD_LOAD",
+          "method": "Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection;->write([B Z)V",
+          "role": "index into MAX_HU_BUF_SIZE[mVersion] for write gating / flow control",
+          "classification": "FACT",
+          "protocol_semantics": "UNKNOWN"
+        },
+        {
+          "kind": "BRANCH_ON_FIELD_DERIVED",
+          "detail": "gates wait/ack and NOP padding paths using MAX_HU_BUF_SIZE[mVersion]",
+          "classification": "FACT"
+        }
+      ]
+    },
+    "baseline_catalog": {
+      "value_class": "V5_ROUNDTRIP",
+      "t6_stage": "T6.5_ROUNDTRIP",
+      "source": "output/v16-baseline/APPLICATION_FLOW_EVIDENCE_REPORT.json",
+      "note": "Baseline class retained; refined below for encode-vs-control distinction"
+    }
+  },
+  "roundtrip": {
+    "status": "NOT_PROVEN",
+    "encode_candidate": {
+      "Info.encodeVersion": "NOT_FOUND",
+      "Packet.encode": {
+        "method": "Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Packet;->encode(Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Command; S S S [B)[B",
+        "role": "generic packet serializer (command/ports/len/payload)",
+        "binds_mVersion_into_payload": "NOT_PROVEN",
+        "classification": "FACT existence; UNKNOWN linkage to VALUE-V001 bytes"
+      }
+    },
+    "write_candidate": {
+      "method": "Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection;->write([B Z)V",
+      "uses_mVersion": true,
+      "use_kind": "CONTROL_INDEX_INTO_MAX_HU_BUF_SIZE",
+      "encodes_mVersion_into_written_bytes": false,
+      "classification": "FACT for control use; NOT_PROVEN for value re-encode"
+    },
+    "v15_ROUNDTRIP_FROM_FIELD": {
+      "status": "CORRELATION (baseline heuristic)",
+      "interpretation": "Analyzer tags field-loaded registers near AccessorySocket.write invokes. Manual bytecode review shows mVersion is not an argument carrying the version short into the written buffer; written buffer is the separate write([B) parameter or sNOP.",
+      "refined_classification": "CONTROL_PATH_CORRELATION",
+      "value_reencode_roundtrip": "NOT_PROVEN",
+      "analyzer_note": "Possible register-reuse over-tagging at write invoke sites = ANALYZER_LIMIT of ROUNDTRIP_FROM_FIELD heuristic; does not prove encode(mVersion)→wire"
+    }
+  },
+  "wire_control": {
+    "artefact": "output/v16-wire-correlation/wire_LAB_B3_TCP_FULLAUTH_20261120T090004Z.json",
+    "joined_as_runtime_correlation": false,
+    "session_match": false,
+    "compatibility_check": {
+      "static_requirement": "decodeVersion reads 2 bytes at payload offset 0 ⇒ Packet.mData length must be >= 2 for non-throwing decode",
+      "result": "COMPATIBILITY_CANDIDATE_ONLY",
+      "classification": "CORRELATION / CANDIDATE",
+      "not_claimed": "VALUE-V001 == B3 packet X"
+    }
+  },
+  "evidence": [
+    {
+      "id": "E001",
+      "from": "DEX method table",
+      "to": "Info.decodeVersion([B)S",
+      "relation": "METHOD_IDENTITY",
+      "evidence": "classes.dex method present; 7 instructions",
+      "classification": "FACT",
+      "confidence": "high",
+      "limit": null
+    },
+    {
+      "id": "E002",
+      "from": "Info.<clinit>",
+      "to": "VERSION_OFFSET=0",
+      "relation": "STATIC_FIELD_INIT",
+      "evidence": "const/4 0; sput VERSION_OFFSET",
+      "classification": "FACT",
+      "confidence": "high",
+      "limit": null
+    },
+    {
+      "id": "E003",
+      "from": "byte[] input",
+      "to": "short return",
+      "relation": "DECODE_TRANSFORM",
+      "evidence": "wrap(input,0,2).getShort()",
+      "classification": "FACT",
+      "confidence": "high",
+      "limit": null
+    },
+    {
+      "id": "E004",
+      "from": "Packet.mData",
+      "to": "decodeVersion arg",
+      "relation": "FIELD_LOAD→PARAMETER",
+      "evidence": "BclConnection$2.run idx 68-69",
+      "classification": "FACT",
+      "confidence": "high",
+      "limit": null
+    },
+    {
+      "id": "E005",
+      "from": "readPacket/internalread",
+      "to": "Packet.mData",
+      "relation": "TRANSPORT_CONSUMER→BUFFER",
+      "evidence": "readPacket bytecode",
+      "classification": "FACT",
+      "confidence": "high",
+      "limit": null
+    },
+    {
+      "id": "E006",
+      "from": "AccessorySocket.read",
+      "to": "internalread buffer",
+      "relation": "INTERFACE_READ",
+      "evidence": "invoke-interface AccessorySocket;->read([BII)I",
+      "classification": "FACT",
+      "confidence": "high",
+      "limit": "DYNAMIC_DISPATCH"
+    },
+    {
+      "id": "E007",
+      "from": "decodeVersion return",
+      "to": "mVersion",
+      "relation": "FIELD_STORE",
+      "evidence": "iput-short idx 71",
+      "classification": "FACT",
+      "confidence": "high",
+      "limit": null
+    },
+    {
+      "id": "E008",
+      "from": "mVersion",
+      "to": "branches/clamp/mIsSingleSA",
+      "relation": "FIELD_LOAD→CONTROL",
+      "evidence": "run() idx 75-85",
+      "classification": "FACT",
+      "confidence": "high",
+      "limit": null
+    },
+    {
+      "id": "E009",
+      "from": "mVersion",
+      "to": "write([BZ) gating",
+      "relation": "FIELD_LOAD→MAX_HU_BUF_SIZE index",
+      "evidence": "write() iget-short mVersion; aget MAX_HU_BUF_SIZE",
+      "classification": "FACT",
+      "confidence": "high",
+      "limit": null
+    },
+    {
+      "id": "E010",
+      "from": "mVersion",
+      "to": "encoded outbound payload bytes",
+      "relation": "VALUE_REENCODE",
+      "evidence": "no Info.encodeVersion; write payload is separate [B / sNOP",
+      "classification": "NOT_PROVEN",
+      "confidence": null,
+      "limit": "APK_LIMIT or ANALYZER_LIMIT on prior ROUNDTRIP heuristic"
+    },
+    {
+      "id": "E011",
+      "from": "VALUE-V001",
+      "to": "LAB_B3 wire packet",
+      "relation": "RUNTIME_WIRE_JOIN",
+      "evidence": "no same-session runtime",
+      "classification": "REJECTED / NOT_EXECUTED",
+      "confidence": null,
+      "limit": "SESSION_MISMATCH / INPUT_MISSING"
+    },
+    {
+      "id": "E012",
+      "from": "method name decodeVersion",
+      "to": "protocol 'version message'",
+      "relation": "NAME→SEMANTICS",
+      "evidence": "name-only",
+      "classification": "REJECTED",
+      "confidence": null,
+      "limit": null
+    }
+  ],
+  "boundary": {
+    "static_analysis_boundary": "REACHED",
+    "first_unclosed_edge": "AccessorySocket.read([BII)I → concrete transport implementation / peer bytes for the Packet.mData that feeds decodeVersion",
+    "boundary_type": "DYNAMIC_DISPATCH",
+    "secondary_boundaries": [
+      {
+        "edge": "observed runtime execution of decodeVersion + concrete input bytes",
+        "boundary_type": "RUNTIME_LIMIT / INPUT_MISSING"
+      },
+      {
+        "edge": "VALUE-V001 ↔ same-session wire packet identity",
+        "boundary_type": "SESSION_MISMATCH / INPUT_MISSING"
+      },
+      {
+        "edge": "mVersion → re-encoded outbound Info payload",
+        "boundary_type": "NOT_PROVEN (no static encode edge found)"
+      }
+    ],
+    "reason": "Decoder transform, caller buffer provenance to Packet.mData, and mVersion consumers are statically closed. Remaining questions require concrete AccessorySocket impl resolution and/or live runtime/wire evidence.",
+    "evidence_class": "FACT for closed static edges; UNKNOWN beyond interface",
+    "required_external_evidence": [
+      "Concrete AccessorySocket implementation binding for the BclConnection instance under analysis",
+      "Android runtime method_entry/return for Info.decodeVersion with input bytes",
+      "Same-session wire/HCI/RFCOMM capture if wire identity is required"
+    ]
+  },
+  "closing_answers": {
+    "1_decodeVersion_fully_reconstructed": "YES",
+    "2_byte_array_provenance_closed": "PARTIAL",
+    "3_byte_transformation_closed": "YES",
+    "4_mVersion_usage_closed": "YES",
+    "5_roundtrip_encode_write_proven": "NO",
+    "6_first_remaining_open_edge": "AccessorySocket.read([BII)I → concrete implementing transport (DYNAMIC_DISPATCH); runtime bytes also INPUT_MISSING",
+    "7_can_edge_be_closed_statically": "UNKNOWN",
+    "8_required_external_evidence": "Concrete AccessorySocket impl + optional runtime/wire same-session evidence",
+    "9_static_analysis_boundary_reached": "YES"
+  },
+  "catalog_values_unchanged": 24,
+  "code_change": false,
+  "correlation_engine_changed": false,
+  "v17": false,
+  "sources_used": [
+    "output/v16-baseline/APPLICATION_FLOW_EVIDENCE_REPORT.json",
+    "output/v15-application-flow/structured_value_flow.json",
+    "output/v15-application-flow/VALUE_LINEAGE_REPORT.json",
+    "output/v15-application-flow/FIELD_CONSUMER_CLOSURE_REPORT.json",
+    "output/v14-semantic-closure/PATH_SEMANTIC_CLOSURE.json",
+    "output/v14-semantic-closure/communication_evidence_expanded.json",
+    "artifacts/de.bmw.connected-6.0.0.4962.apk via apk_forensics.dex_model_adapter (androguard)"
+  ]
+}

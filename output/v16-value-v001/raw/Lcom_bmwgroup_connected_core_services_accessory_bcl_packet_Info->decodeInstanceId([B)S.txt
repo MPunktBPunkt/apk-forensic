@@ -1,0 +1,9 @@
+# Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Info;->decodeInstanceId([B)S
+# dex=classes.dex code_present=True instr=7 access=['public', 'static']
+0000  sget v0, Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Info;->INSTANCE_ID_OFFSET I
+0001  const/4 v1, 2
+0002  invoke-static v2, v0, v1, Ljava/nio/ByteBuffer;->wrap([B I I)Ljava/nio/ByteBuffer;
+0003  move-result-object v0
+0004  invoke-virtual v0, Ljava/nio/ByteBuffer;->getShort()S
+0005  move-result v0
+0006  return v0

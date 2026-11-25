@@ -1,0 +1,129 @@
+# Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection$2;->run()V
+# dex=classes.dex code_present=True instr=127 access=['public']
+0000  const/4 v7, 4
+0001  const/4 v0, 1
+0002  const/4 v1, 0
+0003  new-instance v2, Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Packet;
+0004  invoke-direct v2, Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Packet;-><init>()V
+0005  invoke-static Ljava/lang/Thread;->interrupted()Z
+0006  move-result v3
+0007  if-nez v3, +026h
+0008  iget-object v3, v8, Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection$2;->this$0 Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection;
+0009  invoke-virtual v3, v2, Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection;->readPacket(Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Packet;)V
+0010  iget-object v3, v2, Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Packet;->mData [B
+0011  if-nez v3, +041h
+0012  sget-object v0, Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection;->sLogger Lcom/bmwgroup/connected/internal/util/Logger;
+0013  const-string v2, "handshake(): failed -- no version info"
+0014  new-array v1, v1, [Ljava/lang/Object;
+0015  invoke-virtual v0, v2, v1, Lcom/bmwgroup/connected/internal/util/Logger;->e(Ljava/lang/String; [Ljava/lang/Object;)V
+0016  iget-object v0, v8, Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection$2;->this$0 Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection;
+0017  const-string v1, "HANDSHAKE_FAILED"
+0018  invoke-virtual v0, v1, Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection;->setState(Ljava/lang/String;)V
+0019  iget-object v0, v8, Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection$2;->this$0 Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection;
+0020  iget-object v1, v0, Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection;->mHandshakeThreadGuard Ljava/lang/Object;
+0021  monitor-enter v1
+0022  iget-object v0, v8, Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection$2;->this$0 Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection;
+0023  const/4 v2, 0
+0024  iput-object v2, v0, Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection;->mHandshakeThread Ljava/lang/Thread;
+0025  monitor-exit v1
+0026  return-void
+0027  move-exception v0
+0028  sget-object v2, Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection;->sLogger Lcom/bmwgroup/connected/internal/util/Logger;
+0029  const-string v3, "handshake(): failed"
+0030  new-array v1, v1, [Ljava/lang/Object;
+0031  invoke-virtual v2, v0, v3, v1, Lcom/bmwgroup/connected/internal/util/Logger;->e(Ljava/lang/Throwable; Ljava/lang/String; [Ljava/lang/Object;)V
+0032  iget-object v0, v8, Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection$2;->this$0 Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection;
+0033  const-string v1, "HANDSHAKE_FAILED"
+0034  invoke-virtual v0, v1, Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection;->setState(Ljava/lang/String;)V
+0035  iget-object v0, v8, Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection$2;->this$0 Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection;
+0036  iget-object v1, v0, Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection;->mHandshakeThreadGuard Ljava/lang/Object;
+0037  monitor-enter v1
+0038  iget-object v0, v8, Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection$2;->this$0 Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection;
+0039  const/4 v2, 0
+0040  iput-object v2, v0, Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection;->mHandshakeThread Ljava/lang/Thread;
+0041  monitor-exit v1
+0042  goto -1dh
+0043  move-exception v0
+0044  monitor-exit v1
+0045  throw v0
+0046  move-exception v0
+0047  monitor-exit v1
+0048  throw v0
+0049  sget-object v3, Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection;->sLogger Lcom/bmwgroup/connected/internal/util/Logger;
+0050  const-string v4, "handshake(): read packet header"
+0051  new-array v5, v1, [Ljava/lang/Object;
+0052  invoke-virtual v3, v4, v5, Lcom/bmwgroup/connected/internal/util/Logger;->d(Ljava/lang/String; [Ljava/lang/Object;)V
+0053  iget-object v3, v2, Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Packet;->mCommand Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Command;
+0054  sget-object v4, Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Command;->HANDSHAKE Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Command;
+0055  if-eq v3, v4, +018h
+0056  iget-object v3, v2, Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Packet;->mCommand Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Command;
+0057  if-eqz v3, -05fh
+0058  sget-object v3, Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection;->sLogger Lcom/bmwgroup/connected/internal/util/Logger;
+0059  const-string v4, "handshake(): unexpected command %s, pushing back"
+0060  new-array v5, v0, [Ljava/lang/Object;
+0061  iget-object v6, v2, Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Packet;->mCommand Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Command;
+0062  invoke-virtual v6, Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Command;->toString()Ljava/lang/String;
+0063  move-result-object v6
+0064  aput-object v6, v5, v1
+0065  invoke-virtual v3, v4, v5, Lcom/bmwgroup/connected/internal/util/Logger;->e(Ljava/lang/String; [Ljava/lang/Object;)V
+0066  goto -72h
+0067  iget-object v3, v8, Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection$2;->this$0 Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection;
+0068  iget-object v4, v2, Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Packet;->mData [B
+0069  invoke-static v4, Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Info;->decodeVersion([B)S
+0070  move-result v4
+0071  iput-short v4, v3, Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection;->mVersion S
+0072  iget-object v3, v8, Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection$2;->this$0 Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection;
+0073  iput-boolean v1, v3, Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection;->mIsSingleSA Z
+0074  iget-object v3, v8, Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection$2;->this$0 Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection;
+0075  iget-short v3, v3, Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection;->mVersion S
+0076  if-le v3, v7, +006h
+0077  iget-object v3, v8, Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection$2;->this$0 Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection;
+0078  iput-short v7, v3, Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection;->mVersion S
+0079  iget-object v3, v8, Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection$2;->this$0 Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection;
+0080  iget-short v3, v3, Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection;->mVersion S
+0081  if-ne v3, v7, +00ah
+0082  iget-object v3, v8, Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection$2;->this$0 Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection;
+0083  iget-short v4, v2, Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Packet;->mSrcPort S
+0084  if-ne v4, v0, +04fh
+0085  iput-boolean v0, v3, Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection;->mIsSingleSA Z
+0086  iget-object v0, v8, Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection$2;->this$0 Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection;
+0087  iget-object v3, v2, Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Packet;->mData [B
+0088  invoke-static v3, Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Info;->decodeInstanceId([B)S
+0089  move-result v3
+0090  iput-short v3, v0, Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection;->mInstanceId S
+0091  iget-object v0, v8, Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection$2;->this$0 Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection;
+0092  iget-object v3, v2, Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Packet;->mData [B
+0093  invoke-static v3, Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Info;->decodeBuffersize([B)I
+0094  move-result v3
+0095  iput v3, v0, Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection;->mHuBufsize I
+0096  sget-object v0, Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection;->sLogger Lcom/bmwgroup/connected/internal/util/Logger;
+0097  new-instance v3, Ljava/lang/StringBuilder;
+0098  invoke-direct v3, Ljava/lang/StringBuilder;-><init>()V
+0099  const-string v4, "handshake(): retrieved "
+0100  invoke-virtual v3, v4, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
+0101  move-result-object v3
+0102  iget-object v2, v2, Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Packet;->mData [B
+0103  invoke-static v2, Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Info;->getPacketInfo([B)Ljava/lang/String;
+0104  move-result-object v2
+0105  invoke-virtual v3, v2, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
+0106  move-result-object v2
+0107  invoke-virtual v2, Ljava/lang/StringBuilder;->toString()Ljava/lang/String;
+0108  move-result-object v2
+0109  new-array v1, v1, [Ljava/lang/Object;
+0110  invoke-virtual v0, v2, v1, Lcom/bmwgroup/connected/internal/util/Logger;->d(Ljava/lang/String; [Ljava/lang/Object;)V
+0111  iget-object v0, v8, Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection$2;->this$0 Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection;
+0112  const-string v1, "GOT_HANDSHAKE"
+0113  invoke-virtual v0, v1, Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection;->setState(Ljava/lang/String;)V
+0114  iget-object v0, v8, Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection$2;->this$0 Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection;
+0115  iget-object v1, v0, Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection;->mHandshakeThreadGuard Ljava/lang/Object;
+0116  monitor-enter v1
+0117  iget-object v0, v8, Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection$2;->this$0 Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection;
+0118  const/4 v2, 0
+0119  iput-object v2, v0, Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection;->mHandshakeThread Ljava/lang/Thread;
+0120  monitor-exit v1
+0121  goto/16 -0b5h
+0122  move-exception v0
+0123  monitor-exit v1
+0124  throw v0
+0125  move v0, v1
+0126  goto -4eh

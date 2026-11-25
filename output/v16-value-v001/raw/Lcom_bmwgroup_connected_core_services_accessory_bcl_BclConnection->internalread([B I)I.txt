@@ -1,0 +1,21 @@
+# Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection;->internalread([B I)I
+# dex=classes.dex code_present=True instr=19 access=['protected'] code_offset=4408460
+0000  const/4 v1, -1
+0001  const/4 v0, 0
+0002  if-nez v5, +004h
+0003  move v0, v1
+0004  return v0
+0005  iget-object v2, v4, Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection;->mAccessorySocket Lcom/bmwgroup/connected/core/services/accessory/AccessorySocket;
+0006  sub-int v3, v6, v0
+0007  invoke-interface v2, v5, v0, v3, Lcom/bmwgroup/connected/core/services/accessory/AccessorySocket;->read([B I I)I
+0008  move-result v2
+0009  if-ne v2, v1, +004h
+0010  move v0, v1
+0011  goto -ch
+0012  if-nez v2, +006h
+0013  if-lez v6, +004h
+0014  move v0, v1
+0015  goto -12h
+0016  add-int/2addr v0, v2
+0017  if-lt v0, v6, -013h
+0018  goto -16h

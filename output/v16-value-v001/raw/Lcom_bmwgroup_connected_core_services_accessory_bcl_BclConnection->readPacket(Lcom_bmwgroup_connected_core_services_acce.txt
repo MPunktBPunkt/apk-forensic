@@ -1,0 +1,57 @@
+# Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection;->readPacket(Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Packet;)V
+# dex=classes.dex code_present=True instr=55 access=['public']
+0000  const/16 v4, 8
+0001  new-array v0, v4, [B
+0002  invoke-virtual v5, v0, v4, Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection;->internalread([B I)I
+0003  move-result v1
+0004  const/4 v2, -1
+0005  if-ne v1, v2, +00ah
+0006  new-instance v0, Ljava/lang/IllegalStateException;
+0007  const-string v1, "couldn't read 8 bytes"
+0008  invoke-direct v0, v1, Ljava/lang/IllegalStateException;-><init>(Ljava/lang/String;)V
+0009  throw v0
+0010  int-to-long v2, v1
+0011  invoke-direct v5, v2, v3, Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection;->reportBytesRead(J)V
+0012  if-ne v1, v4, +034h
+0013  invoke-static v0, Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Packet;->decodeCommand([B)Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Command;
+0014  move-result-object v1
+0015  iput-object v1, v6, Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Packet;->mCommand Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Command;
+0016  invoke-static v0, Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Packet;->decodeSrcPort([B)S
+0017  move-result v1
+0018  iput-short v1, v6, Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Packet;->mSrcPort S
+0019  invoke-static v0, Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Packet;->decodeDestPort([B)S
+0020  move-result v1
+0021  iput-short v1, v6, Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Packet;->mDestPort S
+0022  invoke-static v0, Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Packet;->decodeDataLen([B)S
+0023  move-result v0
+0024  iput-short v0, v6, Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Packet;->mDataLen S
+0025  iget-short v0, v6, Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Packet;->mDataLen S
+0026  if-lez v0, +018h
+0027  iget-short v0, v6, Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Packet;->mDataLen S
+0028  new-array v0, v0, [B
+0029  iput-object v0, v6, Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Packet;->mData [B
+0030  iget-object v0, v6, Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Packet;->mData [B
+0031  iget-short v1, v6, Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Packet;->mDataLen S
+0032  invoke-virtual v5, v0, v1, Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection;->internalread([B I)I
+0033  move-result v0
+0034  iget-short v1, v6, Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Packet;->mDataLen S
+0035  if-ne v0, v1, +007h
+0036  int-to-long v0, v0
+0037  invoke-direct v5, v0, v1, Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection;->reportBytesRead(J)V
+0038  return-void
+0039  new-instance v0, Ljava/lang/IllegalStateException;
+0040  new-instance v1, Ljava/lang/StringBuilder;
+0041  invoke-direct v1, Ljava/lang/StringBuilder;-><init>()V
+0042  const-string v2, "couldn't read "
+0043  invoke-virtual v1, v2, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
+0044  move-result-object v1
+0045  iget-short v2, v6, Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Packet;->mDataLen S
+0046  invoke-virtual v1, v2, Ljava/lang/StringBuilder;->append(I)Ljava/lang/StringBuilder;
+0047  move-result-object v1
+0048  const-string v2, " bytes"
+0049  invoke-virtual v1, v2, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
+0050  move-result-object v1
+0051  invoke-virtual v1, Ljava/lang/StringBuilder;->toString()Ljava/lang/String;
+0052  move-result-object v1
+0053  invoke-direct v0, v1, Ljava/lang/IllegalStateException;-><init>(Ljava/lang/String;)V
+0054  throw v0

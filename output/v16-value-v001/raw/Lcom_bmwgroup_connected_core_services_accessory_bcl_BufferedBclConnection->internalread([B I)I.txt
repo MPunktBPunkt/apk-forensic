@@ -1,0 +1,47 @@
+# Lcom/bmwgroup/connected/core/services/accessory/bcl/BufferedBclConnection;->internalread([B I)I
+# dex=classes.dex code_present=True instr=45 access=['protected'] code_offset=4416528
+0000  const/4 v0, 0
+0001  if-nez v6, +004h
+0002  const/4 v7, -1
+0003  return v7
+0004  iget-object v1, v5, Lcom/bmwgroup/connected/core/services/accessory/bcl/BufferedBclConnection;->mCurrentBuf [B
+0005  if-nez v1, +006h
+0006  invoke-direct v5, Lcom/bmwgroup/connected/core/services/accessory/bcl/BufferedBclConnection;->waitForNextBuffer()V
+0007  goto -7h
+0008  iget v1, v5, Lcom/bmwgroup/connected/core/services/accessory/bcl/BufferedBclConnection;->mCurrentBufLen I
+0009  if-gt v7, v1, +01bh
+0010  iget-object v1, v5, Lcom/bmwgroup/connected/core/services/accessory/bcl/BufferedBclConnection;->mCurrentBuf [B
+0011  iget v2, v5, Lcom/bmwgroup/connected/core/services/accessory/bcl/BufferedBclConnection;->mCurrentBufOffset I
+0012  invoke-static v1, v2, v6, v0, v7, Ljava/lang/System;->arraycopy(Ljava/lang/Object; I Ljava/lang/Object; I I)V
+0013  iget v0, v5, Lcom/bmwgroup/connected/core/services/accessory/bcl/BufferedBclConnection;->mCurrentBufOffset I
+0014  add-int/2addr v0, v7
+0015  iput v0, v5, Lcom/bmwgroup/connected/core/services/accessory/bcl/BufferedBclConnection;->mCurrentBufOffset I
+0016  iget v0, v5, Lcom/bmwgroup/connected/core/services/accessory/bcl/BufferedBclConnection;->mCurrentBufLen I
+0017  sub-int/2addr v0, v7
+0018  iput v0, v5, Lcom/bmwgroup/connected/core/services/accessory/bcl/BufferedBclConnection;->mCurrentBufLen I
+0019  iget v0, v5, Lcom/bmwgroup/connected/core/services/accessory/bcl/BufferedBclConnection;->mCurrentBufLen I
+0020  if-nez v0, -020h
+0021  const/4 v0, 0
+0022  iput-object v0, v5, Lcom/bmwgroup/connected/core/services/accessory/bcl/BufferedBclConnection;->mCurrentBuf [B
+0023  goto -25h
+0024  move v1, v7
+0025  iget v2, v5, Lcom/bmwgroup/connected/core/services/accessory/bcl/BufferedBclConnection;->mCurrentBufLen I
+0026  if-le v1, v2, +01fh
+0027  iget v2, v5, Lcom/bmwgroup/connected/core/services/accessory/bcl/BufferedBclConnection;->mCurrentBufLen I
+0028  iget-object v3, v5, Lcom/bmwgroup/connected/core/services/accessory/bcl/BufferedBclConnection;->mCurrentBuf [B
+0029  iget v4, v5, Lcom/bmwgroup/connected/core/services/accessory/bcl/BufferedBclConnection;->mCurrentBufOffset I
+0030  invoke-static v3, v4, v6, v0, v2, Ljava/lang/System;->arraycopy(Ljava/lang/Object; I Ljava/lang/Object; I I)V
+0031  iget v3, v5, Lcom/bmwgroup/connected/core/services/accessory/bcl/BufferedBclConnection;->mCurrentBufOffset I
+0032  add-int/2addr v3, v2
+0033  iput v3, v5, Lcom/bmwgroup/connected/core/services/accessory/bcl/BufferedBclConnection;->mCurrentBufOffset I
+0034  iget v3, v5, Lcom/bmwgroup/connected/core/services/accessory/bcl/BufferedBclConnection;->mCurrentBufLen I
+0035  sub-int/2addr v3, v2
+0036  iput v3, v5, Lcom/bmwgroup/connected/core/services/accessory/bcl/BufferedBclConnection;->mCurrentBufLen I
+0037  add-int/2addr v0, v2
+0038  sub-int/2addr v1, v2
+0039  if-lez v1, +005h
+0040  invoke-direct v5, Lcom/bmwgroup/connected/core/services/accessory/bcl/BufferedBclConnection;->waitForNextBuffer()V
+0041  if-gtz v1, -01eh
+0042  goto -29h
+0043  move v2, v1
+0044  goto -1ch

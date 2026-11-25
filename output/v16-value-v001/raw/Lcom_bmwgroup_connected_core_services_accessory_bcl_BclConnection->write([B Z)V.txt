@@ -1,0 +1,113 @@
+# Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection;->write([B Z)V
+# dex=classes.dex code_present=True instr=111 access=['private', 'synchronized']
+0000  const-wide/16 v8, 10000
+0001  const-wide/16 v6, 512
+0002  monitor-enter v10
+0003  sget-object v0, Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection;->MAX_HU_BUF_SIZE [I
+0004  iget-short v1, v10, Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection;->mVersion S
+0005  aget v0, v0, v1
+0006  if-eqz v0, +056h
+0007  invoke-static Landroid/os/SystemClock;->uptimeMillis()J
+0008  move-result-wide v0
+0009  sget-object v2, Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection;->MAX_HU_BUF_SIZE [I
+0010  iget-short v3, v10, Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection;->mVersion S
+0011  aget v2, v2, v3
+0012  const/16 v3, 16384
+0013  if-eq v2, v3, +048h
+0014  iget-wide v2, v10, Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection;->mRemainingAckBytes J
+0015  array-length v4, v11
+0016  int-to-long v4, v4
+0017  add-long/2addr v2, v4
+0018  sget-object v4, Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection;->MAX_HU_BUF_SIZE [I
+0019  iget-short v5, v10, Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection;->mVersion S
+0020  aget v4, v4, v5
+0021  int-to-long v4, v4
+0022  cmp-long v2, v2, v4
+0023  if-lez v2, +038h
+0024  iget-object v2, v10, Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection;->mRemainingAckBytesSync Ljava/lang/Object;
+0025  monitor-enter v2
+0026  iget-object v3, v10, Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection;->mRemainingAckBytesSync Ljava/lang/Object;
+0027  const-wide/16 v4, 10000
+0028  invoke-virtual v3, v4, v5, Ljava/lang/Object;->wait(J)V
+0029  monitor-exit v2
+0030  invoke-static Landroid/os/SystemClock;->uptimeMillis()J
+0031  move-result-wide v2
+0032  sub-long/2addr v2, v0
+0033  cmp-long v2, v2, v8
+0034  if-lez v2, -02ch
+0035  new-instance v0, Ljava/io/IOException;
+0036  const-string v1, "cannot write %d bytes in time"
+0037  const/4 v2, 1
+0038  new-array v2, v2, [Ljava/lang/Object;
+0039  const/4 v3, 0
+0040  array-length v4, v11
+0041  invoke-static v4, Ljava/lang/Integer;->valueOf(I)Ljava/lang/Integer;
+0042  move-result-object v4
+0043  aput-object v4, v2, v3
+0044  invoke-static v1, v2, Ljava/lang/String;->format(Ljava/lang/String; [Ljava/lang/Object;)Ljava/lang/String;
+0045  move-result-object v1
+0046  invoke-direct v0, v1, Ljava/io/IOException;-><init>(Ljava/lang/String;)V
+0047  throw v0
+0048  move-exception v0
+0049  invoke-virtual v10, Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection;->report()V
+0050  throw v0
+0051  move-exception v0
+0052  monitor-exit v10
+0053  throw v0
+0054  move-exception v0
+0055  monitor-exit v2
+0056  throw v0
+0057  iget-object v0, v10, Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection;->mAccessorySocket Lcom/bmwgroup/connected/core/services/accessory/AccessorySocket;
+0058  const/4 v1, 0
+0059  array-length v2, v11
+0060  invoke-interface v0, v11, v1, v2, Lcom/bmwgroup/connected/core/services/accessory/AccessorySocket;->write([B I I)V
+0061  if-eqz v12, +009h
+0062  iget-wide v0, v10, Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection;->mRemainingAckBytes J
+0063  array-length v2, v11
+0064  int-to-long v2, v2
+0065  add-long/2addr v0, v2
+0066  iput-wide v0, v10, Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection;->mRemainingAckBytes J
+0067  array-length v0, v11
+0068  int-to-long v0, v0
+0069  invoke-direct v10, v0, v1, Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection;->reportBytesWritten(J)V
+0070  sget-object v0, Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection;->MAX_HU_BUF_SIZE [I
+0071  iget-short v1, v10, Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection;->mVersion S
+0072  aget v0, v0, v1
+0073  if-eqz v0, +039h
+0074  iget-wide v0, v10, Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection;->mRemainingAckBytes J
+0075  cmp-long v0, v0, v6
+0076  if-ltz v0, +033h
+0077  iget-wide v0, v10, Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection;->mRemainingAckBytes J
+0078  const-wide/16 v2, 512
+0079  rem-long/2addr v0, v2
+0080  const-wide/16 v2, 0
+0081  cmp-long v0, v0, v2
+0082  if-nez v0, +028h
+0083  iget-wide v0, v10, Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection;->mRemainingAckBytes J
+0084  sget-object v2, Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection;->sNOP [B
+0085  array-length v2, v2
+0086  int-to-long v2, v2
+0087  add-long/2addr v0, v2
+0088  sget-object v2, Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection;->MAX_HU_BUF_SIZE [I
+0089  iget-short v3, v10, Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection;->mVersion S
+0090  aget v2, v2, v3
+0091  int-to-long v2, v2
+0092  cmp-long v0, v0, v2
+0093  if-gez v0, +016h
+0094  iget-object v0, v10, Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection;->mAccessorySocket Lcom/bmwgroup/connected/core/services/accessory/AccessorySocket;
+0095  sget-object v1, Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection;->sNOP [B
+0096  const/4 v2, 0
+0097  sget-object v3, Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection;->sNOP [B
+0098  array-length v3, v3
+0099  invoke-interface v0, v1, v2, v3, Lcom/bmwgroup/connected/core/services/accessory/AccessorySocket;->write([B I I)V
+0100  iget-wide v0, v10, Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection;->mRemainingAckBytes J
+0101  sget-object v2, Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection;->sNOP [B
+0102  array-length v2, v2
+0103  int-to-long v2, v2
+0104  add-long/2addr v0, v2
+0105  iput-wide v0, v10, Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection;->mRemainingAckBytes J
+0106  invoke-virtual v10, Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection;->report()V
+0107  monitor-exit v10
+0108  return-void
+0109  move-exception v3
+0110  goto/16 -086h
