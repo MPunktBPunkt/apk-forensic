@@ -1,0 +1,31 @@
+{
+  "schema": "apk_forensics.correlation_coverage_report.v1",
+  "static_with_runtime": 0,
+  "static_total": 24,
+  "runtime_with_wire": 0,
+  "e2e_values": 0,
+  "external_status": {
+    "runtime": "INPUT_MISSING",
+    "wire": "INPUT_MISSING",
+    "no_external_evidence": true
+  },
+  "strength_counts": {
+    "UNKNOWN": 24,
+    "class:UNKNOWN": 24,
+    "result:UNKNOWN": 24
+  },
+  "limits": {
+    "timestamp_window_ms": 50,
+    "max_runtime_events": 10000,
+    "max_wire_packets": 10000,
+    "max_correlations": 500,
+    "max_field_hops": 2
+  },
+  "negative_controls": [
+    "PATH-000009",
+    "PATH-000010",
+    "PATH-000011",
+    "PATH-000012",
+    "PATH-000013"
+  ]
+}

@@ -1,0 +1,457 @@
+{
+  "schema": "apk_forensics.static_runtime_correlation_report.v1",
+  "counts": {
+    "static_values": 24,
+    "runtime_events": 0,
+    "wire_packets": 0,
+    "static_runtime": 24,
+    "runtime_wire": 0,
+    "end_to_end": 0,
+    "exact": 0,
+    "strong": 0,
+    "ambiguous": 0,
+    "rejected": 0,
+    "unknown": 24
+  },
+  "links": [
+    {
+      "id": "SR-VALUE-V001-NONE",
+      "link_type": "STATIC_RUNTIME_LINK",
+      "static_id": "VALUE-V001",
+      "static_method": "Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection$2;->run()V",
+      "runtime_id": null,
+      "correlation_keys": [],
+      "correlation_rule": "no_runtime_evidence",
+      "strength": "UNKNOWN",
+      "result": "UNKNOWN",
+      "classification": "UNKNOWN",
+      "protocol_semantics": "UNKNOWN",
+      "notes": [
+        "NO_EXTERNAL_EVIDENCE"
+      ]
+    },
+    {
+      "id": "SR-VALUE-V002-NONE",
+      "link_type": "STATIC_RUNTIME_LINK",
+      "static_id": "VALUE-V002",
+      "static_method": "Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection$2;->run()V",
+      "runtime_id": null,
+      "correlation_keys": [],
+      "correlation_rule": "no_runtime_evidence",
+      "strength": "UNKNOWN",
+      "result": "UNKNOWN",
+      "classification": "UNKNOWN",
+      "protocol_semantics": "UNKNOWN",
+      "notes": [
+        "NO_EXTERNAL_EVIDENCE"
+      ]
+    },
+    {
+      "id": "SR-VALUE-V003-NONE",
+      "link_type": "STATIC_RUNTIME_LINK",
+      "static_id": "VALUE-V003",
+      "static_method": "Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection$2;->run()V",
+      "runtime_id": null,
+      "correlation_keys": [],
+      "correlation_rule": "no_runtime_evidence",
+      "strength": "UNKNOWN",
+      "result": "UNKNOWN",
+      "classification": "UNKNOWN",
+      "protocol_semantics": "UNKNOWN",
+      "notes": [
+        "NO_EXTERNAL_EVIDENCE"
+      ]
+    },
+    {
+      "id": "SR-VALUE-V004-NONE",
+      "link_type": "STATIC_RUNTIME_LINK",
+      "static_id": "VALUE-V004",
+      "static_method": "Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection;->readPacket(Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Packet;)V",
+      "runtime_id": null,
+      "correlation_keys": [],
+      "correlation_rule": "no_runtime_evidence",
+      "strength": "UNKNOWN",
+      "result": "UNKNOWN",
+      "classification": "UNKNOWN",
+      "protocol_semantics": "UNKNOWN",
+      "notes": [
+        "NO_EXTERNAL_EVIDENCE"
+      ]
+    },
+    {
+      "id": "SR-VALUE-V005-NONE",
+      "link_type": "STATIC_RUNTIME_LINK",
+      "static_id": "VALUE-V005",
+      "static_method": "Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection;->readPacket(Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Packet;)V",
+      "runtime_id": null,
+      "correlation_keys": [],
+      "correlation_rule": "no_runtime_evidence",
+      "strength": "UNKNOWN",
+      "result": "UNKNOWN",
+      "classification": "UNKNOWN",
+      "protocol_semantics": "UNKNOWN",
+      "notes": [
+        "NO_EXTERNAL_EVIDENCE"
+      ]
+    },
+    {
+      "id": "SR-VALUE-V006-NONE",
+      "link_type": "STATIC_RUNTIME_LINK",
+      "static_id": "VALUE-V006",
+      "static_method": "Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection;->readPacket(Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Packet;)V",
+      "runtime_id": null,
+      "correlation_keys": [],
+      "correlation_rule": "no_runtime_evidence",
+      "strength": "UNKNOWN",
+      "result": "UNKNOWN",
+      "classification": "UNKNOWN",
+      "protocol_semantics": "UNKNOWN",
+      "notes": [
+        "NO_EXTERNAL_EVIDENCE"
+      ]
+    },
+    {
+      "id": "SR-VALUE-V007-NONE",
+      "link_type": "STATIC_RUNTIME_LINK",
+      "static_id": "VALUE-V007",
+      "static_method": "Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection;->readPacket(Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Packet;)V",
+      "runtime_id": null,
+      "correlation_keys": [],
+      "correlation_rule": "no_runtime_evidence",
+      "strength": "UNKNOWN",
+      "result": "UNKNOWN",
+      "classification": "UNKNOWN",
+      "protocol_semantics": "UNKNOWN",
+      "notes": [
+        "NO_EXTERNAL_EVIDENCE"
+      ]
+    },
+    {
+      "id": "SR-VALUE-V008-NONE",
+      "link_type": "STATIC_RUNTIME_LINK",
+      "static_id": "VALUE-V008",
+      "static_method": "Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection;->readPacket(Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Packet;)V",
+      "runtime_id": null,
+      "correlation_keys": [],
+      "correlation_rule": "no_runtime_evidence",
+      "strength": "UNKNOWN",
+      "result": "UNKNOWN",
+      "classification": "UNKNOWN",
+      "protocol_semantics": "UNKNOWN",
+      "notes": [
+        "NO_EXTERNAL_EVIDENCE"
+      ]
+    },
+    {
+      "id": "SR-VALUE-V009-NONE",
+      "link_type": "STATIC_RUNTIME_LINK",
+      "static_id": "VALUE-V009",
+      "static_method": "Lcom/bmwgroup/connected/core/services/accessory/bcl/BclWorker$2;->run()V",
+      "runtime_id": null,
+      "correlation_keys": [],
+      "correlation_rule": "no_runtime_evidence",
+      "strength": "UNKNOWN",
+      "result": "UNKNOWN",
+      "classification": "UNKNOWN",
+      "protocol_semantics": "UNKNOWN",
+      "notes": [
+        "NO_EXTERNAL_EVIDENCE"
+      ]
+    },
+    {
+      "id": "SR-VALUE-V010-NONE",
+      "link_type": "STATIC_RUNTIME_LINK",
+      "static_id": "VALUE-V010",
+      "static_method": "Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Packet;->decodeCommand([B)Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Command;",
+      "runtime_id": null,
+      "correlation_keys": [],
+      "correlation_rule": "no_runtime_evidence",
+      "strength": "UNKNOWN",
+      "result": "UNKNOWN",
+      "classification": "UNKNOWN",
+      "protocol_semantics": "UNKNOWN",
+      "notes": [
+        "NO_EXTERNAL_EVIDENCE"
+      ]
+    },
+    {
+      "id": "SR-VALUE-V011-NONE",
+      "link_type": "STATIC_RUNTIME_LINK",
+      "static_id": "VALUE-V011",
+      "static_method": "Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Packet;->decodeCommand([B)Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Command;",
+      "runtime_id": null,
+      "correlation_keys": [],
+      "correlation_rule": "no_runtime_evidence",
+      "strength": "UNKNOWN",
+      "result": "UNKNOWN",
+      "classification": "UNKNOWN",
+      "protocol_semantics": "UNKNOWN",
+      "notes": [
+        "NO_EXTERNAL_EVIDENCE"
+      ]
+    },
+    {
+      "id": "SR-VALUE-V012-NONE",
+      "link_type": "STATIC_RUNTIME_LINK",
+      "static_id": "VALUE-V012",
+      "static_method": "Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Packet;->decodeDataLen([B)S",
+      "runtime_id": null,
+      "correlation_keys": [],
+      "correlation_rule": "no_runtime_evidence",
+      "strength": "UNKNOWN",
+      "result": "UNKNOWN",
+      "classification": "UNKNOWN",
+      "protocol_semantics": "UNKNOWN",
+      "notes": [
+        "NO_EXTERNAL_EVIDENCE"
+      ]
+    },
+    {
+      "id": "SR-VALUE-V013-NONE",
+      "link_type": "STATIC_RUNTIME_LINK",
+      "static_id": "VALUE-V013",
+      "static_method": "Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Packet;->decodeDataLen([B)S",
+      "runtime_id": null,
+      "correlation_keys": [],
+      "correlation_rule": "no_runtime_evidence",
+      "strength": "UNKNOWN",
+      "result": "UNKNOWN",
+      "classification": "UNKNOWN",
+      "protocol_semantics": "UNKNOWN",
+      "notes": [
+        "NO_EXTERNAL_EVIDENCE"
+      ]
+    },
+    {
+      "id": "SR-VALUE-V014-NONE",
+      "link_type": "STATIC_RUNTIME_LINK",
+      "static_id": "VALUE-V014",
+      "static_method": "Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Packet;->decodeDestPort([B)S",
+      "runtime_id": null,
+      "correlation_keys": [],
+      "correlation_rule": "no_runtime_evidence",
+      "strength": "UNKNOWN",
+      "result": "UNKNOWN",
+      "classification": "UNKNOWN",
+      "protocol_semantics": "UNKNOWN",
+      "notes": [
+        "NO_EXTERNAL_EVIDENCE"
+      ]
+    },
+    {
+      "id": "SR-VALUE-V015-NONE",
+      "link_type": "STATIC_RUNTIME_LINK",
+      "static_id": "VALUE-V015",
+      "static_method": "Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Packet;->decodeDestPort([B)S",
+      "runtime_id": null,
+      "correlation_keys": [],
+      "correlation_rule": "no_runtime_evidence",
+      "strength": "UNKNOWN",
+      "result": "UNKNOWN",
+      "classification": "UNKNOWN",
+      "protocol_semantics": "UNKNOWN",
+      "notes": [
+        "NO_EXTERNAL_EVIDENCE"
+      ]
+    },
+    {
+      "id": "SR-VALUE-V016-NONE",
+      "link_type": "STATIC_RUNTIME_LINK",
+      "static_id": "VALUE-V016",
+      "static_method": "Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Packet;->decodeSopOffset([B)I",
+      "runtime_id": null,
+      "correlation_keys": [],
+      "correlation_rule": "no_runtime_evidence",
+      "strength": "UNKNOWN",
+      "result": "UNKNOWN",
+      "classification": "UNKNOWN",
+      "protocol_semantics": "UNKNOWN",
+      "notes": [
+        "NO_EXTERNAL_EVIDENCE"
+      ]
+    },
+    {
+      "id": "SR-VALUE-V017-NONE",
+      "link_type": "STATIC_RUNTIME_LINK",
+      "static_id": "VALUE-V017",
+      "static_method": "Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Packet;->decodeSrcPort([B)S",
+      "runtime_id": null,
+      "correlation_keys": [],
+      "correlation_rule": "no_runtime_evidence",
+      "strength": "UNKNOWN",
+      "result": "UNKNOWN",
+      "classification": "UNKNOWN",
+      "protocol_semantics": "UNKNOWN",
+      "notes": [
+        "NO_EXTERNAL_EVIDENCE"
+      ]
+    },
+    {
+      "id": "SR-VALUE-V018-NONE",
+      "link_type": "STATIC_RUNTIME_LINK",
+      "static_id": "VALUE-V018",
+      "static_method": "Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Packet;->decodeSrcPort([B)S",
+      "runtime_id": null,
+      "correlation_keys": [],
+      "correlation_rule": "no_runtime_evidence",
+      "strength": "UNKNOWN",
+      "result": "UNKNOWN",
+      "classification": "UNKNOWN",
+      "protocol_semantics": "UNKNOWN",
+      "notes": [
+        "NO_EXTERNAL_EVIDENCE"
+      ]
+    },
+    {
+      "id": "SR-VALUE-V019-NONE",
+      "link_type": "STATIC_RUNTIME_LINK",
+      "static_id": "VALUE-V019",
+      "static_method": "Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Packet;->getPacketInfo([B)Ljava/lang/String;",
+      "runtime_id": null,
+      "correlation_keys": [],
+      "correlation_rule": "no_runtime_evidence",
+      "strength": "UNKNOWN",
+      "result": "UNKNOWN",
+      "classification": "UNKNOWN",
+      "protocol_semantics": "UNKNOWN",
+      "notes": [
+        "NO_EXTERNAL_EVIDENCE"
+      ]
+    },
+    {
+      "id": "SR-VALUE-V020-NONE",
+      "link_type": "STATIC_RUNTIME_LINK",
+      "static_id": "VALUE-V020",
+      "static_method": "Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Packet;->getPacketInfo([B)Ljava/lang/String;",
+      "runtime_id": null,
+      "correlation_keys": [],
+      "correlation_rule": "no_runtime_evidence",
+      "strength": "UNKNOWN",
+      "result": "UNKNOWN",
+      "classification": "UNKNOWN",
+      "protocol_semantics": "UNKNOWN",
+      "notes": [
+        "NO_EXTERNAL_EVIDENCE"
+      ]
+    },
+    {
+      "id": "SR-VALUE-V021-NONE",
+      "link_type": "STATIC_RUNTIME_LINK",
+      "static_id": "VALUE-V021",
+      "static_method": "Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Packet;->getPacketInfo([B)Ljava/lang/String;",
+      "runtime_id": null,
+      "correlation_keys": [],
+      "correlation_rule": "no_runtime_evidence",
+      "strength": "UNKNOWN",
+      "result": "UNKNOWN",
+      "classification": "UNKNOWN",
+      "protocol_semantics": "UNKNOWN",
+      "notes": [
+        "NO_EXTERNAL_EVIDENCE"
+      ]
+    },
+    {
+      "id": "SR-VALUE-V022-NONE",
+      "link_type": "STATIC_RUNTIME_LINK",
+      "static_id": "VALUE-V022",
+      "static_method": "Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Packet;->getPacketInfo([B)Ljava/lang/String;",
+      "runtime_id": null,
+      "correlation_keys": [],
+      "correlation_rule": "no_runtime_evidence",
+      "strength": "UNKNOWN",
+      "result": "UNKNOWN",
+      "classification": "UNKNOWN",
+      "protocol_semantics": "UNKNOWN",
+      "notes": [
+        "NO_EXTERNAL_EVIDENCE"
+      ]
+    },
+    {
+      "id": "SR-VALUE-V023-NONE",
+      "link_type": "STATIC_RUNTIME_LINK",
+      "static_id": "VALUE-V023",
+      "static_method": "Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Packet;->getPacketInfo([B)Ljava/lang/String;",
+      "runtime_id": null,
+      "correlation_keys": [],
+      "correlation_rule": "no_runtime_evidence",
+      "strength": "UNKNOWN",
+      "result": "UNKNOWN",
+      "classification": "UNKNOWN",
+      "protocol_semantics": "UNKNOWN",
+      "notes": [
+        "NO_EXTERNAL_EVIDENCE"
+      ]
+    },
+    {
+      "id": "SR-VALUE-V024-NONE",
+      "link_type": "STATIC_RUNTIME_LINK",
+      "static_id": "VALUE-V024",
+      "static_method": "Lcom/bmwgroup/connected/sdk/internal/connectivity/transport/DeviceManagerLoginThread;->run()V",
+      "runtime_id": null,
+      "correlation_keys": [],
+      "correlation_rule": "no_runtime_evidence",
+      "strength": "UNKNOWN",
+      "result": "UNKNOWN",
+      "classification": "UNKNOWN",
+      "protocol_semantics": "UNKNOWN",
+      "notes": [
+        "NO_EXTERNAL_EVIDENCE"
+      ]
+    }
+  ],
+  "answers_subset": {
+    "1_static_methods_correlated": [],
+    "2_values_with_runtime": [],
+    "3_strength_counts": {
+      "UNKNOWN": 24,
+      "class:UNKNOWN": 24,
+      "result:UNKNOWN": 24
+    },
+    "4_unknown_static_values": [
+      "VALUE-V001",
+      "VALUE-V002",
+      "VALUE-V003",
+      "VALUE-V004",
+      "VALUE-V005",
+      "VALUE-V006",
+      "VALUE-V007",
+      "VALUE-V008",
+      "VALUE-V009",
+      "VALUE-V010",
+      "VALUE-V011",
+      "VALUE-V012",
+      "VALUE-V013",
+      "VALUE-V014",
+      "VALUE-V015",
+      "VALUE-V016",
+      "VALUE-V017",
+      "VALUE-V018",
+      "VALUE-V019",
+      "VALUE-V020",
+      "VALUE-V021",
+      "VALUE-V022",
+      "VALUE-V023",
+      "VALUE-V024"
+    ]
+  },
+  "guard": {
+    "estimate": {
+      "memory_mb": 8,
+      "runtime_seconds": 6,
+      "probes": 24,
+      "risk": "ok",
+      "reasons": [
+        "static=24",
+        "runtime_capped=0/0",
+        "wire_capped=0/0",
+        "timestamp_window_ms=50",
+        "strategy=indexed_buckets_not_cartesian"
+      ],
+      "max_correlations": 500
+    },
+    "decision": "OK",
+    "allow_resource_warning": false
+  },
+  "executed": true,
+  "protocol_semantics": "UNKNOWN"
+}

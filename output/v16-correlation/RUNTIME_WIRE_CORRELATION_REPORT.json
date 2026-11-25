@@ -1,0 +1,24 @@
+{
+  "schema": "apk_forensics.runtime_wire_correlation_report.v1",
+  "counts": {
+    "static_values": 24,
+    "runtime_events": 0,
+    "wire_packets": 0,
+    "static_runtime": 24,
+    "runtime_wire": 0,
+    "end_to_end": 0,
+    "exact": 0,
+    "strong": 0,
+    "ambiguous": 0,
+    "rejected": 0,
+    "unknown": 24
+  },
+  "links": [],
+  "answers_subset": {
+    "5_runtime_wire_reads_writes": [],
+    "6_fragmentation": false,
+    "7_aggregation": false,
+    "8_directions_clear": 0
+  },
+  "protocol_semantics": "UNKNOWN"
+}
