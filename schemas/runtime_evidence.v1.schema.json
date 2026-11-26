@@ -1,0 +1,72 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "apk_forensics.runtime_evidence.v1",
+  "title": "apk_forensics.runtime_evidence.v1",
+  "type": "object",
+  "required": ["schema", "status", "events"],
+  "properties": {
+    "schema": { "const": "apk_forensics.runtime_evidence.v1" },
+    "status": {
+      "type": "string",
+      "enum": ["OK", "EMPTY", "INPUT_MISSING"]
+    },
+    "session_id": { "type": ["string", "null"] },
+    "package": { "type": ["string", "null"] },
+    "process": { "type": ["string", "null"] },
+    "instrumentation": { "type": ["string", "null"] },
+    "source": { "type": ["string", "null"] },
+    "note": { "type": ["string", "null"] },
+    "provenance": { "type": "object" },
+    "counts": { "type": "object" },
+    "events": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/runtime_event" }
+    }
+  },
+  "$defs": {
+    "runtime_event": {
+      "type": "object",
+      "required": ["id", "type"],
+      "properties": {
+        "id": { "type": "string" },
+        "type": {
+          "type": "string",
+          "enum": [
+            "RUNTIME_METHOD",
+            "RUNTIME_READ",
+            "RUNTIME_WRITE",
+            "RUNTIME_BUFFER",
+            "RUNTIME_VALUE",
+            "RUNTIME_EVENT"
+          ]
+        },
+        "method": { "type": ["string", "null"] },
+        "method_name": { "type": ["string", "null"] },
+        "phase": { "type": ["string", "null"] },
+        "timestamp_ms": { "type": ["integer", "null"] },
+        "monotonic_ns": { "type": ["integer", "null"] },
+        "direction": { "type": "string" },
+        "app_direction": { "type": "string" },
+        "length": { "type": ["integer", "null"] },
+        "bytes_hex": { "type": ["string", "null"] },
+        "payload_observed": { "type": "boolean" },
+        "arguments": {},
+        "return_value": {},
+        "thread_id": {},
+        "package": { "type": ["string", "null"] },
+        "process": { "type": ["string", "null"] },
+        "process_id": {},
+        "session_id": { "type": ["string", "null"] },
+        "socket_id": {},
+        "stream_id": {},
+        "transport_id": {},
+        "buffer_ref": {},
+        "value_id": { "type": ["string", "null"] },
+        "classification": { "type": "string" },
+        "protocol_semantics": { "const": "UNKNOWN" }
+      },
+      "description": "bytes_hex is optional. Method execution without payload_observed=true is not payload evidence."
+    }
+  },
+  "additionalProperties": true
+}

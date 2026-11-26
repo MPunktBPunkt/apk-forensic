@@ -63,7 +63,28 @@ KEY_STRENGTH = {
     "value_id": "STRONG",
     "field_identity": "MODERATE",
     "sequence": "MODERATE",
+    "same_session": "STRONG",
 }
+
+# Chain facet labels (metadata). Do not replace FACT/CORRELATION/UNKNOWN classes.
+CHAIN_SAME_SESSION = "SAME_SESSION"
+CHAIN_TIME_CORRELATED = "TIME_CORRELATED"
+CHAIN_BYTE_CORRELATED = "BYTE_CORRELATED"
+CHAIN_METHOD_CORRELATED = "METHOD_CORRELATED"
+CHAIN_FULL = "FULL_CHAIN"
+CHAIN_SESSION_MISMATCH = "SESSION_MISMATCH"
+CHAIN_SESSION_UNKNOWN = "SESSION_UNKNOWN"
+
+
+def _session_relation(a: dict[str, Any], b: dict[str, Any]) -> str:
+    """Return SAME_SESSION | SESSION_MISMATCH | SESSION_UNKNOWN."""
+    sa = a.get("session_id")
+    sb = b.get("session_id")
+    if sa is None or sb is None or str(sa).strip() == "" or str(sb).strip() == "":
+        return CHAIN_SESSION_UNKNOWN
+    if str(sa) == str(sb):
+        return CHAIN_SAME_SESSION
+    return CHAIN_SESSION_MISMATCH
 
 
 def estimate_correlation_work(
@@ -362,6 +383,18 @@ def correlate_runtime_wire(
     if not events or not packets:
         return []
 
+    # Propagate document-level session_id onto events/packets when absent.
+    rt_session = runtime.get("session_id")
+    wr_session = wire.get("session_id")
+    if rt_session is not None:
+        for ev in events:
+            if ev.get("session_id") is None:
+                ev["session_id"] = rt_session
+    if wr_session is not None:
+        for p in packets:
+            if p.get("session_id") is None:
+                p["session_id"] = wr_session
+
     # Index packets by length, time bucket, hex
     by_len: dict[int, list[dict[str, Any]]] = defaultdict(list)
     by_hex: dict[str, list[dict[str, Any]]] = defaultdict(list)
@@ -389,7 +422,15 @@ def correlate_runtime_wire(
         # Exact byte match
         if ev.get("bytes_hex") and ev["bytes_hex"] in by_hex:
             for p in by_hex[ev["bytes_hex"]]:
+                sess = _session_relation(ev, p)
+                if sess == CHAIN_SESSION_MISMATCH:
+                    cand_map[p["id"]] = _rw_link(
+                        ev, p, keys=["exact_bytes"], rejected=True, reason="SESSION_MISMATCH"
+                    )
+                    continue
                 keys = ["exact_bytes"]
+                if sess == CHAIN_SAME_SESSION:
+                    keys.append("same_session")
                 if _in_window(ev.get("timestamp_ms"), p.get("timestamp_ms"), timestamp_window_ms):
                     keys.append("timestamp_window")
                 if _direction_compatible(ev, p):
@@ -399,7 +440,9 @@ def correlate_runtime_wire(
                     continue
                 if ev.get("length") is not None and p.get("length") == ev.get("length"):
                     keys.append("length")
-                cand_map[p["id"]] = _rw_link(ev, p, keys=keys)
+                link = _rw_link(ev, p, keys=keys)
+                link["session_relation"] = sess
+                cand_map[p["id"]] = link
 
         # Fragmentation: runtime bytes == concat of wire fragments
         if ev.get("bytes_hex") and ev.get("aggregate_of") is None:
@@ -600,6 +643,13 @@ def _rw_link(
     reject_weak: bool = False,
     reason: str | None = None,
 ) -> dict[str, Any]:
+    sess = _session_relation(ev, p)
+    if sess == CHAIN_SESSION_MISMATCH:
+        rejected = True
+        reason = reason or "SESSION_MISMATCH"
+    keys = list(keys)
+    if sess == CHAIN_SAME_SESSION and "same_session" not in keys:
+        keys.append("same_session")
     strength = _score_keys(keys)
     if rejected or (reject_weak and strength in {STRENGTH_WEAK, STRENGTH_NONE}):
         result, classification = RESULT_REJECTED, CLASS_REJECTED
@@ -609,6 +659,19 @@ def _rw_link(
     notes = []
     if reason:
         notes.append(reason)
+    facets = []
+    if sess == CHAIN_SAME_SESSION:
+        facets.append(CHAIN_SAME_SESSION)
+    elif sess == CHAIN_SESSION_MISMATCH:
+        facets.append(CHAIN_SESSION_MISMATCH)
+    else:
+        facets.append(CHAIN_SESSION_UNKNOWN)
+    if "timestamp_window" in keys:
+        facets.append(CHAIN_TIME_CORRELATED)
+    if "exact_bytes" in keys or "byte_prefix" in keys:
+        facets.append(CHAIN_BYTE_CORRELATED)
+    if ev.get("method"):
+        facets.append(CHAIN_METHOD_CORRELATED)
     return {
         "id": f"RW-{ev.get('id')}-{p.get('id')}",
         "link_type": "RUNTIME_WIRE_LINK",
@@ -627,6 +690,8 @@ def _rw_link(
         "byte_relation": _bytes_relation(ev.get("bytes_hex"), p.get("bytes_hex")),
         "runtime_direction": ev.get("direction"),
         "wire_direction": p.get("direction"),
+        "session_relation": sess,
+        "chain_facets": facets,
         "notes": notes,
         "runtime_source": {"type": ev.get("type"), "id": ev.get("id"), "artifact": ev.get("source_artifact")},
         "wire_source": {"type": p.get("type"), "id": p.get("id"), "artifact": p.get("source_artifact")},
@@ -693,6 +758,30 @@ def correlate_end_to_end(
                     result, classification = RESULT_REJECTED, CLASS_REJECTED
                 else:
                     result, classification = _classify_from_strength(strength)
+            sess = rw.get("session_relation") or CHAIN_SESSION_UNKNOWN
+            if sess == CHAIN_SESSION_MISMATCH:
+                result, classification = RESULT_REJECTED, CLASS_REJECTED
+                strength = STRENGTH_NONE
+            facets = list(rw.get("chain_facets") or [])
+            if "method_identity" in (sr.get("correlation_keys") or []) or "value_id" in (
+                sr.get("correlation_keys") or []
+            ):
+                if CHAIN_METHOD_CORRELATED not in facets:
+                    facets.append(CHAIN_METHOD_CORRELATED)
+            # FULL_CHAIN requires same session + method correlation + byte correlation.
+            # Byte-only or cross-session matches must not be labeled FULL_CHAIN.
+            chain_class = None
+            if (
+                classification == CLASS_CORRELATION
+                and sess == CHAIN_SAME_SESSION
+                and CHAIN_METHOD_CORRELATED in facets
+                and CHAIN_BYTE_CORRELATED in facets
+            ):
+                chain_class = CHAIN_FULL
+            elif classification == CLASS_CORRELATION and CHAIN_BYTE_CORRELATED in facets:
+                chain_class = CHAIN_BYTE_CORRELATED
+            elif classification == CLASS_CORRELATION and CHAIN_METHOD_CORRELATED in facets:
+                chain_class = CHAIN_METHOD_CORRELATED
             out.append(
                 {
                     "id": f"E2E-{sr.get('static_id')}-{rid}-{rw.get('wire_id')}",
@@ -706,12 +795,23 @@ def correlate_end_to_end(
                     "result": result,
                     "classification": classification,
                     "protocol_semantics": "UNKNOWN",
+                    "session_relation": sess,
+                    "chain_facets": facets,
+                    "chain_class": chain_class,
                     "byte_lineage": [
                         f"WIRE:{rw.get('wire_id')}",
                         f"RUNTIME:{rid}",
                         f"STATIC:{sr.get('static_id')}",
                     ],
-                    "notes": [],
+                    "notes": (
+                        ["SESSION_MISMATCH blocks FULL_CHAIN"]
+                        if sess == CHAIN_SESSION_MISMATCH
+                        else (
+                            ["SESSION_UNKNOWN: byte/method correlation without same-session proof"]
+                            if sess == CHAIN_SESSION_UNKNOWN and classification == CLASS_CORRELATION
+                            else []
+                        )
+                    ),
                     "static_runtime": sr.get("id"),
                     "runtime_wire": rw.get("id"),
                     "static_source": sr.get("static_source"),

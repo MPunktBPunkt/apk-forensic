@@ -1,0 +1,56 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "apk_forensics.wire_evidence.v1",
+  "title": "apk_forensics.wire_evidence.v1",
+  "type": "object",
+  "required": ["schema", "status", "packets"],
+  "properties": {
+    "schema": { "const": "apk_forensics.wire_evidence.v1" },
+    "status": {
+      "type": "string",
+      "enum": ["OK", "EMPTY", "INPUT_MISSING"]
+    },
+    "session_id": { "type": ["string", "null"] },
+    "source": { "type": ["string", "null"] },
+    "note": { "type": ["string", "null"] },
+    "provenance": { "type": "object" },
+    "counts": { "type": "object" },
+    "packets": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/wire_packet" }
+    }
+  },
+  "$defs": {
+    "wire_packet": {
+      "type": "object",
+      "required": ["id", "type"],
+      "properties": {
+        "id": { "type": "string" },
+        "type": {
+          "type": "string",
+          "enum": [
+            "WIRE_PACKET",
+            "WIRE_BYTES",
+            "WIRE_READ",
+            "WIRE_WRITE",
+            "WIRE_DIRECTION",
+            "WIRE_TIMESTAMP"
+          ]
+        },
+        "timestamp_ms": { "type": ["integer", "null"] },
+        "direction": { "type": "string" },
+        "app_direction": { "type": "string" },
+        "length": { "type": ["integer", "null"] },
+        "bytes_hex": { "type": ["string", "null"] },
+        "session_id": { "type": ["string", "null"] },
+        "peer": {},
+        "offset": {},
+        "sequence": {},
+        "source_artifact": {},
+        "classification": { "type": "string" },
+        "protocol_semantics": { "const": "UNKNOWN" }
+      }
+    }
+  },
+  "additionalProperties": true
+}

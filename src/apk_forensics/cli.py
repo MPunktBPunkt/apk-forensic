@@ -407,6 +407,39 @@ def build_parser() -> argparse.ArgumentParser:
         help="Widen method seeds to AccessorySocket/Packet buffer consumers (documented gap fix)",
     )
 
+    ui_snap = sub.add_parser(
+        "ui-snapshot",
+        help="Build a read-only analysis_ui_snapshot.v1 from existing reports (no analysis).",
+    )
+    ui_snap.add_argument(
+        "--case",
+        choices=["bmw-connected", "bimmerlink", "serial-bt"],
+        default=None,
+        help="Preset case mapping to known report paths under the repo",
+    )
+    ui_snap.add_argument(
+        "--root",
+        type=Path,
+        default=Path("."),
+        help="Repository / workspace root containing output/ reports",
+    )
+    ui_snap.add_argument("--output", type=Path, required=True, help="Output snapshot JSON path")
+    ui_snap.add_argument("--focus-value", default=None, help="Optional VALUE-V### focus id")
+    ui_snap.add_argument("--label", default=None, help="Optional display label")
+
+    ui_cmd = sub.add_parser(
+        "ui",
+        help="Serve the local read-only Forensic Analysis UI (stdlib HTTP, no cloud).",
+    )
+    ui_cmd.add_argument(
+        "--snapshot",
+        type=Path,
+        required=True,
+        help="Path to analysis_ui_snapshot.v1 JSON",
+    )
+    ui_cmd.add_argument("--host", default="127.0.0.1")
+    ui_cmd.add_argument("--port", type=int, default=8765)
+
     calibrate_cmd = sub.add_parser(
         "calibrate",
         help="v1.1 resource estimate audit + coverage reports from persisted runs (no APK execution).",
@@ -1372,6 +1405,45 @@ def _cmd_diagnose_buffer_semantics(args: argparse.Namespace) -> int:
     return ExitCode.SUCCESS
 
 
+def _cmd_ui_snapshot(args: argparse.Namespace) -> int:
+    from apk_forensics.ui.snapshot import CASE_PRESETS, build_ui_snapshot, write_ui_snapshot
+
+    if args.case is None:
+        print("error: --case is required (bmw-connected|bimmerlink|serial-bt)", file=sys.stderr)
+        return ExitCode.INVALID_ARGS
+    if args.case not in CASE_PRESETS:
+        print(f"error: unknown case {args.case}", file=sys.stderr)
+        return ExitCode.INVALID_ARGS
+    snap = build_ui_snapshot(
+        root=Path(args.root).resolve(),
+        case=args.case,
+        focus_value_id=args.focus_value,
+        label=args.label,
+    )
+    path = write_ui_snapshot(snap, Path(args.output).resolve())
+    print(f"APK Forensics {__version__} ui-snapshot")
+    print(f"Case: {args.case}")
+    print(f"Focus: {snap.get('focus_value_id')}")
+    print(f"Values: {len(snap.get('values') or [])}")
+    print(f"Open edges: {len(snap.get('open_edges') or [])}")
+    print(f"FULL_CHAIN present: {(snap.get('correlation_graph') or {}).get('full_chain_present')}")
+    print(f"Wrote: {path}")
+    print(f"content_sha256: {snap.get('content_sha256')}")
+    return ExitCode.SUCCESS
+
+
+def _cmd_ui(args: argparse.Namespace) -> int:
+    from apk_forensics.ui.server import serve_ui
+
+    snap = Path(args.snapshot).resolve()
+    if not snap.is_file():
+        print(f"error: snapshot not found: {snap}", file=sys.stderr)
+        return ExitCode.INPUT_UNREADABLE
+    print(f"APK Forensics {__version__} ui")
+    serve_ui(snapshot=snap, host=str(args.host), port=int(args.port))
+    return ExitCode.SUCCESS
+
+
 def _cmd_calibrate(args: argparse.Namespace) -> int:
     import json
     from apk_forensics.coverage_analysis import annotate_paths
@@ -1632,6 +1704,10 @@ def main(argv: list[str] | None = None) -> int:
         return _cmd_diagnose_runtime_correlation(args)
     if args.command == "calibrate":
         return _cmd_calibrate(args)
+    if args.command == "ui-snapshot":
+        return _cmd_ui_snapshot(args)
+    if args.command == "ui":
+        return _cmd_ui(args)
     if args.command == "postprocess-communication":
         return _cmd_postprocess_communication(args)
     if args.command == "scan":

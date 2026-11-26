@@ -97,6 +97,9 @@ def _norm_event(raw: dict[str, Any], *, default_prefix: str, index: int) -> dict
     length = raw.get("length")
     if length is None and bytes_hex is not None:
         length = len(bytes_hex) // 2
+    # Explicit length without bytes must never invent a payload.
+    if length is None and raw.get("input_length") is not None:
+        length = raw.get("input_length")
     ts = raw.get("timestamp_ms")
     if ts is None:
         ts = raw.get("t_ms")
@@ -106,6 +109,13 @@ def _norm_event(raw: dict[str, Any], *, default_prefix: str, index: int) -> dict
         timestamp_ms = int(ts) if ts is not None else None
     except (TypeError, ValueError):
         timestamp_ms = None
+    mono = raw.get("monotonic_ns")
+    if mono is None:
+        mono = raw.get("monotonic_timestamp_ns")
+    try:
+        monotonic_ns = int(mono) if mono is not None else None
+    except (TypeError, ValueError):
+        monotonic_ns = None
     try:
         length_i = int(length) if length is not None else None
     except (TypeError, ValueError):
@@ -113,18 +123,45 @@ def _norm_event(raw: dict[str, Any], *, default_prefix: str, index: int) -> dict
     method = raw.get("method") or raw.get("method_identity")
     if method is not None:
         method = str(method).strip() or None
+    phase = raw.get("phase") or raw.get("call_phase")
+    if phase is not None:
+        phase = str(phase).strip().lower() or None
+        if phase in {"enter", "entry", "method_entry"}:
+            phase = "entry"
+        elif phase in {"exit", "return", "method_exit"}:
+            phase = "exit"
+    args = raw.get("arguments")
+    if args is None:
+        args = raw.get("args")
+    return_value = raw.get("return_value")
+    if return_value is None:
+        return_value = raw.get("retval")
+    payload_observed = bool(bytes_hex)
+    # Method execution FACT ≠ payload FACT. Keep both flags explicit.
     return {
         "id": eid,
         "type": etype,
         "method": method,
         "method_name": (raw.get("method_name") or None),
+        "phase": phase,
         "timestamp_ms": timestamp_ms,
+        "monotonic_ns": monotonic_ns,
         "direction": normalize_direction(raw.get("direction")),
         "app_direction": app_direction(raw.get("direction")),
         "length": length_i,
         "bytes_hex": bytes_hex,
+        "payload_observed": payload_observed,
+        "arguments": args,
+        "return_value": return_value,
+        "thread_id": raw.get("thread_id") or raw.get("tid"),
+        "package": raw.get("package") or raw.get("package_name"),
+        "process": raw.get("process") or raw.get("process_name"),
+        "process_id": raw.get("process_id") or raw.get("pid"),
+        "session_id": raw.get("session_id"),
         "socket_id": raw.get("socket_id"),
         "stream_id": raw.get("stream_id"),
+        "transport_id": raw.get("transport_id"),
+        "buffer_ref": raw.get("buffer_ref") or raw.get("object_ref"),
         "sequence": raw.get("sequence"),
         "offset": raw.get("offset"),
         "value_id": raw.get("value_id"),
@@ -134,10 +171,28 @@ def _norm_event(raw: dict[str, Any], *, default_prefix: str, index: int) -> dict
         "fragment_of": raw.get("fragment_of"),
         "aggregate_of": raw.get("aggregate_of"),
         "source_artifact": raw.get("source_artifact"),
-        "classification": "FACT",
+        "instrumentation": raw.get("instrumentation"),
+        "classification": raw.get("classification") or "FACT",
         "protocol_semantics": "UNKNOWN",
         "raw_keys": sorted(raw.keys()),
     }
+
+
+def _resolve_runtime_status(raw: dict[str, Any], events: list[dict[str, Any]]) -> str:
+    """Preserve INPUT_MISSING; never upgrade empty capture attempts to NOT_FOUND."""
+    declared = str(raw.get("status") or "").strip().upper()
+    if declared == "INPUT_MISSING":
+        return "INPUT_MISSING"
+    if events:
+        return "OK"
+    prov = raw.get("provenance") if isinstance(raw.get("provenance"), dict) else {}
+    missing = prov.get("missing_inputs") or []
+    if missing or prov.get("attempted") is True and not events:
+        # Attempted capture with zero events remains INPUT_MISSING (device/process absent).
+        return "INPUT_MISSING"
+    if declared == "EMPTY":
+        return "EMPTY"
+    return "EMPTY"
 
 
 def load_runtime_evidence(path: Path | None) -> dict[str, Any]:
@@ -147,23 +202,43 @@ def load_runtime_evidence(path: Path | None) -> dict[str, Any]:
             "status": "INPUT_MISSING",
             "events": [],
             "counts": {"events": 0},
+            "session_id": None,
+            "package": None,
+            "process": None,
+            "instrumentation": None,
             "source": None,
             "note": "No runtime evidence artefact provided.",
         }
     path = Path(path).resolve()
     raw = json.loads(path.read_text(encoding="utf-8"))
     events_in = raw.get("events") or raw.get("runtime_events") or []
-    events = [_norm_event(e, default_prefix="R", index=i + 1) for i, e in enumerate(events_in) if isinstance(e, dict)]
+    doc_session = raw.get("session_id")
+    events = []
+    for i, e in enumerate(events_in):
+        if not isinstance(e, dict):
+            continue
+        ev = _norm_event(e, default_prefix="R", index=i + 1)
+        if ev.get("session_id") is None and doc_session is not None:
+            ev["session_id"] = doc_session
+        events.append(ev)
     unknown_types = sorted({e["type"] for e in events if e["type"] not in RUNTIME_TYPES})
+    status = _resolve_runtime_status(raw, events)
     return {
         "schema": raw.get("schema") or RUNTIME_SCHEMA,
-        "status": "OK" if events else "EMPTY",
+        "status": status,
         "events": events,
         "counts": {
             "events": len(events),
             "by_type": _count_by(events, "type"),
+            "with_payload": sum(1 for e in events if e.get("payload_observed")),
+            "without_payload": sum(1 for e in events if not e.get("payload_observed")),
             "unknown_types": unknown_types,
         },
+        "session_id": doc_session,
+        "package": raw.get("package") or raw.get("package_name"),
+        "process": raw.get("process"),
+        "instrumentation": raw.get("instrumentation")
+        or ((raw.get("provenance") or {}).get("instrumentation") if isinstance(raw.get("provenance"), dict) else None),
         "source": str(path),
         "provenance": raw.get("provenance") or {},
         "note": raw.get("note"),
@@ -177,32 +252,150 @@ def load_wire_evidence(path: Path | None) -> dict[str, Any]:
             "status": "INPUT_MISSING",
             "packets": [],
             "counts": {"packets": 0},
+            "session_id": None,
             "source": None,
             "note": "No wire/capture evidence artefact provided.",
         }
     path = Path(path).resolve()
     raw = json.loads(path.read_text(encoding="utf-8"))
     packets_in = raw.get("packets") or raw.get("wire_packets") or raw.get("events") or []
-    packets = [_norm_event(e, default_prefix="W", index=i + 1) for i, e in enumerate(packets_in) if isinstance(e, dict)]
-    for p in packets:
+    doc_session = raw.get("session_id")
+    packets = []
+    for i, e in enumerate(packets_in):
+        if not isinstance(e, dict):
+            continue
+        p = _norm_event(e, default_prefix="W", index=i + 1)
+        if p.get("session_id") is None and doc_session is not None:
+            p["session_id"] = doc_session
         if p["type"] not in WIRE_TYPES:
             # allow generic packet label
             if p["type"] in RUNTIME_TYPES:
                 p["type"] = "WIRE_PACKET"
+        packets.append(p)
     unknown_types = sorted({p["type"] for p in packets if p["type"] not in WIRE_TYPES})
+    declared = str(raw.get("status") or "").strip().upper()
+    if declared == "INPUT_MISSING":
+        status = "INPUT_MISSING"
+    else:
+        status = "OK" if packets else "EMPTY"
     return {
         "schema": raw.get("schema") or WIRE_SCHEMA,
-        "status": "OK" if packets else "EMPTY",
+        "status": status,
         "packets": packets,
         "counts": {
             "packets": len(packets),
             "by_type": _count_by(packets, "type"),
             "unknown_types": unknown_types,
         },
+        "session_id": doc_session,
         "source": str(path),
         "provenance": raw.get("provenance") or {},
         "note": raw.get("note"),
     }
+
+
+def adapt_external_runtime_to_v1(
+    records: list[dict[str, Any]] | None,
+    *,
+    session_id: str | None = None,
+    package: str | None = None,
+    process: str | None = None,
+    instrumentation: str | None = None,
+    source: str | None = None,
+    status: str | None = None,
+    provenance: dict[str, Any] | None = None,
+    note: str | None = None,
+) -> dict[str, Any]:
+    """Minimal adapter: external hook/log records → runtime_evidence.v1.
+
+    Does not install Frida/JVMTI. Does not invent events. Empty/absent records with
+    explicit missing instrumentation → INPUT_MISSING (never NOT_FOUND).
+    Static VALUE ids must not be injected here as runtime facts.
+    """
+    records = list(records or [])
+    events = [_norm_event(r, default_prefix="R", index=i + 1) for i, r in enumerate(records) if isinstance(r, dict)]
+    for ev in events:
+        if ev.get("session_id") is None and session_id is not None:
+            ev["session_id"] = session_id
+        # Refuse silent promotion of static catalog IDs unless the external source set them.
+        # (Adapter itself never invents value_id.)
+    declared = (status or "").strip().upper() or None
+    if provenance is None:
+        missing: list[str] = []
+        if not events:
+            missing.append("NO_RUNTIME_RECORDS")
+            if not instrumentation:
+                missing.append("NO_INSTRUMENTATION")
+        provenance = {
+            "instrumentation": instrumentation,
+            "adapter": "adapt_external_runtime_to_v1",
+            "missing_inputs": missing,
+        }
+    raw_stub = {"status": declared, "provenance": provenance}
+    if declared:
+        resolved = declared
+        if declared == "OK" and not events:
+            resolved = "EMPTY"
+    elif not events:
+        resolved = "INPUT_MISSING"
+    else:
+        resolved = _resolve_runtime_status(raw_stub, events)
+    return {
+        "schema": RUNTIME_SCHEMA,
+        "status": resolved,
+        "session_id": session_id,
+        "package": package,
+        "process": process,
+        "instrumentation": instrumentation,
+        "events": events,
+        "counts": {
+            "events": len(events),
+            "by_type": _count_by(events, "type"),
+            "with_payload": sum(1 for e in events if e.get("payload_observed")),
+            "without_payload": sum(1 for e in events if not e.get("payload_observed")),
+        },
+        "source": source,
+        "provenance": raw_stub["provenance"],
+        "note": note
+        or (
+            "Adapter output only. Method execution without bytes_hex is not payload evidence."
+        ),
+    }
+
+
+# Canonical V001 hook target (static identity). Not a runtime fact.
+V001_RUNTIME_HOOK_TARGET = {
+    "value_id": "VALUE-V001",
+    "static_source_api": "Lcom/bmwgroup/connected/core/services/accessory/bcl/packet/Info;->decodeVersion([B)S",
+    "static_source_method": "Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection$2;->run()V",
+    "class": "com.bmwgroup.connected.core.services.accessory.bcl.packet.Info",
+    "method": "decodeVersion",
+    "descriptor": "([B)S",
+    "required_runtime_fields": [
+        "method",
+        "timestamp_ms",
+        "session_id",
+        "package",
+        "process",
+        "phase",
+        "length",
+        "bytes_hex",
+        "return_value",
+    ],
+    "optional_runtime_fields": [
+        "thread_id",
+        "monotonic_ns",
+        "arguments",
+        "socket_id",
+        "transport_id",
+        "buffer_ref",
+    ],
+    "note": (
+        "Hook Info.decodeVersion only. Do not write STATIC FACT (BIG_ENDIAN slice) into the "
+        "runtime event. Do not pre-fill value_id from the catalog unless the instrumentation "
+        "layer explicitly tagged it after an independent join."
+    ),
+}
 
 
 def load_static_evidence_from_application_flow(

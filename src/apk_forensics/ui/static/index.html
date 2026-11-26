@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>apk-forensics — Forensic Analysis UI</title>
+  <link rel="stylesheet" href="/styles.css" />
+</head>
+<body>
+  <header class="top">
+    <div class="brand">
+      apk-forensics
+      <small>Read-only Forensic Analysis UI</small>
+    </div>
+    <div class="meta-line" id="top-meta">loading…</div>
+  </header>
+
+  <nav>
+    <button type="button" data-nav="overview" class="active">Overview</button>
+    <button type="button" data-nav="path">Analysis Path</button>
+    <button type="button" data-nav="values">Values</button>
+    <button type="button" data-nav="open">Open Edges</button>
+    <button type="button" data-nav="runtime">Runtime / Wire</button>
+    <button type="button" data-nav="knowledge">What we know</button>
+    <button type="button" data-nav="timeline">Timeline</button>
+    <button type="button" data-nav="sources">Sources</button>
+  </nav>
+
+  <main>
+    <section data-view="overview">
+      <div class="grid-2">
+        <div class="card"><h3>APK</h3><div id="overview-apk"></div></div>
+        <div class="card"><h3>Analysis Status</h3><div id="overview-status" class="grid-2"></div></div>
+      </div>
+      <div class="card"><h3>Pipeline</h3><div class="pipeline" id="overview-pipeline"></div></div>
+      <div class="card"><h3>Evidence Counters</h3><div id="overview-counters"></div></div>
+    </section>
+
+    <section data-view="path" class="hidden"><div id="path-view"></div></section>
+    <section data-view="values" class="hidden"><div id="values-view"></div></section>
+    <section data-view="open" class="hidden"><div id="open-view"></div></section>
+    <section data-view="runtime" class="hidden"><div id="runtime-view"></div></section>
+    <section data-view="knowledge" class="hidden"><div id="knowledge-view"></div></section>
+    <section data-view="timeline" class="hidden"><div id="timeline-view"></div></section>
+    <section data-view="sources" class="hidden"><div id="sources-view"></div></section>
+  </main>
+
+  <aside class="panel" id="detail">
+    <p class="empty">Detail panel</p>
+  </aside>
+
+  <script src="/app.js"></script>
+</body>
+</html>
