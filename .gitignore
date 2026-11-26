@@ -28,6 +28,7 @@ output/*
 !output/serial-bt-terminal-152/**
 !output/ui/
 !output/ui/FORENSIC_UI_IMPLEMENTATION.md
+!output/ui/FORENSIC_WORKBENCH_IMPLEMENTATION.md
 work/
 cache/
 .apk-forensics-workspace.json

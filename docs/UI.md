@@ -1,72 +1,101 @@
-# Forensic Analysis UI
+# Forensic Analysis UI / Workbench
 
-Read-only local UI for inspecting existing apk-forensics evidence.
+Local UI for apk-forensics:
 
-The UI does **not** analyze APKs, compute XREFs, invent protocol semantics, or run correlation.
+1. **Forensic Explorer** — read-only visualization of `analysis_ui_snapshot.v1`
+2. **New Analysis Workbench** — orchestrates the *existing* analyzer (scan / estimate / SearchPlan / Resource Guard)
 
 ```text
-Analyzer / offline diagnose-*  →  JSON reports  →  ui-snapshot  →  UI
+APK / path
+   ↓
+Workbench Job API  (stdlib HTTP)
+   ↓
+create_analysis_job → Resource Guard → run_pipeline
+   ↓
+report.json / report.md
+   ↓
+ui-snapshot (existing aggregator)
+   ↓
+Forensic Explorer
 ```
+
+The UI does **not** invent evidence, XREFs, protocol semantics, or resource estimates.
+
+## Important scope
+
+| Capability | Status |
+|---|---|
+| Static APK analysis | Supported (orchestrates CLI/pipeline) |
+| APK execution | **Not supported / not claimed** |
+| Runtime instrumentation | Separate workflow (`INPUT_MISSING` until real evidence) |
+| Evidence classes | Unchanged (`FACT` / `INFERENCE` / …) |
+
+SearchPlan limits ≠ Resource Policy limits — shown as separate UI sections.
 
 ## Architecture
 
 | Piece | Role |
 |---|---|
-| `apk_forensics.ui.snapshot` | Deterministic aggregator → `analysis_ui_snapshot.v1` |
-| `apk_forensics.ui.server` | stdlib `ThreadingHTTPServer` serving static files + snapshot JSON |
-| `apk_forensics/ui/static/*` | Single-page UI (HTML/CSS/JS) |
+| `apk_forensics.ui.snapshot` | Deterministic report → snapshot aggregator |
+| `apk_forensics.ui.workbench` | Upload workspace, plan catalog, estimate, job runner |
+| `apk_forensics.ui.server` | stdlib `ThreadingHTTPServer` + JSON APIs |
+| `apk_forensics/ui/static/*` | SPA (Explorer + Workbench) |
 | CLI `ui-snapshot` / `ui` | Build snapshot / serve UI |
 
-No Flask/FastAPI/React dependency. No cloud. No external API.
+No Flask/FastAPI. No cloud. No external API. No LLM.
 
-## Data sources
+## Data sources (Explorer)
 
-Snapshots are built from **existing** report paths (case presets):
+Snapshots from existing reports (`CASE_PRESETS` or job output). Counters and classifications come from reports only.
 
-- `bmw-connected` — v13/v14/v15/v16 value + runtime readiness + cross-apk counters
-- `bimmerlink` — META + optional v15 flow
-- `serial-bt` — serial v15 flow
+## Workbench APIs
 
-Counters are read from reports (e.g. `CROSS_APK_EVALUATION_REPORT.json`, baseline meta, application-flow). Nothing is hard-coded as evidence.
+| Method | Path | Purpose |
+|---|---|---|
+| GET | `/api/snapshot` | Current Explorer snapshot |
+| GET | `/api/meta` | Plans, policies, bind warning |
+| GET | `/api/plans` | Bundled `plans/*.yaml` only |
+| GET | `/api/plans/{id}/criteria` | Grouped SearchPlan criteria |
+| POST | `/api/upload` | APK upload → `work/ui-uploads/` |
+| POST | `/api/validate` | Server-side path fingerprint |
+| POST | `/api/estimate` | Existing Resource Estimator + Guard decision |
+| POST | `/api/jobs/start` | Start background analysis job |
+| GET | `/api/jobs/{id}/status` | Progress / logs / results |
+| POST | `/api/jobs/{id}/cancel` | Cooperative cancel |
+| GET | `/api/result?path=` | Read file **only** under uploads/jobs workspace |
 
-## Evidence model in the UI
-
-Status classes shown with **label + text mark + color**:
-
-`FACT` `INFERENCE` `CORRELATION` `UNKNOWN` `NOT_PROVEN` `INPUT_MISSING` `REJECTED` (+ pipeline states like `COMPLETE` / `NOT_EXECUTED` / `DYNAMIC_DISPATCH`)
-
-Open edges distinguish boundaries from negatives (`NOT_FOUND` is not used for missing runtime).
-
-`FULL_CHAIN` is displayed only when the snapshot’s correlation graph says `full_chain_present=true` (today: false until a real same-session run exists).
+Jobs persist `output/ui-jobs/<stamp>-<id>/workbench_job.json` (`apk_forensics.workbench_job.v1`).
 
 ## UI pages
 
-1. Overview — APK identity, analysis status, pipeline, counters  
-2. Analysis Path — VALUE-V001 (or focus) node/edge chain  
-3. Values — neutral VALUE-V### catalog  
-4. Open Edges — DYNAMIC_DISPATCH / NOT_PROVEN / INPUT_MISSING / …  
-5. Runtime / Wire — separation + session-mismatch rule  
-6. What we know — proven / not proven / missing input + next experiment  
-7. Timeline — analysis milestones (no synthetic runtime clocks)  
-8. Sources — referenced report paths + presence  
+Overview · **New Analysis** · **Analysis Job** · Analysis Path · Values · Open Edges · Runtime/Wire · What we know · Timeline · Sources
 
-Detail panel on the right shows the selected node/edge/source fields.
+## Security
+
+- Default bind `127.0.0.1`
+- Explicit warning when bound to `0.0.0.0`
+- Upload names sanitized; no path traversal
+- Result download restricted to workbench workspace roots
+- Resource `REJECT` cannot be overridden; `WARNING` needs explicit Proceed
+- Only validated bundled SearchPlans accepted
 
 ## Start
 
 ```bash
-# from repo root, with reports present under output/
-apk-forensics ui-snapshot --case bmw-connected --output /tmp/ui-snap.json
-apk-forensics ui --snapshot /tmp/ui-snap.json --port 8765
-# open http://127.0.0.1:8765/
+# Explorer only (optional snapshot)
+apk-forensics ui --snapshot output/ui/analysis_ui_snapshot.bmw-connected.json --root .
+
+# Workbench + Explorer (default)
+apk-forensics ui --root . --host 127.0.0.1 --port 8765
+
+# Read-only Explorer (no job APIs)
+apk-forensics ui --snapshot PATH --no-workbench
 ```
+
+Open `http://127.0.0.1:8765/` — use **New Analysis** to upload or enter a **server-side** APK path.
 
 ## Extension points
 
-- Add a case preset in `CASE_PRESETS` mapping roles → report paths  
-- Optionally pass richer correlation run JSON later (still read-only)  
-- Do **not** embed analyzer logic in `app.js`
-
-## Reproducibility
-
-Same report inputs → same `content_sha256` on the snapshot (canonical JSON hash).
+- Add YAML under `plans/` (automatically listed)
+- Do not embed analyzer logic in `app.js`
+- Diagnose-* chains after scan can be added as optional post-steps later

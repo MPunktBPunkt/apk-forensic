@@ -2,21 +2,23 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>apk-forensics — Forensic Analysis UI</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>apk-forensics — Forensic Workbench</title>
   <link rel="stylesheet" href="/styles.css" />
 </head>
 <body>
   <header class="top">
     <div class="brand">
       apk-forensics
-      <small>Read-only Forensic Analysis UI</small>
+      <small>Forensic Analysis Workbench</small>
     </div>
     <div class="meta-line" id="top-meta">loading…</div>
   </header>
 
-  <nav>
+  <nav id="main-nav">
     <button type="button" data-nav="overview" class="active">Overview</button>
+    <button type="button" data-nav="new">New Analysis</button>
+    <button type="button" data-nav="job">Analysis Job</button>
     <button type="button" data-nav="path">Analysis Path</button>
     <button type="button" data-nav="values">Values</button>
     <button type="button" data-nav="open">Open Edges</button>
@@ -28,12 +30,95 @@
 
   <main>
     <section data-view="overview">
+      <div id="bind-warn" class="warn hidden"></div>
       <div class="grid-2">
         <div class="card"><h3>APK</h3><div id="overview-apk"></div></div>
         <div class="card"><h3>Analysis Status</h3><div id="overview-status" class="grid-2"></div></div>
       </div>
       <div class="card"><h3>Pipeline</h3><div class="pipeline" id="overview-pipeline"></div></div>
       <div class="card"><h3>Evidence Counters</h3><div id="overview-counters"></div></div>
+      <div class="card">
+        <h3>Scope</h3>
+        <p><span class="badge COMPLETE"><span class="mark">[OK]</span> STATIC APK ANALYSIS</span> supported</p>
+        <p><span class="badge INPUT_MISSING"><span class="mark">[IM]</span> APK EXECUTION</span> not supported / not claimed</p>
+        <p><span class="badge UNKNOWN"><span class="mark">[?]</span> RUNTIME INSTRUMENTATION</span> separate workflow</p>
+      </div>
+    </section>
+
+    <section data-view="new" class="hidden">
+      <div class="card">
+        <h3>New Analysis</h3>
+        <p class="empty">Orchestrates the existing static analyzer. Does not execute the Android app.</p>
+        <div class="warn" id="wb-disclaimer"></div>
+      </div>
+
+      <div class="card">
+        <h3>1. APK input</h3>
+        <div class="tabs">
+          <button type="button" class="tab active" data-input-tab="upload">Upload</button>
+          <button type="button" class="tab" data-input-tab="server">Server-side path</button>
+        </div>
+        <div id="input-upload">
+          <label class="dropzone" id="dropzone">
+            <input type="file" id="apk-file" accept=".apk,.APK,application/vnd.android.package-archive" multiple />
+            <span>APK auswählen / Datei hierher ziehen</span>
+          </label>
+          <p class="empty">Upload stays on the analysis host (no cloud).</p>
+        </div>
+        <div id="input-server" class="hidden">
+          <label class="field-label">Server-side path on analysis host</label>
+          <input type="text" id="server-path" class="input" placeholder="/path/to/application.apk" />
+          <p class="empty">Path on the machine running <code>apk-forensics ui</code> — not the phone browser.</p>
+          <button type="button" class="btn" id="btn-validate-path">Validate</button>
+        </div>
+        <div id="input-meta" class="meta-box"></div>
+      </div>
+
+      <div class="card">
+        <h3>2. Profile / SearchPlan</h3>
+        <p class="empty">Only plans shipped under <code>plans/*.yaml</code>. SearchPlan limits ≠ Resource Policy.</p>
+        <div id="plan-list" class="plan-list"></div>
+        <div id="plan-detail" class="meta-box"></div>
+        <details class="criteria" id="criteria-box"><summary>SearchPlan criteria</summary><div id="criteria-form"></div></details>
+      </div>
+
+      <div class="card">
+        <h3>3. Resource Policy</h3>
+        <div class="radio-row" id="policy-list"></div>
+        <label class="check"><input type="checkbox" id="allow-warning" /> Allow Resource Warning</label>
+        <p class="empty">WARNING requires explicit approval. REJECT cannot be overridden.</p>
+      </div>
+
+      <div class="card">
+        <h3>4. Preflight</h3>
+        <button type="button" class="btn primary" id="btn-estimate">Estimate Resources</button>
+        <div id="preflight" class="meta-box"></div>
+      </div>
+
+      <div class="card">
+        <h3>5. Start</h3>
+        <div id="start-summary" class="meta-box"></div>
+        <div id="warning-confirm" class="warn hidden">
+          <p>This analysis has a resource warning.</p>
+          <button type="button" class="btn" id="btn-cancel-warn">Cancel</button>
+          <button type="button" class="btn primary" id="btn-proceed-warn">Proceed</button>
+        </div>
+        <div id="reject-box" class="warn hidden"></div>
+        <button type="button" class="btn primary" id="btn-start" disabled>Start Analysis</button>
+        <p class="empty">Static forensics only — not APK execution.</p>
+      </div>
+    </section>
+
+    <section data-view="job" class="hidden">
+      <div class="card"><h3>Analysis Job</h3><div id="job-header" class="meta-box">No active job.</div></div>
+      <div class="card"><h3>Progress</h3><div id="job-stages"></div></div>
+      <div class="card"><h3>ETA (heuristic)</h3><div id="job-eta" class="meta-box"></div></div>
+      <div class="card">
+        <h3>Analysis log</h3>
+        <label class="check"><input type="checkbox" id="show-debug-log" /> Show debug log</label>
+        <pre class="log" id="job-log"></pre>
+      </div>
+      <div class="card"><h3>Results</h3><div id="job-results"></div></div>
     </section>
 
     <section data-view="path" class="hidden"><div id="path-view"></div></section>

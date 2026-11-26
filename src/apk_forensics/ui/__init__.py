@@ -1,6 +1,6 @@
-"""Read-only Forensic Analysis UI (snapshot + local static server).
+"""Forensic Analysis UI — Explorer (snapshot) + Workbench (orchestrator).
 
-Does not analyze APKs. Does not invent evidence classifications.
+Does not invent evidence classifications. Static APK analysis only.
 """
 
 from apk_forensics.ui.snapshot import SNAPSHOT_SCHEMA, build_ui_snapshot, load_json

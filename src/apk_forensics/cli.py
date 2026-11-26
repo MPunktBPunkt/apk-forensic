@@ -429,13 +429,24 @@ def build_parser() -> argparse.ArgumentParser:
 
     ui_cmd = sub.add_parser(
         "ui",
-        help="Serve the local read-only Forensic Analysis UI (stdlib HTTP, no cloud).",
+        help="Serve Forensic Analysis UI (Explorer + optional Workbench job APIs).",
     )
     ui_cmd.add_argument(
         "--snapshot",
         type=Path,
-        required=True,
-        help="Path to analysis_ui_snapshot.v1 JSON",
+        default=None,
+        help="Optional analysis_ui_snapshot.v1 JSON for Explorer",
+    )
+    ui_cmd.add_argument(
+        "--root",
+        type=Path,
+        default=Path("."),
+        help="Repository / workspace root for plans, uploads, and job outputs",
+    )
+    ui_cmd.add_argument(
+        "--no-workbench",
+        action="store_true",
+        help="Disable New Analysis job APIs (Explorer read-only mode)",
     )
     ui_cmd.add_argument("--host", default="127.0.0.1")
     ui_cmd.add_argument("--port", type=int, default=8765)
@@ -1435,12 +1446,18 @@ def _cmd_ui_snapshot(args: argparse.Namespace) -> int:
 def _cmd_ui(args: argparse.Namespace) -> int:
     from apk_forensics.ui.server import serve_ui
 
-    snap = Path(args.snapshot).resolve()
-    if not snap.is_file():
+    snap = Path(args.snapshot).resolve() if args.snapshot else None
+    if snap is not None and not snap.is_file():
         print(f"error: snapshot not found: {snap}", file=sys.stderr)
         return ExitCode.INPUT_UNREADABLE
     print(f"APK Forensics {__version__} ui")
-    serve_ui(snapshot=snap, host=str(args.host), port=int(args.port))
+    serve_ui(
+        snapshot=snap,
+        host=str(args.host),
+        port=int(args.port),
+        root=Path(args.root).resolve(),
+        workbench=not bool(args.no_workbench),
+    )
     return ExitCode.SUCCESS
 
 

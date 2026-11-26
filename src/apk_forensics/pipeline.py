@@ -54,11 +54,18 @@ DEFAULT_LIMITATIONS = [
 ]
 
 
-def _job_checkpoint(analysis_job: Any | None) -> None:
+def _job_checkpoint(analysis_job: Any | None, stage: str | None = None) -> None:
     if analysis_job is None:
         return
     from apk_forensics.analysis_job import check_runtime_limit
 
+    if stage:
+        on_stage = getattr(analysis_job, "on_stage", None)
+        if callable(on_stage):
+            try:
+                on_stage(stage)
+            except Exception:  # noqa: BLE001 — progress must never abort analysis
+                pass
     token = getattr(analysis_job, "cancellation", None)
     if token is not None:
         token.check()
@@ -172,7 +179,7 @@ def run_pipeline(
             raise
 
         with zf:
-            _job_checkpoint(analysis_job)
+            _job_checkpoint(analysis_job, "inventory")
             zip_result = build_zip_inventory(zf, config=cfg, compute_hashes=True)
             scanners.append(zip_result)
             warnings.extend(zip_result.warnings)
@@ -184,20 +191,20 @@ def run_pipeline(
                 except Exception as exc:  # noqa: BLE001
                     raise InputError(f"Failed to load profile: {exc}", exit_code=2) from exc
 
-            _job_checkpoint(analysis_job)
+            _job_checkpoint(analysis_job, "inventory")
             manifest_result = analyze_manifest(zf, apk_path=apk_path, config=cfg)
             scanners.append(manifest_result)
             warnings.extend(manifest_result.warnings)
             errors.extend(manifest_result.errors)
 
-            _job_checkpoint(analysis_job)
+            _job_checkpoint(analysis_job, "dex")
             dex_result = analyze_dex(zf, config=cfg)
             scanners.append(dex_result)
             warnings.extend(dex_result.warnings)
             errors.extend(dex_result.errors)
             dex_blobs: list[ScanBlob] = list(dex_result.data.get("blobs") or [])
 
-            _job_checkpoint(analysis_job)
+            _job_checkpoint(analysis_job, "dex")
             native_result = analyze_native(zf, artifact_sha256=sha256, config=cfg)
             scanners.append(native_result)
             warnings.extend(native_result.warnings)
@@ -221,7 +228,7 @@ def run_pipeline(
                 except Exception as exc:  # noqa: BLE001
                     warnings.append(f"Could not include manifest in candidate scan: {exc}")
 
-            _job_checkpoint(analysis_job)
+            _job_checkpoint(analysis_job, "dex")
             candidate_result = run_candidate_scanner(
                 blobs,
                 artifact_sha256=sha256,
@@ -268,7 +275,7 @@ def run_pipeline(
 
             dex_context_section = None
             if cfg.dex_context:
-                _job_checkpoint(analysis_job)
+                _job_checkpoint(analysis_job, "dex_context_xref")
                 dex_context_section = run_dex_context_analysis(
                     apk_path,
                     findings,
@@ -315,7 +322,7 @@ def run_pipeline(
             bluetooth_section = None
             communication_section = None
             if cfg.bluetooth_path:
-                _job_checkpoint(analysis_job)
+                _job_checkpoint(analysis_job, "bluetooth")
                 bluetooth_section = run_bluetooth_path_analysis(
                     apk_path,
                     findings,
@@ -338,7 +345,7 @@ def run_pipeline(
                 )
 
             if getattr(cfg, "communication", False) and bluetooth_section is not None:
-                _job_checkpoint(analysis_job)
+                _job_checkpoint(analysis_job, "communication")
                 from apk_forensics.communication_evidence import run_communication_analysis
 
                 communication_section = run_communication_analysis(
