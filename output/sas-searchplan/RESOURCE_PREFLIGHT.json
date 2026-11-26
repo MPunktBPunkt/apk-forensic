@@ -1,0 +1,653 @@
+{
+  "analysis_job_id": "50c2d70eb3e5aeb259de19c66e7583f3fddbecd40bee472240e9c868b7187641",
+  "input": {
+    "artifacts": [
+      {
+        "path": "/home/martin/projects/apk-forensics/artifacts/de.bmw.connected-6.0.0.4962.apk",
+        "file_name": "de.bmw.connected-6.0.0.4962.apk",
+        "size_bytes": 58387715,
+        "dex_count": 3,
+        "dex_total_bytes": 20112208,
+        "native_so_count": 50,
+        "native_total_bytes": 80738640,
+        "entry_count": 2984
+      }
+    ],
+    "sha256": "b1135e357b62a1f54b3b791609684cb54a184fa29c0e65a3f80e58ee22f496bd"
+  },
+  "plan": {
+    "name": "sas_authentication_investigation",
+    "sha256": "9c81b949858f7c6b0eff0f680140d7bdec063d4a0ff374b810153f9514aa5956",
+    "path": "work/user-plans/sas_authentication_investigation.yaml",
+    "criteria": {
+      "inventory": {
+        "manifest": true,
+        "zip_inventory": true,
+        "dex": true,
+        "strings": true,
+        "uuid": true
+      },
+      "dex_xref": {
+        "enabled": true,
+        "xref_depth": 2,
+        "max_callers": 30,
+        "max_callees": 30,
+        "instruction_window": 10
+      },
+      "bluetooth": {
+        "enabled": true,
+        "reconstruct_callers": true,
+        "reconstruct_streams": true,
+        "reconstruct_read_write": true,
+        "interprocedural": true,
+        "caller_depth": 2,
+        "dataflow_depth": 3,
+        "max_method_hops": 4,
+        "max_field_hops": 3,
+        "max_object_nodes": 500
+      },
+      "evidence_graph": {
+        "enabled": true,
+        "max_paths": 50
+      },
+      "communication": {
+        "enabled": true,
+        "max_method_hops": 4,
+        "max_field_hops": 3,
+        "max_buffer_hops": 6,
+        "max_parser_hops": 4,
+        "max_message_hops": 4,
+        "max_dataflow_paths": 100
+      },
+      "runtime_correlation": {
+        "enabled": false,
+        "note": "Offline correlation limits only. Start Analysis does NOT execute the APK or collect runtime evidence.",
+        "max_runtime_events": 10000,
+        "max_wire_packets": 10000,
+        "max_correlations": 500
+      },
+      "search_plan_limits_note": "SearchPlan limits \u2260 Resource Policy limits."
+    }
+  },
+  "resource_policy": "standard",
+  "allow_resource_warning": true,
+  "estimate": {
+    "memory_mb": 1802,
+    "runtime_seconds": 660,
+    "findings": 4690,
+    "dex_contexts": 400,
+    "xrefs": 1290,
+    "risk": "warning",
+    "reasons": [
+      "dex_context enabled",
+      "xref_depth=2",
+      "3 DEX file(s)",
+      "DEX payload ~20 MiB",
+      "bluetooth enabled",
+      "bt_caller_depth=2",
+      "bt_dataflow_depth=3",
+      "bluetooth interprocedural object-flow",
+      "bt_max_method_hops=4",
+      "bt_max_field_hops=3",
+      "evidence_graph canonicalize/paths",
+      "evidence_graph_max_paths=50",
+      "communication bytes/parser/message analysis",
+      "communication_max_paths=100",
+      "50 native .so",
+      "56 search terms"
+    ],
+    "factors": {
+      "coefficients": {
+        "BASE_MEMORY_MB": 96,
+        "PER_DEX_MB": 100,
+        "PER_DEX_MB_CONTEXT": 120,
+        "PER_DEX_MB_XREF": 50,
+        "PER_BT_BASE_MB": 120,
+        "PER_BT_CALLER_DEPTH_MB": 10,
+        "PER_BT_DATAFLOW_DEPTH_MB": 12,
+        "PER_BT_CALLER_DEPTH_RT": 5,
+        "PER_BT_DATAFLOW_DEPTH_RT": 6,
+        "PER_BT_INTERPROC_BASE_MB": 8,
+        "PER_BT_METHOD_HOP_MB": 1,
+        "PER_BT_FIELD_HOP_MB": 1,
+        "BASE_RUNTIME_S": 15,
+        "PER_DEX_CONTEXT_RUNTIME": 35,
+        "PER_COMM_BASE_MB": 6,
+        "PER_COMM_BUFFER_HOP_MB": 1
+      },
+      "totals": {
+        "size_mb": 56,
+        "dex_count": 3,
+        "dex_total_mb": 20,
+        "native_so_count": 50,
+        "artifact_count": 1
+      },
+      "plan": {
+        "dex_context": true,
+        "bluetooth": true,
+        "xref_depth": 2,
+        "max_callers": 30,
+        "max_callees": 30,
+        "instruction_window": 10,
+        "search_terms": 56,
+        "search_regex": 3,
+        "search_uuids": 0,
+        "modules": [
+          "bluetooth",
+          "candidate",
+          "dex",
+          "dex_context",
+          "manifest",
+          "strings",
+          "uuid",
+          "xref",
+          "zip_inventory"
+        ],
+        "plan_sha256": "9c81b949858f7c6b0eff0f680140d7bdec063d4a0ff374b810153f9514aa5956",
+        "bt_caller_depth": 2,
+        "bt_dataflow_depth": 3,
+        "bt_max_dataflow_nodes": 300,
+        "bt_reconstruct_callers": true,
+        "bt_reconstruct_streams": true,
+        "bt_interprocedural": true,
+        "bt_max_method_hops": 4,
+        "bt_max_field_hops": 3,
+        "bt_max_object_nodes": 500,
+        "evidence_graph": true,
+        "evidence_graph_max_paths": 50,
+        "communication": true,
+        "communication_max_paths": 100,
+        "communication_max_buffer_hops": 6,
+        "correlation": false,
+        "correlation_max_runtime_events": 0,
+        "correlation_max_wire_packets": 0,
+        "correlation_max_correlations": 0
+      },
+      "policy": "standard",
+      "calibration": {
+        "applied_to_totals": false,
+        "note": "No global actual/estimate scale factor is applied to Guard inputs."
+      }
+    },
+    "artifacts": [
+      {
+        "path": "/home/martin/projects/apk-forensics/artifacts/de.bmw.connected-6.0.0.4962.apk",
+        "file_name": "de.bmw.connected-6.0.0.4962.apk",
+        "size_bytes": 58387715,
+        "dex_count": 3,
+        "dex_total_bytes": 20112208,
+        "native_so_count": 50,
+        "native_total_bytes": 80738640,
+        "entry_count": 2984
+      }
+    ],
+    "breakdown": {
+      "components": [
+        {
+          "name": "baseline_input_dex_native",
+          "memory_mb": 616,
+          "runtime_seconds": 108,
+          "source": "artifact_fingerprint+BASE_*",
+          "kind": "heuristic",
+          "affects": "both"
+        },
+        {
+          "name": "dex_context_xref",
+          "memory_mb": 700,
+          "runtime_seconds": 264,
+          "source": "plan.dex_context/xref_depth",
+          "kind": "heuristic",
+          "affects": "both"
+        },
+        {
+          "name": "bluetooth_path_analysis",
+          "memory_mb": 366,
+          "runtime_seconds": 162,
+          "source": "plan.bluetooth",
+          "kind": "heuristic",
+          "affects": "both"
+        },
+        {
+          "name": "caller_reconstruction",
+          "memory_mb": 60,
+          "runtime_seconds": 30,
+          "source": "plan.bluetooth.caller_depth",
+          "kind": "heuristic",
+          "affects": "both"
+        },
+        {
+          "name": "object_flow",
+          "memory_mb": 44,
+          "runtime_seconds": 77,
+          "source": "plan.bluetooth.interprocedural",
+          "kind": "heuristic",
+          "affects": "both"
+        },
+        {
+          "name": "evidence_graph",
+          "memory_mb": 4,
+          "runtime_seconds": 5,
+          "source": "plan.evidence_graph",
+          "kind": "heuristic",
+          "affects": "both"
+        },
+        {
+          "name": "communication_dataflow",
+          "memory_mb": 12,
+          "runtime_seconds": 14,
+          "source": "plan.communication",
+          "kind": "heuristic",
+          "affects": "both"
+        },
+        {
+          "name": "static_runtime_correlation",
+          "memory_mb": 0,
+          "runtime_seconds": 0,
+          "source": "plan.correlation",
+          "kind": "heuristic",
+          "affects": "runtime"
+        },
+        {
+          "name": "TOTAL",
+          "memory_mb": 1802,
+          "runtime_seconds": 660,
+          "source": "sum(components)",
+          "kind": "derived",
+          "affects": "both"
+        }
+      ],
+      "notes": [
+        "Breakdown sums to the Guard-facing totals; no post-hoc actual scaling.",
+        "Coefficients are conservative heuristics keyed by input size + plan complexity.",
+        "INPUT SIZE (APK/DEX/native) is distinct from ANALYSIS COMPLEXITY (hops/nodes/modules)."
+      ],
+      "component_catalog": [
+        {
+          "name": "baseline_input_dex_native",
+          "memory_formula": "BASE + size_frac + dex*PER_DEX + native*PER_NATIVE + terms",
+          "runtime_formula": "BASE + size/4 + dex*PER_DEX_RT + native + terms/10",
+          "empirical_or_heuristic": "heuristic",
+          "statically_measurable": true,
+          "empirically_calibratable": true
+        },
+        {
+          "name": "dex_context_xref",
+          "memory_formula": "dex*(CONTEXT + xref_depth*XREF) + dex_total_mb*BYTES",
+          "runtime_formula": "dex*(CONTEXT_RT + xref_depth*XREF_RT) + callers/callees term",
+          "empirical_or_heuristic": "heuristic",
+          "statically_measurable": true,
+          "empirically_calibratable": true
+        },
+        {
+          "name": "bluetooth_path_analysis",
+          "memory_formula": "BT_BASE + dex*BT_DEX + dataflow_depth/nodes terms",
+          "runtime_formula": "dex*BT_RT + dataflow depth/nodes terms",
+          "empirical_or_heuristic": "heuristic",
+          "statically_measurable": true,
+          "empirically_calibratable": true
+        },
+        {
+          "name": "caller_reconstruction",
+          "memory_formula": "dex * caller_depth * PER_BT_CALLER_DEPTH_MB",
+          "runtime_formula": "dex * caller_depth * PER_BT_CALLER_DEPTH_RT",
+          "empirical_or_heuristic": "heuristic",
+          "statically_measurable": true,
+          "empirically_calibratable": true
+        },
+        {
+          "name": "object_flow",
+          "memory_formula": "INTERPROC_BASE + dex*(method_hops + field_hops + object_nodes/100)",
+          "runtime_formula": "INTERPROC_BASE_RT + dex*(method_hops*3 + field_hops*2 + object_nodes/100)",
+          "empirical_or_heuristic": "heuristic",
+          "statically_measurable": true,
+          "empirically_calibratable": true
+        },
+        {
+          "name": "evidence_graph",
+          "memory_formula": "PER_EVIDENCE_GRAPH_BASE_MB (+ path term currently 0)",
+          "runtime_formula": "PER_EVIDENCE_GRAPH_BASE_RT",
+          "empirical_or_heuristic": "heuristic",
+          "statically_measurable": true,
+          "empirically_calibratable": true
+        },
+        {
+          "name": "communication_dataflow",
+          "memory_formula": "PER_COMM_BASE_MB + buffer_hops*PER_COMM_BUFFER_HOP_MB",
+          "runtime_formula": "PER_COMM_BASE_RT + buffer_hops*PER_COMM_BUFFER_HOP_RT",
+          "empirical_or_heuristic": "heuristic",
+          "statically_measurable": true,
+          "empirically_calibratable": true
+        }
+      ]
+    }
+  },
+  "decision": {
+    "decision": "WARNING",
+    "reasons": [
+      "estimated memory 1802 MiB exceeds warning threshold 1024 MiB",
+      "estimated runtime 660s exceeds warning threshold 300s"
+    ],
+    "policy": "standard",
+    "estimate": {
+      "memory_mb": 1802,
+      "runtime_seconds": 660,
+      "findings": 4690,
+      "dex_contexts": 400,
+      "xrefs": 1290,
+      "risk": "warning",
+      "reasons": [
+        "dex_context enabled",
+        "xref_depth=2",
+        "3 DEX file(s)",
+        "DEX payload ~20 MiB",
+        "bluetooth enabled",
+        "bt_caller_depth=2",
+        "bt_dataflow_depth=3",
+        "bluetooth interprocedural object-flow",
+        "bt_max_method_hops=4",
+        "bt_max_field_hops=3",
+        "evidence_graph canonicalize/paths",
+        "evidence_graph_max_paths=50",
+        "communication bytes/parser/message analysis",
+        "communication_max_paths=100",
+        "50 native .so",
+        "56 search terms"
+      ],
+      "factors": {
+        "coefficients": {
+          "BASE_MEMORY_MB": 96,
+          "PER_DEX_MB": 100,
+          "PER_DEX_MB_CONTEXT": 120,
+          "PER_DEX_MB_XREF": 50,
+          "PER_BT_BASE_MB": 120,
+          "PER_BT_CALLER_DEPTH_MB": 10,
+          "PER_BT_DATAFLOW_DEPTH_MB": 12,
+          "PER_BT_CALLER_DEPTH_RT": 5,
+          "PER_BT_DATAFLOW_DEPTH_RT": 6,
+          "PER_BT_INTERPROC_BASE_MB": 8,
+          "PER_BT_METHOD_HOP_MB": 1,
+          "PER_BT_FIELD_HOP_MB": 1,
+          "BASE_RUNTIME_S": 15,
+          "PER_DEX_CONTEXT_RUNTIME": 35,
+          "PER_COMM_BASE_MB": 6,
+          "PER_COMM_BUFFER_HOP_MB": 1
+        },
+        "totals": {
+          "size_mb": 56,
+          "dex_count": 3,
+          "dex_total_mb": 20,
+          "native_so_count": 50,
+          "artifact_count": 1
+        },
+        "plan": {
+          "dex_context": true,
+          "bluetooth": true,
+          "xref_depth": 2,
+          "max_callers": 30,
+          "max_callees": 30,
+          "instruction_window": 10,
+          "search_terms": 56,
+          "search_regex": 3,
+          "search_uuids": 0,
+          "modules": [
+            "bluetooth",
+            "candidate",
+            "dex",
+            "dex_context",
+            "manifest",
+            "strings",
+            "uuid",
+            "xref",
+            "zip_inventory"
+          ],
+          "plan_sha256": "9c81b949858f7c6b0eff0f680140d7bdec063d4a0ff374b810153f9514aa5956",
+          "bt_caller_depth": 2,
+          "bt_dataflow_depth": 3,
+          "bt_max_dataflow_nodes": 300,
+          "bt_reconstruct_callers": true,
+          "bt_reconstruct_streams": true,
+          "bt_interprocedural": true,
+          "bt_max_method_hops": 4,
+          "bt_max_field_hops": 3,
+          "bt_max_object_nodes": 500,
+          "evidence_graph": true,
+          "evidence_graph_max_paths": 50,
+          "communication": true,
+          "communication_max_paths": 100,
+          "communication_max_buffer_hops": 6,
+          "correlation": false,
+          "correlation_max_runtime_events": 0,
+          "correlation_max_wire_packets": 0,
+          "correlation_max_correlations": 0
+        },
+        "policy": "standard",
+        "calibration": {
+          "applied_to_totals": false,
+          "note": "No global actual/estimate scale factor is applied to Guard inputs."
+        }
+      },
+      "artifacts": [
+        {
+          "path": "/home/martin/projects/apk-forensics/artifacts/de.bmw.connected-6.0.0.4962.apk",
+          "file_name": "de.bmw.connected-6.0.0.4962.apk",
+          "size_bytes": 58387715,
+          "dex_count": 3,
+          "dex_total_bytes": 20112208,
+          "native_so_count": 50,
+          "native_total_bytes": 80738640,
+          "entry_count": 2984
+        }
+      ],
+      "breakdown": {
+        "components": [
+          {
+            "name": "baseline_input_dex_native",
+            "memory_mb": 616,
+            "runtime_seconds": 108,
+            "source": "artifact_fingerprint+BASE_*",
+            "kind": "heuristic",
+            "affects": "both"
+          },
+          {
+            "name": "dex_context_xref",
+            "memory_mb": 700,
+            "runtime_seconds": 264,
+            "source": "plan.dex_context/xref_depth",
+            "kind": "heuristic",
+            "affects": "both"
+          },
+          {
+            "name": "bluetooth_path_analysis",
+            "memory_mb": 366,
+            "runtime_seconds": 162,
+            "source": "plan.bluetooth",
+            "kind": "heuristic",
+            "affects": "both"
+          },
+          {
+            "name": "caller_reconstruction",
+            "memory_mb": 60,
+            "runtime_seconds": 30,
+            "source": "plan.bluetooth.caller_depth",
+            "kind": "heuristic",
+            "affects": "both"
+          },
+          {
+            "name": "object_flow",
+            "memory_mb": 44,
+            "runtime_seconds": 77,
+            "source": "plan.bluetooth.interprocedural",
+            "kind": "heuristic",
+            "affects": "both"
+          },
+          {
+            "name": "evidence_graph",
+            "memory_mb": 4,
+            "runtime_seconds": 5,
+            "source": "plan.evidence_graph",
+            "kind": "heuristic",
+            "affects": "both"
+          },
+          {
+            "name": "communication_dataflow",
+            "memory_mb": 12,
+            "runtime_seconds": 14,
+            "source": "plan.communication",
+            "kind": "heuristic",
+            "affects": "both"
+          },
+          {
+            "name": "static_runtime_correlation",
+            "memory_mb": 0,
+            "runtime_seconds": 0,
+            "source": "plan.correlation",
+            "kind": "heuristic",
+            "affects": "runtime"
+          },
+          {
+            "name": "TOTAL",
+            "memory_mb": 1802,
+            "runtime_seconds": 660,
+            "source": "sum(components)",
+            "kind": "derived",
+            "affects": "both"
+          }
+        ],
+        "notes": [
+          "Breakdown sums to the Guard-facing totals; no post-hoc actual scaling.",
+          "Coefficients are conservative heuristics keyed by input size + plan complexity.",
+          "INPUT SIZE (APK/DEX/native) is distinct from ANALYSIS COMPLEXITY (hops/nodes/modules)."
+        ],
+        "component_catalog": [
+          {
+            "name": "baseline_input_dex_native",
+            "memory_formula": "BASE + size_frac + dex*PER_DEX + native*PER_NATIVE + terms",
+            "runtime_formula": "BASE + size/4 + dex*PER_DEX_RT + native + terms/10",
+            "empirical_or_heuristic": "heuristic",
+            "statically_measurable": true,
+            "empirically_calibratable": true
+          },
+          {
+            "name": "dex_context_xref",
+            "memory_formula": "dex*(CONTEXT + xref_depth*XREF) + dex_total_mb*BYTES",
+            "runtime_formula": "dex*(CONTEXT_RT + xref_depth*XREF_RT) + callers/callees term",
+            "empirical_or_heuristic": "heuristic",
+            "statically_measurable": true,
+            "empirically_calibratable": true
+          },
+          {
+            "name": "bluetooth_path_analysis",
+            "memory_formula": "BT_BASE + dex*BT_DEX + dataflow_depth/nodes terms",
+            "runtime_formula": "dex*BT_RT + dataflow depth/nodes terms",
+            "empirical_or_heuristic": "heuristic",
+            "statically_measurable": true,
+            "empirically_calibratable": true
+          },
+          {
+            "name": "caller_reconstruction",
+            "memory_formula": "dex * caller_depth * PER_BT_CALLER_DEPTH_MB",
+            "runtime_formula": "dex * caller_depth * PER_BT_CALLER_DEPTH_RT",
+            "empirical_or_heuristic": "heuristic",
+            "statically_measurable": true,
+            "empirically_calibratable": true
+          },
+          {
+            "name": "object_flow",
+            "memory_formula": "INTERPROC_BASE + dex*(method_hops + field_hops + object_nodes/100)",
+            "runtime_formula": "INTERPROC_BASE_RT + dex*(method_hops*3 + field_hops*2 + object_nodes/100)",
+            "empirical_or_heuristic": "heuristic",
+            "statically_measurable": true,
+            "empirically_calibratable": true
+          },
+          {
+            "name": "evidence_graph",
+            "memory_formula": "PER_EVIDENCE_GRAPH_BASE_MB (+ path term currently 0)",
+            "runtime_formula": "PER_EVIDENCE_GRAPH_BASE_RT",
+            "empirical_or_heuristic": "heuristic",
+            "statically_measurable": true,
+            "empirically_calibratable": true
+          },
+          {
+            "name": "communication_dataflow",
+            "memory_formula": "PER_COMM_BASE_MB + buffer_hops*PER_COMM_BUFFER_HOP_MB",
+            "runtime_formula": "PER_COMM_BASE_RT + buffer_hops*PER_COMM_BUFFER_HOP_RT",
+            "empirical_or_heuristic": "heuristic",
+            "statically_measurable": true,
+            "empirically_calibratable": true
+          }
+        ]
+      }
+    }
+  },
+  "stage_estimates": [
+    {
+      "stage": "input_validation",
+      "label": "Input validation",
+      "estimate_seconds": null,
+      "display": "Not separately estimated",
+      "kind": "HEURISTIC_ESTIMATE"
+    },
+    {
+      "stage": "inventory",
+      "label": "Inventory",
+      "estimate_seconds": null,
+      "display": "Not separately estimated",
+      "kind": "HEURISTIC_ESTIMATE"
+    },
+    {
+      "stage": "dex",
+      "label": "DEX / Native / Candidates",
+      "estimate_seconds": 108,
+      "display": "01:48",
+      "kind": "HEURISTIC_ESTIMATE"
+    },
+    {
+      "stage": "dex_context_xref",
+      "label": "DEX Context / XREF",
+      "estimate_seconds": 264,
+      "display": "04:24",
+      "kind": "HEURISTIC_ESTIMATE"
+    },
+    {
+      "stage": "bluetooth",
+      "label": "Bluetooth path analysis",
+      "estimate_seconds": 274,
+      "display": "04:34",
+      "kind": "HEURISTIC_ESTIMATE"
+    },
+    {
+      "stage": "communication",
+      "label": "Communication",
+      "estimate_seconds": 14,
+      "display": "00:14",
+      "kind": "HEURISTIC_ESTIMATE"
+    },
+    {
+      "stage": "reports",
+      "label": "Reports",
+      "estimate_seconds": null,
+      "display": "Not separately estimated",
+      "kind": "HEURISTIC_ESTIMATE"
+    },
+    {
+      "stage": "ui_snapshot",
+      "label": "UI Snapshot",
+      "estimate_seconds": null,
+      "display": "Not separately estimated",
+      "kind": "HEURISTIC_ESTIMATE"
+    },
+    {
+      "stage": "TOTAL",
+      "label": "TOTAL",
+      "estimate_seconds": 660,
+      "display": "11:00",
+      "kind": "HEURISTIC_ESTIMATE",
+      "note": "Heuristic estimate \u2014 not a guaranteed runtime."
+    }
+  ],
+  "estimated_runtime_display": "11:00",
+  "estimated_memory_mb": 1802,
+  "risk": "WARNING",
+  "note": "HEURISTIC ESTIMATE from existing Resource Estimator \u2014 not guaranteed runtime.",
+  "disclaimer": "Preflight for static APK analysis. Does not execute the app."
+}

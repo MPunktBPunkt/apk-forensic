@@ -37,6 +37,13 @@ output/*
 output/iap2-searchplan/scan/
 output/iap2-searchplan/scan/**
 output/iap2-searchplan/scan_console.log
+!output/sas-searchplan/
+!output/sas-searchplan/*.md
+!output/sas-searchplan/*.yaml
+!output/sas-searchplan/*.json
+output/sas-searchplan/scan/
+output/sas-searchplan/scan/**
+output/sas-searchplan/scan_console.log
 work/
 cache/
 .apk-forensics-workspace.json

@@ -1,0 +1,32 @@
+{
+  "schema": "apk_forensics.plan_provenance.v1",
+  "created_at": "2026-11-26T13:23:34Z",
+  "created_by": "workbench.plan_builder",
+  "source_goal": "Untersuche die APK auf statische Hinweise auf SAS bzw. eine SAS-artige Authentifizierungs-/Credential-Kommunikation und verfolge mögliche Challenge-, Response-, Credential-, Signatur- und Kryptographie-Flows bis zur Accessory-/Transport-Schicht, soweit die vorhandene statische Analyse dies unterstützt.",
+  "base_plan": null,
+  "topics_matched": [
+    "auth_handshake",
+    "etch_rhmi"
+  ],
+  "rationale": [
+    "Investigation goal is metadata / search intention — not evidence.",
+    "Suggestion configures SearchPlan fields only; analyzer findings remain evidence-driven.",
+    "Matched auth/handshake language → generic search terms (no protocol identity claimed).",
+    "Communication/Bluetooth enabled for static path following around candidate sites.",
+    "Matched Etch/RHMI/SAS as literal search targets only — no semantic FACT injection.",
+    "Traversal depth preset 'standard' applied to supported SearchPlan fields only.",
+    "Focused SAS/auth/crypto/accessory terms; avoided ultra-broad generic litter.",
+    "Traversal set for Transport↔buffer↔crypto candidate following within SearchPlan caps.",
+    "correlation.enabled=false: no runtime INPUT expected.",
+    "'SAS' remains a search intention token — not BMW-SAS protocol FACT."
+  ],
+  "plan_sha256": "9c81b949858f7c6b0eff0f680140d7bdec063d4a0ff374b810153f9514aa5956",
+  "plan_file": "sas_authentication_investigation.yaml",
+  "note": "Provenance is not evidence. SearchPlan configures investigation only.",
+  "depth_preset": "standard_focused_auth",
+  "overrides": {
+    "focused_auth_terms": true,
+    "correlation_enabled": false,
+    "reason_depth": "method_hops=4 / buffer_hops=6 for auth↔accessory linkage without unbounded graph"
+  }
+}

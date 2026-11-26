@@ -1,0 +1,164 @@
+schema_version: '1.0'
+plan:
+  name: sas_authentication_investigation
+  description: 'User investigation goal (search intention, not evidence):
+
+    Untersuche die APK auf statische Hinweise auf SAS bzw. eine SAS-artige Authentifizierungs-/Credential-Kommunikation
+    und verfolge mögliche Challenge-, Response-, Credential-, Signatur- und Kryptographie-Flows
+    bis zur Accessory-/Transport-Schicht, soweit die vorhandene statische Analyse
+    dies unterstützt.
+
+
+    Focused SAS/auth/crypto/accessory SearchPlan. ''SAS'' and method names are search
+    targets only — not protocol FACT.'
+  modules:
+  - bluetooth
+  - candidate
+  - dex
+  - dex_context
+  - manifest
+  - strings
+  - uuid
+  - xref
+  - zip_inventory
+search:
+  terms:
+  - AES
+  - AccessorySocket
+  - BclConnection
+  - BluetoothSocket
+  - BtAccessorySocket
+  - ByteBuffer
+  - Certificate
+  - Cipher
+  - ECDSA
+  - EthAccessorySocket
+  - HMAC
+  - InputStream
+  - KeyFactory
+  - KeyPair
+  - KeyStore
+  - Mac
+  - MessageDigest
+  - OutputStream
+  - PKCS
+  - PrivateKey
+  - PublicKey
+  - RSA
+  - SAS
+  - SHA-256
+  - SHA256
+  - SecretKey
+  - UsbAccessory
+  - UsbAccessorySocket
+  - X509
+  - accessToken
+  - authenticate
+  - authenticated
+  - authentication
+  - authorization
+  - authorize
+  - challenge
+  - challengeResponse
+  - createRfcommSocketToServiceRecord
+  - credential
+  - credentials
+  - doBclHandshake
+  - identity
+  - identityToken
+  - nonce
+  - proof
+  - randomBytes
+  - response
+  - secret
+  - sessionKey
+  - sharedSecret
+  - sign
+  - signature
+  - signed
+  - token
+  - verification
+  - verify
+  regex:
+  - (?i)authenticate
+  - (?i)challenge.?response
+  - (?i)sas
+  uuids: []
+  api_patterns:
+  - android
+  - bluetooth
+  - network
+  - rfcomm
+  - socket
+  - usb
+dex_context:
+  enabled: true
+  instruction_window: 10
+  xref_depth: 2
+  max_callers: 30
+  max_callees: 30
+bluetooth:
+  enabled: true
+  dataflow_depth: 3
+  window: 12
+  max_paths: 50
+  max_results: 100
+  target: null
+  caller_depth: 2
+  reconstruct_callers: true
+  reconstruct_streams: true
+  reconstruct_read_write: true
+  max_callers: 50
+  max_callees: 50
+  max_dataflow_paths: 50
+  max_dataflow_nodes: 300
+  interprocedural: true
+  max_method_hops: 4
+  max_field_hops: 3
+  max_object_nodes: 500
+evidence_graph:
+  enabled: true
+  canonicalize: true
+  deduplicate: true
+  extract_paths: true
+  include_boundaries: true
+  max_evidence_paths: 50
+communication:
+  enabled: true
+  interprocedural: true
+  max_method_hops: 4
+  max_field_hops: 3
+  max_object_nodes: 500
+  max_dataflow_paths: 100
+  max_buffer_hops: 6
+  max_parser_hops: 4
+  max_message_hops: 4
+correlation:
+  enabled: false
+  timestamp_window_ms: 50
+  max_runtime_events: 10000
+  max_wire_packets: 10000
+  max_correlations: 500
+  require_direction_match: true
+  allow_fragmentation: true
+  allow_aggregation: true
+evidence:
+  classifications:
+  - FACT
+  - CORRELATION
+  - INFERENCE
+  - UNKNOWN
+limits:
+  max_results: 150
+  max_contexts: 100
+  max_xrefs: 1000
+  max_chains: 20
+  max_findings: 15000
+output:
+  format:
+  - json
+  - markdown
+  include_raw: false
+profile:
+  name: null
+  path: null

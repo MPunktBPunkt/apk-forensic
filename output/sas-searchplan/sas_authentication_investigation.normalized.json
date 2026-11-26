@@ -1,0 +1,175 @@
+{
+  "bluetooth": {
+    "caller_depth": 2,
+    "dataflow_depth": 3,
+    "enabled": true,
+    "interprocedural": true,
+    "max_callees": 50,
+    "max_callers": 50,
+    "max_dataflow_nodes": 300,
+    "max_dataflow_paths": 50,
+    "max_field_hops": 3,
+    "max_method_hops": 4,
+    "max_object_nodes": 500,
+    "max_paths": 50,
+    "max_results": 100,
+    "reconstruct_callers": true,
+    "reconstruct_read_write": true,
+    "reconstruct_streams": true,
+    "target": null,
+    "window": 12
+  },
+  "communication": {
+    "enabled": true,
+    "interprocedural": true,
+    "max_buffer_hops": 6,
+    "max_dataflow_paths": 100,
+    "max_field_hops": 3,
+    "max_message_hops": 4,
+    "max_method_hops": 4,
+    "max_object_nodes": 500,
+    "max_parser_hops": 4
+  },
+  "correlation": {
+    "allow_aggregation": true,
+    "allow_fragmentation": true,
+    "enabled": false,
+    "max_correlations": 500,
+    "max_runtime_events": 10000,
+    "max_wire_packets": 10000,
+    "require_direction_match": true,
+    "timestamp_window_ms": 50
+  },
+  "dex_context": {
+    "enabled": true,
+    "instruction_window": 10,
+    "max_callees": 30,
+    "max_callers": 30,
+    "xref_depth": 2
+  },
+  "evidence": {
+    "classifications": [
+      "FACT",
+      "CORRELATION",
+      "INFERENCE",
+      "UNKNOWN"
+    ]
+  },
+  "evidence_graph": {
+    "canonicalize": true,
+    "deduplicate": true,
+    "enabled": true,
+    "extract_paths": true,
+    "include_boundaries": true,
+    "max_evidence_paths": 50
+  },
+  "limits": {
+    "max_chains": 20,
+    "max_contexts": 100,
+    "max_findings": 15000,
+    "max_results": 150,
+    "max_xrefs": 1000
+  },
+  "output": {
+    "format": [
+      "json",
+      "markdown"
+    ],
+    "include_raw": false
+  },
+  "plan": {
+    "description": "User investigation goal (search intention, not evidence):\nUntersuche die APK auf statische Hinweise auf SAS bzw. eine SAS-artige Authentifizierungs-/Credential-Kommunikation und verfolge m\u00f6gliche Challenge-, Response-, Credential-, Signatur- und Kryptographie-Flows bis zur Accessory-/Transport-Schicht, soweit die vorhandene statische Analyse dies unterst\u00fctzt.\n\nFocused SAS/auth/crypto/accessory SearchPlan. 'SAS' and method names are search targets only \u2014 not protocol FACT.",
+    "modules": [
+      "bluetooth",
+      "candidate",
+      "dex",
+      "dex_context",
+      "manifest",
+      "strings",
+      "uuid",
+      "xref",
+      "zip_inventory"
+    ],
+    "name": "sas_authentication_investigation"
+  },
+  "plan_sha256": "9c81b949858f7c6b0eff0f680140d7bdec063d4a0ff374b810153f9514aa5956",
+  "profile": {
+    "name": null,
+    "path": null
+  },
+  "schema_version": "1.0",
+  "search": {
+    "api_patterns": [
+      "android",
+      "bluetooth",
+      "network",
+      "rfcomm",
+      "socket",
+      "usb"
+    ],
+    "regex": [
+      "(?i)authenticate",
+      "(?i)challenge.?response",
+      "(?i)sas"
+    ],
+    "terms": [
+      "AES",
+      "AccessorySocket",
+      "BclConnection",
+      "BluetoothSocket",
+      "BtAccessorySocket",
+      "ByteBuffer",
+      "Certificate",
+      "Cipher",
+      "ECDSA",
+      "EthAccessorySocket",
+      "HMAC",
+      "InputStream",
+      "KeyFactory",
+      "KeyPair",
+      "KeyStore",
+      "Mac",
+      "MessageDigest",
+      "OutputStream",
+      "PKCS",
+      "PrivateKey",
+      "PublicKey",
+      "RSA",
+      "SAS",
+      "SHA-256",
+      "SHA256",
+      "SecretKey",
+      "UsbAccessory",
+      "UsbAccessorySocket",
+      "X509",
+      "accessToken",
+      "authenticate",
+      "authenticated",
+      "authentication",
+      "authorization",
+      "authorize",
+      "challenge",
+      "challengeResponse",
+      "createRfcommSocketToServiceRecord",
+      "credential",
+      "credentials",
+      "doBclHandshake",
+      "identity",
+      "identityToken",
+      "nonce",
+      "proof",
+      "randomBytes",
+      "response",
+      "secret",
+      "sessionKey",
+      "sharedSecret",
+      "sign",
+      "signature",
+      "signed",
+      "token",
+      "verification",
+      "verify"
+    ],
+    "uuids": []
+  }
+}
