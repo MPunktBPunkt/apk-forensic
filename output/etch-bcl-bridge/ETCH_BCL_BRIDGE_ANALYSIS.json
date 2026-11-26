@@ -1,0 +1,207 @@
+{
+  "analysis": "etch_bcl_transport_bridge",
+  "date": "2026-11-26",
+  "apk": {
+    "file": "artifacts/de.bmw.connected-6.0.0.4962.apk",
+    "package": "de.bmw.connected",
+    "version": "6.0.0.4962",
+    "apk_sha256": "b1135e357b62a1f54b3b791609684cb54a184fa29c0e65a3f80e58ee22f496bd"
+  },
+  "plan": {
+    "path": "work/user-plans/etch_bcl_transport_bridge.yaml",
+    "plan_sha256": "f6425312bd7a6f8a070fed3a371fcc74ccdf9b5a90a0e8bf146cb8a201d5d4db",
+    "full_rescan": {
+      "resource_guard": "WARNING",
+      "estimate_memory_mb": 1754,
+      "estimate_runtime_s": 626,
+      "started": false,
+      "reason": "Prefer offline diagnose-* on existing report; WARNING not overridden for full scan"
+    }
+  },
+  "analyzers_used": [
+    "search_plan.validate/estimate",
+    "diagnose-buffer-semantics --expand-interface-consumers --expand-etch-transport",
+    "diagnose-application-flow --expand-interface-consumers --expand-etch-transport",
+    "communication_evidence.expand_buffer_consumer_seeds(include_etch_transport=True)",
+    "communication_evidence.build_communication_evidence",
+    "dex_model_adapter stream invoke-edge scan",
+    "prior: sas-deep-dive / sas-searchplan / bmw-connected-600-v10 / v13-v16 closures"
+  ],
+  "primitive_added": {
+    "name": "expand_etch_transport",
+    "module": "src/apk_forensics/communication_evidence.py",
+    "cli": "--expand-etch-transport",
+    "purpose": "Seed expansion for Etch remoting/transport invoke refs (not protocol FACT)"
+  },
+  "existing_inputs": [
+    "output/sas-deep-dive/SAS_B3_STATIC_DEEP_ANALYSIS.*",
+    "output/sas-searchplan/scan/report.json",
+    "output/bmw-connected-600-v10/report.json",
+    "output/v13-closure/TRANSPORT_EVIDENCE_CLOSURE_REPORT.json",
+    "output/v14-semantic-closure/*",
+    "output/v15-application-flow/*"
+  ],
+  "static": {
+    "sas_certificate_transport": {
+      "path": [
+        "EtchCarConnection$2.getChallenge([B)[B",
+        "RemoteBMWRemotingServer.sas_certificate([B)[B",
+        "RemoteBMWRemotingServer$_Async._begin_sas_certificate → Message(_mf_data)",
+        "RemoteBase._begincall → DeliveryService",
+        "BMWRemotingHelper.newServer → TransportFactory.getTransport(tcp://…) → TcpTransport"
+      ],
+      "status": "CLOSED_to_etch_tcp_stack",
+      "classification": "FACT"
+    },
+    "sas_login_transport": {
+      "path": [
+        "EtchCarConnection$2.login([B)V",
+        "RemoteBMWRemotingServer.sas_login([B, null)",
+        "RemoteBMWRemotingServer$_Async._begin_sas_login → Message(_mf_data,_mf_version)",
+        "RemoteBase._begincall → DeliveryService",
+        "same mRemoteServer / same newServer transport stack"
+      ],
+      "status": "CLOSED_to_etch_tcp_stack",
+      "classification": "FACT",
+      "same_as_sas_certificate": "FACT_SAME_PROXY_FIELD_mRemoteServer"
+    },
+    "etch_message_construction": {
+      "status": "CLOSED",
+      "classification": "FACT",
+      "types": [
+        "ValueFactoryBMWRemoting._mt_…_sas_certificate",
+        "ValueFactoryBMWRemoting._mt_…_sas_login",
+        "_mf_data",
+        "_result_*"
+      ]
+    },
+    "etch_session_transport_object": {
+      "status": "CLOSED",
+      "classification": "FACT",
+      "construction": "BMWRemotingHelper.newServer(uri) → DefaultDeliveryService(MailboxManager(TransportMessage)) → RemoteBMWRemotingServer(DeliveryService)",
+      "uri_template": "tcp://%s:%d?Packetizer.maxPktSize=8388608&TcpTransport.noDelay=true",
+      "concrete_tcp_write": "Lorg/apache/etch/util/core/io/TcpTransport;->send([B I I)V",
+      "tcp_send_callers_in_apk": [
+        "TcpTransport.send([B)V",
+        "TcpTransport.transportData(Who, FlexBuffer)"
+      ]
+    },
+    "tcp_ipc_intent_bridge": {
+      "etch_side": {
+        "CarContext.connect(String host, int port, …) → CarConnection.createCarConnection → EtchCarConnection",
+        "classification": "FACT",
+        "EXTRA_HOST_in_same_method_as_EtchCarConnection": "APK_PATH_NOT_FOUND"
+      },
+      "accessory_side": {
+        "BtServiceBroadcastHandler.sendOnAttached / UsbService.onAttached / EthService.onAttached",
+        "tokens": ["EXTRA_HOST", "EXTRA_PORT", "EXTRA_INSTANCE", "127.0.0.1"],
+        "BclWorker.start": "127.0.0.1",
+        "classification": "FACT"
+      },
+      "hmi_helper": {
+        "HmiConnectionHelper": ["127.0.0.1", "10.0.2.2", "Intent extras address/port/instance_id"],
+        "links_to_EtchCarConnection": "NOT_PROVEN",
+        "classification": "FACT_strings_NOT_PROVEN_join"
+      },
+      "etch_tcp_equals_bcl_localhost": {
+        "status": "NOT_PROVEN",
+        "classification": "HYPOTHESIS_Model_A_shape_only"
+      }
+    },
+    "etch_to_bclconnection": {
+      "direct_invoke_edges": 0,
+      "status": "APK_PATH_NOT_FOUND",
+      "classification": "NOT_PROVEN"
+    },
+    "bcl_to_accessory": {
+      "status": "CLOSED",
+      "classification": "FACT",
+      "path": "BclConnection.write/read → AccessorySocket.write/read",
+      "concrete_socket": "DYNAMIC_DISPATCH",
+      "source": "prior sas-deep-dive + this invoke scan"
+    },
+    "response_byte_flow": {
+      "signChallenge_to_sas_login_arg": "CLOSED_FACT_from_sas_deep_dive",
+      "sas_login_to_Message_mf_data": "CLOSED_FACT",
+      "Message_to_DeliveryService_begincall": "CLOSED_FACT",
+      "DeliveryService_to_TcpTransport_send_buffer_lineage": "PARTIAL",
+      "boundary": "ANALYZER_LIMIT / METHOD_RETENTION_CAP — communication_evidence paths remain BCL-biased; call-stack FACT places writes on TcpTransport.send",
+      "b3_byte_identity": "NOT_CORRELATED"
+    }
+  },
+  "architecture_models": {
+    "A_etch_tcp_localhost_to_external_bcl_proxy": {
+      "support": "PARTIAL_INFERENCE",
+      "evidence": "Etch uses tcp://host:port; accessory stack uses 127.0.0.1 + EXTRA_HOST/PORT — no static object join"
+    },
+    "B_etch_direct_internal_bclconnection": {
+      "support": "REJECTED_as_static_path",
+      "evidence": "0 Etch↔BclConnection invoke edges"
+    },
+    "C_other_transport": {
+      "support": "FACT_for_etch_leg",
+      "evidence": "Etch ends at java.net.Socket via TcpTransport"
+    }
+  },
+  "open_edges": [
+    {
+      "id": "OE-T1",
+      "edge": "TcpTransport Socket bytes → BclConnection.write",
+      "status": "NOT_PROVEN",
+      "boundary": "APK_PATH_NOT_FOUND_or_runtime_external_proxy"
+    },
+    {
+      "id": "OE-T2",
+      "edge": "CarContext.connect(host,port) provenance from Accessory EXTRA_HOST/PORT Intent",
+      "status": "NOT_PROVEN",
+      "boundary": "ANALYZER_LIMIT / possible cross-component runtime"
+    },
+    {
+      "id": "OE-T3",
+      "edge": "response[] FlexBuffer packetizer → TcpTransport.send exact buffer identity",
+      "status": "PARTIAL",
+      "boundary": "ANALYZER_LIMIT"
+    },
+    {
+      "id": "OE-T4",
+      "edge": "B3 wire bytes ↔ APK transport write",
+      "status": "NOT_CORRELATED",
+      "boundary": "INPUT_MISSING_runtime"
+    }
+  ],
+  "boundaries": [
+    {"type": "METHOD_RETENTION_CAP", "detail": "communication load capped at 200 methods after 120 seed hits"},
+    {"type": "DYNAMIC_DISPATCH", "detail": "AccessorySocket concrete impl"},
+    {"type": "APK_PATH_NOT_FOUND", "detail": "Etch package → BclConnection invoke"},
+    {"type": "INPUT_MISSING", "detail": "runtime of this APK"},
+    {"type": "RESOURCE_WARNING", "detail": "full rescan estimate not started"}
+  ],
+  "b3": {
+    "role": "search_anchor_only",
+    "byte_correlation": "NOT_CORRELATED",
+    "runtime": "INPUT_MISSING"
+  },
+  "verdict": {
+    "result_class": "PARTIALLY_CLOSED",
+    "etch_message": "CLOSED",
+    "etch_transport": "CLOSED",
+    "etch_tcp_socket": "CLOSED",
+    "etch_to_bcl": "APK_PATH_NOT_FOUND",
+    "bcl_to_accessory": "CLOSED",
+    "model": "C_plus_A_hypothesis",
+    "answers": {
+      "Q1": "diagnose-buffer-semantics, diagnose-application-flow, communication_evidence(+etch seed), dex invoke scan, prior evidence graphs",
+      "Q2": "sas-searchplan report, bmw-connected-600-v10/v11, v13 transport closure, v14 buffer semantics, v15/v16 application flow, sas-deep-dive",
+      "Q3": "YES CLOSED",
+      "Q4": "YES CLOSED (DeliveryService/TransportMessage from newServer)",
+      "Q5": "YES CLOSED (TcpTransport → java.net.Socket / send)",
+      "Q6": "Accessory IPC EXTRA_HOST/PORT/127.0.0.1 FACT; join to Etch host/port NOT_PROVEN",
+      "Q7": "NO — APK_PATH_NOT_FOUND",
+      "Q8": "YES — prior FACT path reused",
+      "Q9": "to Message/_begincall YES; to TcpTransport.send buffer lineage PARTIAL",
+      "Q10": "TcpTransport ↔ BclConnection (OE-T1)",
+      "Q11": "not statically closed in this APK; JADX cannot invent missing edge; Runtime needed for Model-A join / host provenance",
+      "Q12": "NO — B3 Byte Correlation = NOT_CORRELATED"
+    }
+  }
+}

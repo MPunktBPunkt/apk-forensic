@@ -1,0 +1,417 @@
+{
+  "analysis": "sas_b3_static_deep_dive",
+  "date": "2026-11-26",
+  "apk": {
+    "file": "artifacts/de.bmw.connected-6.0.0.4962.apk",
+    "package": "de.bmw.connected",
+    "version": "6.0.0.4962",
+    "apk_sha256": "b1135e357b62a1f54b3b791609684cb54a184fa29c0e65a3f80e58ee22f496bd"
+  },
+  "method": {
+    "b3_role": "search_anchor_only",
+    "runtime": "INPUT_MISSING",
+    "wire": "AVAILABLE_as_external_reference",
+    "technique": [
+      "DEX string/method inventory (androguard)",
+      "invoke xref",
+      "bytecode dump of key methods",
+      "native access-flag / loadLibrary boundary"
+    ]
+  },
+  "b3_reference": {
+    "available": true,
+    "operations": [
+      "sas_certificate",
+      "_result_sas_certificate",
+      "challenge",
+      "signChallenge",
+      "sas_login",
+      "_result_sas_login"
+    ],
+    "note": "WIRE facts only; never projected as APK FACT"
+  },
+  "static": {
+    "candidates": [
+      {
+        "id": "SasAdapter",
+        "class": "Lcom/bmwgroup/connected/internal/remoting/SasAdapter;",
+        "kind": "interface",
+        "methods": [
+          "getChallenge([B)[B",
+          "login([B)V",
+          "logout()V",
+          "updateCrl([B)V"
+        ],
+        "classification": "FACT"
+      },
+      {
+        "id": "EtchCarConnection$2",
+        "class": "Lcom/bmwgroup/connected/internal/remoting/etch/EtchCarConnection$2;",
+        "kind": "SasAdapter_impl",
+        "methods": {
+          "getChallenge": "RemoteBMWRemotingServer.sas_certificate([B)[B",
+          "login": "RemoteBMWRemotingServer.sas_login([B Lde/bmw/idrive/BMWRemoting$VersionInfo;)Ljava/lang/String; with VersionInfo=null"
+        },
+        "classification": "FACT"
+      },
+      {
+        "id": "CarSecurityManager",
+        "class": "Lcom/bmwgroup/connected/internal/security/CarSecurityManager;",
+        "orchestrator": "login()V",
+        "fields": ["mSasAdapter", "mICarSecurityService"],
+        "classification": "FACT"
+      },
+      {
+        "id": "ICarSecurityService",
+        "class": "Lcom/bmwgroup/connected/internal/security/ICarSecurityService;",
+        "binder": true,
+        "methods": [
+          "createSecurityContext(Ljava/lang/String;Ljava/lang/String;)J",
+          "getCertificates(J)[B",
+          "signChallenge(J [B)[B",
+          "destroySecurityContext(J)V"
+        ],
+        "classification": "FACT"
+      },
+      {
+        "id": "SecurityModule",
+        "class": "Lcom/bmwgroup/connected/core/security/SecurityModule;",
+        "delegates_to": "Lcom/bmwgroup/connected/core/audio/AudioModule;",
+        "classification": "FACT"
+      },
+      {
+        "id": "AudioModule",
+        "class": "Lcom/bmwgroup/connected/core/audio/AudioModule;",
+        "loadLibrary": "audio",
+        "native_so": "libaudio.so",
+        "native_methods": {
+          "a": "init(String)",
+          "b": "deInit()",
+          "c": "createSecurityContext → int",
+          "d": "destroySecurityContext(int)",
+          "e": "addAndVerifyCertificateFromPackage(int, byte[])",
+          "f": "getCertificates(int) → byte[]",
+          "g": "signChallenge(int, byte[]) → byte[]"
+        },
+        "classification": "FACT",
+        "boundary": "JNI_NATIVE"
+      },
+      {
+        "id": "RemoteBMWRemotingServer",
+        "class": "Lde/bmw/idrive/RemoteBMWRemotingServer;",
+        "methods": [
+          "sas_certificate([B)[B",
+          "sas_login([B Lde/bmw/idrive/BMWRemoting$VersionInfo;)Ljava/lang/String;",
+          "sas_crl([B)V",
+          "sas_logout(Ljava/lang/String;)V",
+          "sas_permission(Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;"
+        ],
+        "classification": "FACT",
+        "caller_status": "HAS_CALLER_not_symbol_only"
+      },
+      {
+        "id": "CryptoUtil",
+        "class": "Lcom/bmwgroup/connected/core/util/CryptoUtil;",
+        "methods": ["decodeWithAes([B)[B", "encodeWithAes([B)[B", "encryptDecryptByXor([B B)[B"],
+        "sas_challenge_link": "NOT_PROVEN",
+        "cert_container_link": "FACT",
+        "classification": "FACT_co_location_plus_cert_AES_only"
+      },
+      {
+        "id": "BclConnection",
+        "class": "Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection;",
+        "writes_to": "AccessorySocket.write([B I I)V",
+        "classification": "FACT"
+      }
+    ],
+    "certificate_flow": [
+      {
+        "edge": "CarSecurityService.getCertificateContainerFromPackage → CarAssetManagerAndroid.openP7BFile → CryptoUtil.decodeWithAes → SecurityModule.addAndVerifyCertificateFromPackage → AudioModule.e",
+        "status": "CLOSED",
+        "classification": "FACT"
+      },
+      {
+        "edge": "CarSecurityManager.login → ICarSecurityService.getCertificates(J) → CarSecurityService$1 → SecurityModule.getCertificates → AudioModule.f → byte[]",
+        "status": "CLOSED_to_JNI",
+        "classification": "FACT",
+        "boundary": "JNI_NATIVE"
+      },
+      {
+        "edge": "cert byte[] → SasAdapter.getChallenge(cert)",
+        "status": "CLOSED",
+        "classification": "FACT"
+      }
+    ],
+    "challenge_flow": [
+      {
+        "edge": "SasAdapter.getChallenge([B) [interface]",
+        "status": "DYNAMIC_DISPATCH",
+        "resolved_impl": "EtchCarConnection$2 when CarConnection is EtchCarConnection and service key SAS_ADAPTER",
+        "classification": "FACT_with_dispatch_note"
+      },
+      {
+        "edge": "EtchCarConnection$2.getChallenge → RemoteBMWRemotingServer.sas_certificate([B)[B",
+        "status": "CLOSED",
+        "classification": "FACT"
+      },
+      {
+        "edge": "sas_certificate → Etch Message type ValueFactoryBMWRemoting._mt_de_bmw_idrive_BMWRemoting_sas_certificate field _mf_data → _begincall → Mailbox → _end_sas_certificate → _result_sas_certificate as byte[]",
+        "status": "CLOSED",
+        "classification": "FACT"
+      },
+      {
+        "edge": "returned challenge byte[] → ICarSecurityService.signChallenge(J, challenge)",
+        "status": "CLOSED",
+        "classification": "FACT"
+      }
+    ],
+    "crypto_flow": [
+      {
+        "edge": "signChallenge Binder → SecurityModule.signChallenge → AudioModule.g(I [B)[B native",
+        "status": "CLOSED_to_JNI",
+        "algorithm": "UNKNOWN",
+        "boundary": "JNI_NATIVE",
+        "classification": "FACT"
+      },
+      {
+        "edge": "CryptoUtil AES/XOR → challenge signing",
+        "status": "NOT_PROVEN",
+        "classification": "REJECTED_as_SAS_signing_path"
+      }
+    ],
+    "response_flow": [
+      {
+        "edge": "AudioModule.g return byte[] → Binder → CarSecurityManager.login local → SasAdapter.login([B)",
+        "status": "CLOSED",
+        "classification": "FACT"
+      },
+      {
+        "edge": "EtchCarConnection$2.login → RemoteBMWRemotingServer.sas_login([B, null VersionInfo)",
+        "status": "CLOSED",
+        "classification": "FACT"
+      }
+    ],
+    "sas_login_flow": [
+      {
+        "edge": "sas_login → ValueFactoryBMWRemoting._mt_..._sas_login + _mf_data + _mf_version → DeliveryService/_begincall",
+        "status": "CLOSED",
+        "classification": "FACT"
+      },
+      {
+        "edge": "sas_login result → _result_sas_login String (discarded by EtchCarConnection$2.login which is void)",
+        "status": "CLOSED",
+        "classification": "FACT"
+      }
+    ],
+    "accessory_flow": [
+      {
+        "edge": "BclConnection.write/read → AccessorySocket.write/read",
+        "status": "CLOSED",
+        "classification": "FACT",
+        "concrete_socket": "DYNAMIC_DISPATCH"
+      },
+      {
+        "edge": "Etch sas_* Message bytes → BclConnection.write",
+        "status": "NOT_PROVEN",
+        "classification": "NOT_PROVEN",
+        "note": "Etch uses tcp://host:port TcpTransport; BCL uses AccessorySocket. Localhost co-presence is INFERENCE only."
+      },
+      {
+        "edge": "EtchCarConnection.<init> connection string template tcp://%s:%d?Packetizer.maxPktSize=8388608&TcpTransport.noDelay=true",
+        "status": "CLOSED",
+        "classification": "FACT"
+      }
+    ],
+    "end_to_end_paths": [
+      {
+        "id": "E2E-JAVA-SAS-AUTH",
+        "path": [
+          "CarContext.performLogin / CarSecurityManager.login",
+          "ICarSecurityService.createSecurityContext",
+          "ICarSecurityService.getCertificates → byte[] cert",
+          "SasAdapter.getChallenge(cert) → EtchCarConnection$2 → sas_certificate → byte[] challenge",
+          "ICarSecurityService.signChallenge(handle, challenge) → SecurityModule → AudioModule.g [JNI]",
+          "SasAdapter.login(response) → EtchCarConnection$2 → sas_login"
+        ],
+        "status": "PARTIALLY_CLOSED",
+        "closed_through": "sas_login Etch RPC invocation",
+        "open_at": [
+          "AudioModule.g native signing algorithm",
+          "Etch TcpTransport payload → BclConnection → AccessorySocket"
+        ]
+      }
+    ]
+  },
+  "correlation": [
+    {
+      "element": "sas_certificate",
+      "apk_static": "FACT_method_and_caller",
+      "b3_wire": "beobachtet",
+      "static_wire": "CORRELATED_symbol",
+      "byte_identity": "NOT_CORRELATED"
+    },
+    {
+      "element": "certificate_bytes",
+      "apk_static": "FACT_byte_array_from_getCertificates_JNI",
+      "b3_wire": "beobachtet",
+      "static_wire": "NOT_CORRELATED",
+      "byte_identity": "NOT_CORRELATED"
+    },
+    {
+      "element": "challenge",
+      "apk_static": "FACT_return_of_sas_certificate_as_byte[]",
+      "b3_wire": "beobachtet",
+      "static_wire": "CORRELATED_role",
+      "byte_identity": "NOT_CORRELATED"
+    },
+    {
+      "element": "challenge_consumer",
+      "apk_static": "FACT_ICarSecurityService.signChallenge",
+      "b3_wire": "indirekt",
+      "static_wire": "CORRELATED_role",
+      "byte_identity": "NOT_CORRELATED"
+    },
+    {
+      "element": "signChallenge",
+      "apk_static": "FACT_Binder_and_native_g",
+      "b3_wire": "erwartet/korreliert",
+      "static_wire": "CORRELATED_symbol",
+      "algorithm": "UNKNOWN_JNI"
+    },
+    {
+      "element": "response_bytes",
+      "apk_static": "FACT_return_of_signChallenge_to_sas_login_arg",
+      "b3_wire": "beobachtet",
+      "static_wire": "CORRELATED_role",
+      "byte_identity": "NOT_CORRELATED"
+    },
+    {
+      "element": "sas_login",
+      "apk_static": "FACT_method_and_caller",
+      "b3_wire": "beobachtet",
+      "static_wire": "CORRELATED_symbol",
+      "byte_identity": "NOT_CORRELATED"
+    },
+    {
+      "element": "BCL_transport",
+      "apk_static": "FACT_class_exists_AccessorySocket_link",
+      "b3_wire": "beobachtet",
+      "static_wire": "NOT_CORRELATED_to_sas_login_bytes",
+      "note": "SAS Etch path does not statically invoke BclConnection"
+    },
+    {
+      "element": "Etch_destination",
+      "apk_static": "FACT_RemoteBMWRemotingServer_DeliveryService",
+      "b3_wire": "beobachtet",
+      "static_wire": "CORRELATED_stack"
+    },
+    {
+      "element": "Accessory_transport",
+      "apk_static": "FACT_BclConnection_to_AccessorySocket",
+      "b3_wire": "beobachtet",
+      "static_wire": "NOT_CORRELATED_to_sas_login_bytes"
+    }
+  ],
+  "open_edges": [
+    {
+      "id": "OE1",
+      "edge": "AudioModule.g / libaudio.so signing algorithm and key material",
+      "status": "OPEN",
+      "boundary": "JNI_NATIVE"
+    },
+    {
+      "id": "OE2",
+      "edge": "Etch TcpTransport serialized sas_* messages → BclConnection.write → AccessorySocket",
+      "status": "NOT_PROVEN",
+      "boundary": "ANALYZER_LIMIT_or_architectural_indirection"
+    },
+    {
+      "id": "OE3",
+      "edge": "B3 wire byte[] ↔ concrete APK register/field values",
+      "status": "NOT_CORRELATED",
+      "boundary": "INPUT_MISSING_runtime"
+    },
+    {
+      "id": "OE4",
+      "edge": "Concrete AccessorySocket impl (Bt/Usb/Eth) for a given session",
+      "status": "DYNAMIC_DISPATCH"
+    }
+  ],
+  "boundaries": [
+    {
+      "type": "JNI_NATIVE",
+      "java_method": "Lcom/bmwgroup/connected/core/audio/AudioModule;->g(I [B)[B",
+      "library": "libaudio.so (System.loadLibrary(\"audio\"))",
+      "next": "OPEN"
+    },
+    {
+      "type": "JNI_NATIVE",
+      "java_method": "Lcom/bmwgroup/connected/core/audio/AudioModule;->f(I)[B",
+      "library": "libaudio.so",
+      "next": "OPEN"
+    },
+    {
+      "type": "DYNAMIC_DISPATCH",
+      "site": "SasAdapter.getChallenge/login",
+      "resolved_when": "CarConnection.getService(\"SAS_ADAPTER\") returns EtchCarConnection.mSasAdapter (EtchCarConnection$2)"
+    },
+    {
+      "type": "DYNAMIC_DISPATCH",
+      "site": "AccessorySocket.write/read from BclConnection",
+      "concrete": "IMPLEMENTATION_UNKNOWN_per_session"
+    },
+    {
+      "type": "INPUT_MISSING",
+      "item": "runtime instrumentation of this APK",
+      "runtime_classification": "INPUT_MISSING"
+    }
+  ],
+  "evidence_classification_summary": {
+    "FACT": [
+      "SasAdapter / EtchCarConnection$2 / CarSecurityManager.login chain",
+      "Binder ICarSecurityService signChallenge/getCertificates",
+      "RemoteBMWRemotingServer.sas_certificate/sas_login with callers",
+      "ValueFactoryBMWRemoting message types including _result_*",
+      "AudioModule native + loadLibrary(audio)",
+      "BclConnection → AccessorySocket",
+      "CryptoUtil.decodeWithAes on P7B container path"
+    ],
+    "NOT_PROVEN": [
+      "sas_login bytes → BclConnection.write",
+      "CryptoUtil used for challenge signing",
+      "RSA4096 or any concrete signing algorithm",
+      "B3 byte identity with APK values"
+    ],
+    "REJECTED": [
+      "CryptoUtil + SAS co-location ⇒ SAS signing uses CryptoUtil"
+    ],
+    "CORRELATION": [
+      "B3 operation names ↔ APK Etch/Binder method names (symbol/role)"
+    ]
+  },
+  "verdict": {
+    "result_class": "PARTIALLY_CLOSED",
+    "also": "JNI_NATIVE_boundary_on_crypto",
+    "sas_crypto": "PARTIALLY_CLOSED",
+    "sas_accessory": "NOT_PROVEN",
+    "challenge_response": "CLOSED_java_orchestration",
+    "response_to_sas_login": "CLOSED",
+    "sas_login_to_etch": "CLOSED",
+    "etch_to_bcl": "NOT_PROVEN",
+    "bcl_to_accessory": "CLOSED",
+    "b3_static_correlation": "SYMBOL_AND_ROLE_CORRELATED_BYTES_NOT_CORRELATED",
+    "sas_accessory_link": "NOT_PROVEN",
+    "answers": {
+      "Q1": "PARTIALLY — Java/Etch/Binder closed; native crypto + Etch→BCL open",
+      "Q2": "YES for Java orchestration challenge→signChallenge→response; algorithm JNI OPEN",
+      "Q3": "YES — response byte[] → SasAdapter.login → sas_login",
+      "Q4": "YES — sas_login is Etch RemoteBMWRemotingServer RPC",
+      "Q5": "BCL→AccessorySocket YES; Etch→BCL NOT_PROVEN",
+      "Q6": "NOT_PROVEN as closed static dataflow through BCL/Accessory",
+      "Q7": "First open high-value edge: Etch TcpTransport → BclConnection (OE2); crypto algorithm also open at JNI (OE1)",
+      "Q8": "Etch→BCL bridging and native signChallenge internals / B3 byte identity",
+      "Q9": "NO — byte identity NOT_CORRELATED",
+      "Q10": "Minimal next: (a) Frida/runtime hook CarSecurityManager.login + sas_certificate/sas_login + BclConnection.write on same session; and/or (b) reverse libaudio.so JNI g()"
+    }
+  }
+}

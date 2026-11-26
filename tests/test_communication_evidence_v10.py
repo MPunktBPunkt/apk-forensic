@@ -459,3 +459,24 @@ def test_aggregate_analyze_methods_assigns_path_ids() -> None:
     assert section["summary"]["protocol_semantics"] == "UNKNOWN"
     if section["paths"]:
         assert section["paths"][0]["display_id"].startswith("PATH-COMM-")
+
+
+def test_etch_transport_seed_regex_matches_sas_and_transport_factory() -> None:
+    from apk_forensics.communication_evidence import (
+        _BUFFER_CONSUMER_SEED_RE,
+        _ETCH_TRANSPORT_SEED_RE,
+    )
+
+    assert _ETCH_TRANSPORT_SEED_RE.search(
+        "invoke-virtual v0, v1, Lde/bmw/idrive/RemoteBMWRemotingServer;"
+        "->sas_login([B Lde/bmw/idrive/BMWRemoting$VersionInfo;)Ljava/lang/String;"
+    )
+    assert _ETCH_TRANSPORT_SEED_RE.search(
+        "invoke-static v0, v1, Lorg/apache/etch/bindings/java/support/TransportFactory;"
+        "->getTransport(Ljava/lang/String; Lorg/apache/etch/util/Resources;)"
+        "Lorg/apache/etch/bindings/java/transport/TransportMessage;"
+    )
+    assert _BUFFER_CONSUMER_SEED_RE.search(
+        "invoke-virtual v0, v1, v2, "
+        "Lcom/bmwgroup/connected/core/services/accessory/bcl/BclConnection;->write([B Z)V"
+    )

@@ -1,0 +1,71 @@
+{
+  "value_id": "SAS_RESPONSE_BYTES",
+  "type": "[B",
+  "steps": [
+    {
+      "op": "ORIGIN",
+      "site": "ICarSecurityService.signChallenge → AudioModule.g native",
+      "input": "challenge[B]",
+      "output": "response[B]",
+      "status": "FACT",
+      "boundary": "JNI_NATIVE (out of scope here)"
+    },
+    {
+      "op": "ARG_PASS",
+      "site": "CarSecurityManager.login → SasAdapter.login([B)",
+      "input": "response[B]",
+      "output": "response[B]",
+      "status": "FACT"
+    },
+    {
+      "op": "ARG_PASS",
+      "site": "EtchCarConnection$2.login → RemoteBMWRemotingServer.sas_login([B, null)",
+      "input": "response[B]",
+      "output": "response[B]",
+      "status": "FACT"
+    },
+    {
+      "op": "MESSAGE_PUT",
+      "site": "_begin_sas_login: Message.put(_mf_data, byte[])",
+      "input": "response[B]",
+      "output": "Etch Message field _mf_data",
+      "status": "FACT"
+    },
+    {
+      "op": "RPC_BEGIN",
+      "site": "RemoteBase._begincall(Message) → Mailbox / DeliveryService",
+      "input": "Message",
+      "output": "session outbound call",
+      "status": "FACT"
+    },
+    {
+      "op": "SERIALIZE",
+      "site": "Etch Packetizer / FlexBuffer (apache etch stack)",
+      "input": "Message",
+      "output": "buffer[B] (inferred stack)",
+      "status": "PARTIAL",
+      "boundary": "ANALYZER_LIMIT — not fully expanded in communication_evidence paths"
+    },
+    {
+      "op": "TRANSPORT_WRITE",
+      "site": "TcpTransport.send([B I I) / transportData(FlexBuffer)",
+      "input": "buffer[B]",
+      "output": "java.net.Socket stream",
+      "status": "FACT_call_exists_PARTIAL_byte_identity"
+    },
+    {
+      "op": "BCL_WRITE",
+      "site": "BclConnection.write([B Z)",
+      "input": "?",
+      "output": "AccessorySocket.write",
+      "status": "NOT_PROVEN_from_sas_response",
+      "note": "BclConnection.write exists and reaches AccessorySocket, but no edge from Etch/TcpTransport"
+    }
+  ],
+  "same_transport_sas_certificate": {
+    "status": "FACT_SAME_PROXY_FIELD",
+    "field": "EtchCarConnection.mRemoteServer"
+  },
+  "b3_correlation": "NOT_CORRELATED",
+  "runtime": "INPUT_MISSING"
+}

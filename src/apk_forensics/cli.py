@@ -376,6 +376,11 @@ def build_parser() -> argparse.ArgumentParser:
         action="store_true",
         help="Use v1.4 interface/Packet seed expansion when loading methods",
     )
+    app_cmd.add_argument(
+        "--expand-etch-transport",
+        action="store_true",
+        help="Also expand seeds to Etch remoting/transport invoke refs (DeliveryService/Tcp/sas_*)",
+    )
 
     sem_cmd = sub.add_parser(
         "diagnose-buffer-semantics",
@@ -405,6 +410,11 @@ def build_parser() -> argparse.ArgumentParser:
         "--expand-interface-consumers",
         action="store_true",
         help="Widen method seeds to AccessorySocket/Packet buffer consumers (documented gap fix)",
+    )
+    sem_cmd.add_argument(
+        "--expand-etch-transport",
+        action="store_true",
+        help="Also expand seeds to Etch remoting/transport invoke refs (DeliveryService/Tcp/sas_*)",
     )
 
     ui_snap = sub.add_parser(
@@ -1277,7 +1287,8 @@ def _cmd_diagnose_application_flow(args: argparse.Namespace) -> int:
         keys,
         max_methods=200,
         expand_interface_consumers=bool(args.expand_interface_consumers),
-        max_expand_extra=80,
+        expand_etch_transport=bool(getattr(args, "expand_etch_transport", False)),
+        max_expand_extra=120 if getattr(args, "expand_etch_transport", False) else 80,
     )
     flow = analyze_application_value_flow(methods)
     baseline_pc = int(
@@ -1317,6 +1328,7 @@ def _cmd_diagnose_application_flow(args: argparse.Namespace) -> int:
             "method_retention": retention,
             "warnings": warnings,
             "expand_interface_consumers": bool(args.expand_interface_consumers),
+            "expand_etch_transport": bool(getattr(args, "expand_etch_transport", False)),
             "max_field_hops": 2,
             "limits_raised": False,
         },
@@ -1372,7 +1384,10 @@ def _cmd_diagnose_buffer_semantics(args: argparse.Namespace) -> int:
             "max_object_nodes": 500,
             "interprocedural": True,
             "expand_interface_consumers": bool(args.expand_interface_consumers),
-            "max_expand_extra": 80,
+            "expand_etch_transport": bool(getattr(args, "expand_etch_transport", False)),
+            "max_expand_extra": 120
+            if getattr(args, "expand_etch_transport", False)
+            else 80,
         }
         expanded_comm = postprocess_communication_from_report(
             report,
@@ -1396,6 +1411,7 @@ def _cmd_diagnose_buffer_semantics(args: argparse.Namespace) -> int:
             "source_report": str(report_path),
             "apk": str(args.apk) if args.apk else None,
             "expand_interface_consumers": bool(args.expand_interface_consumers),
+            "expand_etch_transport": bool(getattr(args, "expand_etch_transport", False)),
             "postprocessing_version": __version__,
             "max_field_hops": 2,
             "limits_raised": False,

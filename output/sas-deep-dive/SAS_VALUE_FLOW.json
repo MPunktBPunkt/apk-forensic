@@ -1,0 +1,53 @@
+{
+  "value_flows": [
+    {
+      "id": "VF-CERT",
+      "type": "[B",
+      "origin": "ICarSecurityService.getCertificates(J) via AudioModule.f native",
+      "store": "local in CarSecurityManager.login",
+      "consumer": "SasAdapter.getChallenge([B)",
+      "transform": "none in Java after JNI return",
+      "crypto": "prior: CryptoUtil.decodeWithAes on P7B load path (separate)",
+      "accessory_etch": "passed into sas_certificate as _mf_data",
+      "static_end": "Etch Mailbox send",
+      "receiver_unique": true,
+      "dispatch": "SasAdapter DYNAMIC_DISPATCH → EtchCarConnection$2",
+      "jni": "origin JNI",
+      "b3_byte_correlate": false,
+      "status": "CLOSED_to_etch"
+    },
+    {
+      "id": "VF-CHALLENGE",
+      "type": "[B",
+      "origin": "RemoteBMWRemotingServer._end_sas_certificate → _result_sas_certificate",
+      "store": "local in CarSecurityManager.login",
+      "consumer": "ICarSecurityService.signChallenge(J [B)",
+      "transform": "none in Java",
+      "crypto": "consumed by native AudioModule.g",
+      "accessory_etch": "produced by Etch RPC",
+      "static_end": "JNI g input",
+      "receiver_unique": true,
+      "dispatch": false,
+      "jni": "consumer JNI",
+      "b3_byte_correlate": false,
+      "status": "CLOSED_java"
+    },
+    {
+      "id": "VF-RESPONSE",
+      "type": "[B",
+      "origin": "AudioModule.g native return via Binder",
+      "store": "local in CarSecurityManager.login",
+      "consumer": "SasAdapter.login([B) → sas_login _mf_data",
+      "transform": "UNKNOWN inside native",
+      "crypto": "produced by JNI (algorithm UNKNOWN)",
+      "accessory_etch": "Etch sas_login",
+      "static_end": "DeliveryService/_begincall",
+      "receiver_unique": true,
+      "dispatch": "SasAdapter DYNAMIC_DISPATCH",
+      "jni": "origin JNI",
+      "b3_byte_correlate": false,
+      "status": "CLOSED_to_etch_JNI_algo_open"
+    }
+  ],
+  "methodology": "VALUE-V001-style questions applied per candidate"
+}

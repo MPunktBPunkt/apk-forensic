@@ -31,6 +31,26 @@ _BUFFER_CONSUMER_SEED_RE = re.compile(
     r"BufferedBclConnection"
 )
 
+# Etch remoting transport invoke refs (v1.x gap: BCL seeds alone miss sas_*/DeliveryService/Tcp path).
+# Name tokens are search seeds only — not protocol FACT.
+_ETCH_TRANSPORT_SEED_RE = re.compile(
+    r"(?:RemoteBMWRemotingServer|RemoteBMWRemoting);"
+    r"->(?:sas_|_begin|_end|_begincall|_endcall|_newMessage)|"
+    r"BMWRemotingHelper;->newServer|"
+    r"ValueFactoryBMWRemoting|"
+    r"DefaultDeliveryService|"
+    r"org/apache/etch/[^;\s]+;"
+    r"->(?:"
+    r"begincall|endcall|transportMessage|sessionMessage|"
+    r"data|packet|write|flush|send|"
+    r"getTransport|newTransport|connect"
+    r")|"
+    r"TcpTransport|"
+    r"TcpTransportFactory|"
+    r"MguTransportFactory|"
+    r"TransportFactory;->getTransport"
+)
+
 
 def _collect_io_method_keys(bluetooth_section: dict[str, Any]) -> set[str]:
     keys: set[str] = set()
@@ -70,8 +90,13 @@ def expand_buffer_consumer_seeds(
     seed_keys: set[str],
     *,
     max_extra: int = 80,
+    include_etch_transport: bool = False,
 ) -> tuple[set[str], dict[str, Any]]:
     """Add methods that invoke AccessorySocket/Packet buffer APIs (v1.4 gap fix).
+
+    Optional ``include_etch_transport`` also retains methods that invoke Etch
+    remoting/transport APIs (DeliveryService / TcpTransport / sas_* proxy). This is
+    seed expansion for object/dataflow tracking — not a protocol identity claim.
 
     Does not raise SearchPlan limits; only widens the offline/live method seed set
     when transport wrappers alone hide real byte processing behind interfaces.
@@ -80,10 +105,15 @@ def expand_buffer_consumer_seeds(
         "enabled": True,
         "max_extra": max_extra,
         "added": [],
+        "added_bcl_accessory": [],
+        "added_etch_transport": [],
         "scanned_methods": 0,
+        "include_etch_transport": bool(include_etch_transport),
         "note": (
             "Expansion follows concrete invoke refs to AccessorySocket/Packet/"
-            "BclConnection buffer APIs — not method-name protocol claims."
+            "BclConnection buffer APIs"
+            + (" and Etch remoting/transport APIs" if include_etch_transport else "")
+            + " — not method-name protocol claims."
         ),
     }
     if max_extra <= 0:
@@ -93,22 +123,37 @@ def expand_buffer_consumer_seeds(
     _units, it, _w, _v = stream_methods_with_instructions(dex)
     expanded = set(seed_keys)
     added: list[str] = []
+    added_bcl: list[str] = []
+    added_etch: list[str] = []
     for method in it:
         meta["scanned_methods"] += 1
         key = _method_key(method)
         if key in expanded:
             continue
         body = " ".join((ins.text or "") for ins in (method.instructions or []))
-        if _BUFFER_CONSUMER_SEED_RE.search(body) or (
-            "packet/Packet" in method.class_name
-            and (method.method_name or "").startswith(("decode", "encode"))
-        ):
+        hit_bcl = bool(
+            _BUFFER_CONSUMER_SEED_RE.search(body)
+            or (
+                "packet/Packet" in method.class_name
+                and (method.method_name or "").startswith(("decode", "encode"))
+            )
+        )
+        hit_etch = bool(include_etch_transport and _ETCH_TRANSPORT_SEED_RE.search(body))
+        if hit_bcl or hit_etch:
             expanded.add(key)
             added.append(key)
+            if hit_bcl:
+                added_bcl.append(key)
+            if hit_etch:
+                added_etch.append(key)
             if len(added) >= max_extra:
                 break
     meta["added"] = added
     meta["added_count"] = len(added)
+    meta["added_bcl_accessory"] = added_bcl
+    meta["added_etch_transport"] = added_etch
+    meta["added_bcl_accessory_count"] = len(added_bcl)
+    meta["added_etch_transport_count"] = len(added_etch)
     return expanded, meta
 
 
@@ -119,6 +164,7 @@ def load_methods_for_communication(
     max_methods: int = 200,
     also_same_class: bool = True,
     expand_interface_consumers: bool = False,
+    expand_etch_transport: bool = False,
     max_expand_extra: int = 80,
 ) -> tuple[list[MethodInfo], list[str], dict[str, Any]]:
     """Load a bounded set of MethodInfo bodies relevant to communication analysis.
@@ -137,17 +183,23 @@ def load_methods_for_communication(
         "note": "Retention cap is an analyzer bound, not a native/reflection APK boundary.",
         "seed_expansion": None,
     }
-    if not wanted_keys:
+    if not wanted_keys and not expand_interface_consumers and not expand_etch_transport:
         return [], ["No transport I/O method keys available for communication analysis."], retention
 
     keys = set(wanted_keys)
-    if expand_interface_consumers:
+    if expand_interface_consumers or expand_etch_transport:
+        # Allow etch-only expansion even when transport I/O keys are empty (ANALYZER_GAP fix).
         keys, exp_meta = expand_buffer_consumer_seeds(
-            apk_path, keys, max_extra=max_expand_extra
+            apk_path,
+            keys,
+            max_extra=max_expand_extra,
+            include_etch_transport=bool(expand_etch_transport),
         )
         retention["seed_expansion"] = exp_meta
         warnings.append(
-            f"v1.4 seed expansion added {exp_meta.get('added_count', 0)} interface/buffer consumer methods."
+            f"v1.4 seed expansion added {exp_meta.get('added_count', 0)} "
+            f"interface/buffer"
+            f"{'/etch-transport' if expand_etch_transport else ''} consumer methods."
         )
 
     wanted_classes = set()
@@ -184,10 +236,21 @@ def load_methods_for_communication(
                     "frame",
                     "knock",
                     "handshake",
+                    "sas_",
+                    "begincall",
+                    "endcall",
+                    "transport",
+                    "connect",
+                    "send",
                 )
             ):
                 take = True
             if "[B" in desc or "ByteBuffer" in desc or "InputStream" in desc or "OutputStream" in desc:
+                take = True
+            # Etch/BMW remoting classes retained when etch-transport expansion seeded them
+            if "idrive" in (method.class_name or "").lower() or "apache/etch" in (
+                method.class_name or ""
+            ).lower():
                 take = True
         if take and key not in seen:
             candidates += 1
@@ -303,6 +366,7 @@ def run_communication_analysis(
             keys,
             max_methods=min(int(config.get("max_object_nodes", 500)), 200),
             expand_interface_consumers=bool(config.get("expand_interface_consumers", False)),
+            expand_etch_transport=bool(config.get("expand_etch_transport", False)),
             max_expand_extra=int(config.get("max_expand_extra", 80)),
         )
         provenance = {
@@ -364,6 +428,7 @@ def postprocess_communication_from_report(
         keys,
         max_methods=min(int(config.get("max_object_nodes", 500)), 200),
         expand_interface_consumers=bool(config.get("expand_interface_consumers", False)),
+        expand_etch_transport=bool(config.get("expand_etch_transport", False)),
         max_expand_extra=int(config.get("max_expand_extra", 80)),
     )
     provenance["method_retention"] = retention

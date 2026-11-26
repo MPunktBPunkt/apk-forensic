@@ -1,0 +1,39 @@
+{
+  "graph": "etch_bcl_transport_bridge",
+  "apk_sha256": "b1135e357b62a1f54b3b791609684cb54a184fa29c0e65a3f80e58ee22f496bd",
+  "nodes": [
+    {"id": "CarSecurityManager.login", "layer": "sas"},
+    {"id": "SasAdapter.login", "layer": "sas"},
+    {"id": "RemoteBMWRemotingServer.sas_login", "layer": "etch_rpc"},
+    {"id": "RemoteBMWRemotingServer.sas_certificate", "layer": "etch_rpc"},
+    {"id": "Etch Message (_mf_data)", "layer": "etch_msg"},
+    {"id": "RemoteBase._begincall", "layer": "etch_session"},
+    {"id": "DefaultDeliveryService", "layer": "etch_session"},
+    {"id": "TransportFactory.getTransport", "layer": "etch_transport"},
+    {"id": "TcpTransport", "layer": "etch_tcp"},
+    {"id": "java.net.Socket / OutputStream", "layer": "tcp"},
+    {"id": "CarContext.connect(host,port)", "layer": "app"},
+    {"id": "Accessory Intent EXTRA_HOST/PORT", "layer": "ipc"},
+    {"id": "BclWorker/Bt/Usb/Eth 127.0.0.1", "layer": "ipc"},
+    {"id": "BclConnection", "layer": "bcl"},
+    {"id": "AccessorySocket", "layer": "accessory"}
+  ],
+  "edges": [
+    {"from": "CarSecurityManager.login", "to": "SasAdapter.login", "status": "FACT", "via": "response[]"},
+    {"from": "SasAdapter.login", "to": "RemoteBMWRemotingServer.sas_login", "status": "FACT", "via": "EtchCarConnection$2"},
+    {"from": "SasAdapter.getChallenge", "to": "RemoteBMWRemotingServer.sas_certificate", "status": "FACT", "via": "EtchCarConnection$2"},
+    {"from": "RemoteBMWRemotingServer.sas_login", "to": "Etch Message (_mf_data)", "status": "FACT"},
+    {"from": "RemoteBMWRemotingServer.sas_certificate", "to": "Etch Message (_mf_data)", "status": "FACT"},
+    {"from": "Etch Message (_mf_data)", "to": "RemoteBase._begincall", "status": "FACT"},
+    {"from": "RemoteBase._begincall", "to": "DefaultDeliveryService", "status": "FACT"},
+    {"from": "CarContext.connect(host,port)", "to": "TransportFactory.getTransport", "status": "FACT", "via": "EtchCarConnection.connect → BMWRemotingHelper.newServer(tcp://)"},
+    {"from": "TransportFactory.getTransport", "to": "TcpTransport", "status": "FACT"},
+    {"from": "DefaultDeliveryService", "to": "TcpTransport", "status": "FACT", "via": "same newServer stack / TransportMessage"},
+    {"from": "TcpTransport", "to": "java.net.Socket / OutputStream", "status": "FACT", "via": "TcpTransport.send"},
+    {"from": "java.net.Socket / OutputStream", "to": "BclConnection", "status": "NOT_PROVEN", "note": "0 invoke edges; possible external localhost proxy (Model A) only as HYPOTHESIS"},
+    {"from": "Accessory Intent EXTRA_HOST/PORT", "to": "CarContext.connect(host,port)", "status": "NOT_PROVEN"},
+    {"from": "BclWorker/Bt/Usb/Eth 127.0.0.1", "to": "BclConnection", "status": "FACT", "via": "accessory service stack"},
+    {"from": "BclConnection", "to": "AccessorySocket", "status": "FACT", "dispatch": "DYNAMIC_DISPATCH"},
+    {"from": "sas_certificate", "to": "sas_login", "status": "FACT", "via": "SAME mRemoteServer field"}
+  ]
+}

@@ -1,0 +1,38 @@
+{
+  "graph": "sas_candidate_call_object",
+  "apk_sha256": "b1135e357b62a1f54b3b791609684cb54a184fa29c0e65a3f80e58ee22f496bd",
+  "nodes": [
+    {"id": "CarSecurityManager.login", "kind": "orchestrator"},
+    {"id": "ICarSecurityService", "kind": "binder_iface"},
+    {"id": "CarSecurityService$1", "kind": "binder_stub_impl"},
+    {"id": "SecurityModule", "kind": "java_facade"},
+    {"id": "AudioModule", "kind": "jni"},
+    {"id": "libaudio.so", "kind": "native"},
+    {"id": "SasAdapter", "kind": "interface"},
+    {"id": "EtchCarConnection$2", "kind": "impl"},
+    {"id": "RemoteBMWRemotingServer", "kind": "etch_proxy"},
+    {"id": "ValueFactoryBMWRemoting", "kind": "etch_types"},
+    {"id": "DefaultDeliveryService", "kind": "etch_transport"},
+    {"id": "TcpTransport", "kind": "etch_tcp"},
+    {"id": "BclConnection", "kind": "bcl"},
+    {"id": "AccessorySocket", "kind": "accessory_iface"},
+    {"id": "CryptoUtil", "kind": "aes_util"}
+  ],
+  "edges": [
+    {"from": "CarSecurityManager.login", "to": "ICarSecurityService", "via": "createSecurityContext/getCertificates/signChallenge", "status": "FACT"},
+    {"from": "ICarSecurityService", "to": "CarSecurityService$1", "via": "Binder", "status": "FACT"},
+    {"from": "CarSecurityService$1", "to": "SecurityModule", "via": "signChallenge/getCertificates", "status": "FACT"},
+    {"from": "SecurityModule", "to": "AudioModule", "via": "g/f/e/c", "status": "FACT"},
+    {"from": "AudioModule", "to": "libaudio.so", "via": "native", "status": "FACT", "boundary": "JNI_NATIVE"},
+    {"from": "CarSecurityManager.login", "to": "SasAdapter", "via": "getChallenge/login", "status": "FACT", "dispatch": "DYNAMIC_DISPATCH"},
+    {"from": "SasAdapter", "to": "EtchCarConnection$2", "via": "SAS_ADAPTER service", "status": "FACT"},
+    {"from": "EtchCarConnection$2", "to": "RemoteBMWRemotingServer", "via": "sas_certificate/sas_login", "status": "FACT"},
+    {"from": "RemoteBMWRemotingServer", "to": "ValueFactoryBMWRemoting", "via": "message types", "status": "FACT"},
+    {"from": "RemoteBMWRemotingServer", "to": "DefaultDeliveryService", "via": "_begincall", "status": "FACT"},
+    {"from": "DefaultDeliveryService", "to": "TcpTransport", "via": "uri tcp://", "status": "FACT"},
+    {"from": "TcpTransport", "to": "BclConnection", "via": "session bridge", "status": "NOT_PROVEN"},
+    {"from": "BclConnection", "to": "AccessorySocket", "via": "write/read", "status": "FACT", "dispatch": "DYNAMIC_DISPATCH"},
+    {"from": "CryptoUtil", "to": "CarSecurityService", "via": "decodeWithAes P7B", "status": "FACT"},
+    {"from": "CryptoUtil", "to": "AudioModule.g", "via": "challenge sign", "status": "NOT_PROVEN"}
+  ]
+}

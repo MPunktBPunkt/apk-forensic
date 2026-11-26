@@ -1,0 +1,145 @@
+schema_version: "1.0"
+
+plan:
+  name: etch_bcl_transport_bridge
+  description: >
+    User investigation goal (search intention, not evidence):
+    Resolve the static transport edge from Etch sas_certificate/sas_login
+    Message/DeliveryService/TcpTransport to BCL/AccessorySocket object flows
+    inside de.bmw.connected — without assuming localhost BCL-proxy architecture.
+    Terms are search seeds only; method names do not establish protocol FACT.
+  modules:
+    - manifest
+    - zip_inventory
+    - dex
+    - strings
+    - candidate
+    - dex_context
+    - xref
+    - bluetooth
+    - native
+
+search:
+  terms:
+    - AccessorySocket
+    - BclConnection
+    - BMWRemotingHelper
+    - BtAccessorySocket
+    - BufferedBclConnection
+    - DefaultDeliveryService
+    - EthAccessorySocket
+    - EtchCarConnection
+    - EXTRA_HOST
+    - EXTRA_PORT
+    - InetSocketAddress
+    - InputStream
+    - Mailbox
+    - MguTransportFactory
+    - OutputStream
+    - RemoteBMWRemotingServer
+    - Socket
+    - SocketChannel
+    - TcpTransport
+    - TcpTransportFactory
+    - TransportFactory
+    - UsbAccessorySocket
+    - ValueFactoryBMWRemoting
+    - bindService
+    - localhost
+    - "127.0.0.1"
+    - sas_certificate
+    - sas_login
+    - "tcp://"
+  regex:
+    - "(?i)sas_(certificate|login)"
+    - "(?i)tcp://"
+    - "(?i)bclconnection"
+    - "(?i)etchcarconnection"
+  uuids: []
+  api_patterns:
+    - android
+    - bluetooth
+    - network
+    - rfcomm
+    - socket
+    - usb
+
+dex_context:
+  enabled: true
+  instruction_window: 10
+  xref_depth: 2
+  max_callers: 30
+  max_callees: 30
+
+bluetooth:
+  enabled: true
+  dataflow_depth: 3
+  window: 12
+  max_paths: 40
+  max_results: 80
+  target: BclConnection
+  caller_depth: 2
+  reconstruct_callers: true
+  reconstruct_streams: true
+  reconstruct_read_write: true
+  max_callers: 40
+  max_callees: 40
+  max_dataflow_paths: 40
+  max_dataflow_nodes: 160
+  interprocedural: true
+  max_method_hops: 3
+  max_field_hops: 2
+  max_object_nodes: 400
+
+evidence_graph:
+  enabled: true
+  canonicalize: true
+  deduplicate: true
+  extract_paths: true
+  include_boundaries: true
+  max_evidence_paths: 40
+
+communication:
+  enabled: true
+  interprocedural: true
+  max_method_hops: 3
+  max_field_hops: 2
+  max_object_nodes: 400
+  max_dataflow_paths: 80
+  max_buffer_hops: 5
+  max_parser_hops: 3
+  max_message_hops: 3
+
+correlation:
+  enabled: false
+  timestamp_window_ms: 50
+  max_runtime_events: 10000
+  max_wire_packets: 10000
+  max_correlations: 500
+  require_direction_match: true
+  allow_fragmentation: true
+  allow_aggregation: true
+
+evidence:
+  classifications:
+    - FACT
+    - CORRELATION
+    - INFERENCE
+    - UNKNOWN
+
+limits:
+  max_results: 150
+  max_contexts: 100
+  max_xrefs: 1000
+  max_chains: 20
+  max_findings: 12000
+
+output:
+  format:
+    - json
+    - markdown
+  include_raw: false
+
+profile:
+  name: null
+  path: null
