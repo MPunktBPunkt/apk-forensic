@@ -1,0 +1,31 @@
+{
+  "schema": "apk_forensics.plan_provenance.v1",
+  "created_at": "2026-11-26T13:03:39Z",
+  "created_by": "plan_builder.suggest_plan_from_goal",
+  "source_goal": "Untersuche eine Android-APK auf Hinweise auf iAP / iAP2 bzw. das Apple iPod Accessory Protocol und verfolge die damit verbundenen Kommunikations-, Byte-, Buffer-, Object- und Application-Flows so weit, wie die vorhandene statische Analyse dies unterstützt.",
+  "base_plan": null,
+  "topics_matched": [
+    "iap2"
+  ],
+  "rationale": [
+    "Investigation goal is metadata / search intention — not evidence.",
+    "Suggestion configures SearchPlan fields only; analyzer findings remain evidence-driven.",
+    "Matched investigation topic 'iAP2/accessory' → added as search terms only (not protocol FACT).",
+    "Bluetooth/USB/socket api_patterns enabled as supported search scopes.",
+    "Bluetooth + communication + evidence_graph enabled for static path/dataflow investigation.",
+    "Traversal depth preset 'deep' applied to supported SearchPlan fields only.",
+    "Manually enriched with transport/buffer/auth literals from investigation brief.",
+    "byte[] / bare read/write omitted as overly generic literal search terms.",
+    "correlation.enabled=false: no runtime INPUT expected for this run."
+  ],
+  "plan_sha256": "0da3732baf5e3e1108081a360ce88054ed581ceedf487d2c873ea6fe2eb4071b",
+  "plan_file": "iap2_accessory_investigation.yaml",
+  "note": "Provenance is not evidence. SearchPlan configures investigation only.",
+  "depth_preset": "deep",
+  "overrides": {
+    "enriched_terms": true,
+    "depth_preset": "deep",
+    "correlation_enabled": false,
+    "reason_depth": "deep preset: follow Transport→Socket→Stream→buffer→decoder statically within SearchPlan caps (method_hops<=5, field_hops<=4, buffer_hops<=8)."
+  }
+}

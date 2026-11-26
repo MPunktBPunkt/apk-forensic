@@ -30,6 +30,13 @@ output/*
 !output/ui/FORENSIC_UI_IMPLEMENTATION.md
 !output/ui/FORENSIC_WORKBENCH_IMPLEMENTATION.md
 !output/ui/FORENSIC_SEARCHPLAN_BUILDER_IMPLEMENTATION.md
+!output/iap2-searchplan/
+!output/iap2-searchplan/*.md
+!output/iap2-searchplan/*.yaml
+!output/iap2-searchplan/*.json
+output/iap2-searchplan/scan/
+output/iap2-searchplan/scan/**
+output/iap2-searchplan/scan_console.log
 work/
 cache/
 .apk-forensics-workspace.json

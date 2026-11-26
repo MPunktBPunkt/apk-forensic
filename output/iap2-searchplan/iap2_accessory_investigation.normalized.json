@@ -1,0 +1,149 @@
+{
+  "bluetooth": {
+    "caller_depth": 2,
+    "dataflow_depth": 3,
+    "enabled": true,
+    "interprocedural": true,
+    "max_callees": 50,
+    "max_callers": 50,
+    "max_dataflow_nodes": 200,
+    "max_dataflow_paths": 50,
+    "max_field_hops": 4,
+    "max_method_hops": 5,
+    "max_object_nodes": 500,
+    "max_paths": 50,
+    "max_results": 100,
+    "reconstruct_callers": true,
+    "reconstruct_read_write": true,
+    "reconstruct_streams": true,
+    "target": null,
+    "window": 12
+  },
+  "communication": {
+    "enabled": true,
+    "interprocedural": true,
+    "max_buffer_hops": 8,
+    "max_dataflow_paths": 100,
+    "max_field_hops": 4,
+    "max_message_hops": 3,
+    "max_method_hops": 5,
+    "max_object_nodes": 500,
+    "max_parser_hops": 3
+  },
+  "correlation": {
+    "allow_aggregation": true,
+    "allow_fragmentation": true,
+    "enabled": false,
+    "max_correlations": 500,
+    "max_runtime_events": 10000,
+    "max_wire_packets": 10000,
+    "require_direction_match": true,
+    "timestamp_window_ms": 50
+  },
+  "dex_context": {
+    "enabled": true,
+    "instruction_window": 12,
+    "max_callees": 20,
+    "max_callers": 20,
+    "xref_depth": 2
+  },
+  "evidence": {
+    "classifications": [
+      "FACT",
+      "CORRELATION",
+      "INFERENCE",
+      "UNKNOWN"
+    ]
+  },
+  "evidence_graph": {
+    "canonicalize": true,
+    "deduplicate": true,
+    "enabled": true,
+    "extract_paths": true,
+    "include_boundaries": true,
+    "max_evidence_paths": 50
+  },
+  "limits": {
+    "max_chains": 20,
+    "max_contexts": 100,
+    "max_findings": 10000,
+    "max_results": 100,
+    "max_xrefs": 1000
+  },
+  "output": {
+    "format": [
+      "json",
+      "markdown"
+    ],
+    "include_raw": false
+  },
+  "plan": {
+    "description": "User investigation goal (search intention, not evidence):\nUntersuche eine Android-APK auf Hinweise auf iAP / iAP2 bzw. das Apple iPod Accessory Protocol und verfolge die damit verbundenen Kommunikations-, Byte-, Buffer-, Object- und Application-Flows so weit, wie die vorhandene statische Analyse dies unterst\u00fctzt.\n\nEnriched manually with accessory/transport/buffer/auth search terms. Terms are search targets only \u2014 not protocol FACT.",
+    "modules": [
+      "bluetooth",
+      "candidate",
+      "dex",
+      "dex_context",
+      "manifest",
+      "strings",
+      "uuid",
+      "xref",
+      "zip_inventory"
+    ],
+    "name": "iap2_accessory_investigation"
+  },
+  "plan_sha256": "0da3732baf5e3e1108081a360ce88054ed581ceedf487d2c873ea6fe2eb4071b",
+  "profile": {
+    "name": null,
+    "path": null
+  },
+  "schema_version": "1.0",
+  "search": {
+    "api_patterns": [
+      "android",
+      "bluetooth",
+      "network",
+      "rfcomm",
+      "socket",
+      "usb"
+    ],
+    "regex": [],
+    "terms": [
+      "Accessory Protocol",
+      "AccessorySocket",
+      "Apple Accessory",
+      "BluetoothSocket",
+      "ByteBuffer",
+      "DataInputStream",
+      "DataOutputStream",
+      "EASession",
+      "InputStream",
+      "OutputStream",
+      "Socket",
+      "System.arraycopy",
+      "UsbAccessory",
+      "UsbDevice",
+      "UsbInterface",
+      "authenticate",
+      "authentication",
+      "buffer",
+      "certificate",
+      "challenge",
+      "createRfcommSocketToServiceRecord",
+      "decode",
+      "encode",
+      "frame",
+      "handshake",
+      "iAP",
+      "iAP2",
+      "iPod",
+      "iPod Accessory",
+      "message",
+      "packet",
+      "parse",
+      "response",
+      "signature"
+    ],
+    "uuids": []
+  }
+}
