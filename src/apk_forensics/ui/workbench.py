@@ -140,6 +140,7 @@ def list_bundled_plans(root: Path) -> list[dict[str, Any]]:
                     "path": str(path.relative_to(root.resolve())),
                     "error": str(exc),
                     "valid": False,
+                    "kind": "builtin",
                 }
             )
             continue
@@ -157,6 +158,7 @@ def list_bundled_plans(root: Path) -> list[dict[str, Any]]:
                 "communication_enabled": plan.communication_enabled,
                 "correlation_enabled": plan.correlation_enabled,
                 "valid": True,
+                "kind": "builtin",
                 "note": (
                     "Correlation flags refer to offline static↔runtime/wire join, "
                     "not APK execution."
@@ -166,6 +168,12 @@ def list_bundled_plans(root: Path) -> list[dict[str, Any]]:
             }
         )
     return out
+
+
+def list_all_plans(root: Path) -> list[dict[str, Any]]:
+    from apk_forensics.ui.plan_builder import list_user_plans
+
+    return list_bundled_plans(root) + list_user_plans(root)
 
 
 def plan_criteria_view(plan: SearchPlan) -> dict[str, Any]:
@@ -590,7 +598,13 @@ class WorkbenchController:
                 else None
             ),
             "resource_policies": sorted(POLICY_PRESETS.keys()),
-            "plans": list_bundled_plans(self.root),
+            "plans": list_all_plans(self.root),
+            "pipeline_coverage": {
+                "base_static_analysis": "AVAILABLE",
+                "extended_forensic_post_processing": "NOT AUTOMATIC",
+                "runtime_instrumentation": "SEPARATE WORKFLOW",
+                "runtime_wire_correlation": "INPUT-DEPENDENT",
+            },
             "disclaimer": (
                 "Static APK analysis only. APK execution / runtime instrumentation "
                 "is a separate workflow (INPUT_MISSING until real runtime evidence exists)."
@@ -632,19 +646,88 @@ class WorkbenchController:
         return meta
 
     def load_plan(self, plan_id: str, overrides: dict[str, Any] | None = None) -> tuple[Path, SearchPlan]:
-        plans = {p["id"]: p for p in list_bundled_plans(self.root) if p.get("valid")}
-        # also allow stem match
+        from apk_forensics.ui.plan_builder import user_plans_dir
+
+        plans = {p["id"]: p for p in list_all_plans(self.root) if p.get("valid")}
+        # also allow stem match / user:name without prefix
         if plan_id not in plans:
-            for p in list_bundled_plans(self.root):
-                if Path(p["path"]).stem == plan_id and p.get("valid"):
+            for p in list_all_plans(self.root):
+                if not p.get("valid"):
+                    continue
+                stem = Path(str(p.get("path") or "")).stem
+                if stem == plan_id or p.get("name") == plan_id or p.get("id") == f"user:{plan_id}":
                     plans[plan_id] = p
                     break
         if plan_id not in plans:
-            raise PlanValidationError(f"Unknown or invalid plan: {plan_id}")
-        path = (self.root / plans[plan_id]["path"]).resolve()
-        resolve_under(self.root / "plans", path)
+            raise PlanValidationError([f"Unknown or invalid plan: {plan_id}"])
+        entry = plans[plan_id]
+        raw_path = Path(entry["path"])
+        path = raw_path if raw_path.is_absolute() else (self.root / raw_path).resolve()
+        # Allow built-in plans/ or user work/user-plans/
+        try:
+            resolve_under(self.root / "plans", path)
+        except PermissionError:
+            resolve_under(user_plans_dir(self.root), path)
         plan = apply_plan_overrides(path, overrides)
         return path, plan
+
+    def suggest_plan(self, goal: str, *, plan_name: str | None = None, depth: str = "standard") -> dict[str, Any]:
+        from apk_forensics.ui.plan_builder import suggest_plan_from_goal
+
+        return suggest_plan_from_goal(goal, plan_name=plan_name, depth=depth)
+
+    def validate_plan_raw(self, raw: dict[str, Any]) -> dict[str, Any]:
+        from apk_forensics.ui.plan_builder import validate_raw_plan
+
+        return validate_raw_plan(raw)
+
+    def preview_plan_form(self, form: dict[str, Any]) -> dict[str, Any]:
+        from apk_forensics.ui.plan_builder import build_raw_from_builder_form, validate_raw_plan
+
+        raw = build_raw_from_builder_form(form)
+        result = validate_raw_plan(raw)
+        result["raw"] = raw
+        return result
+
+    def save_plan(
+        self,
+        raw: dict[str, Any],
+        *,
+        provenance: dict[str, Any] | None = None,
+        overwrite: bool = False,
+    ) -> dict[str, Any]:
+        from apk_forensics.ui.plan_builder import plan_preview, save_user_plan
+
+        saved = save_user_plan(self.root, raw, provenance=provenance, overwrite=overwrite)
+        return {
+            "ok": True,
+            "plan_id": f"user:{saved.plan.plan_name}",
+            "path": str(saved.path),
+            "provenance_path": str(saved.provenance_path) if saved.provenance_path else None,
+            "plan": plan_preview(saved.plan),
+            "plan_sha256": saved.plan.plan_sha256,
+            "kind": "user",
+        }
+
+    def clone_builtin_plan(self, plan_id: str, *, new_name: str, goal_note: str | None = None) -> dict[str, Any]:
+        from apk_forensics.ui.plan_builder import clone_plan, plan_preview
+
+        path, _plan = self.load_plan(plan_id)
+        # Refuse silent overwrite of builtins — clone always writes to user-plans
+        if "plans" in path.parts and "user-plans" not in path.parts:
+            # built-in
+            pass
+        saved = clone_plan(self.root, path, new_name=new_name, goal_note=goal_note)
+        return {
+            "ok": True,
+            "plan_id": f"user:{saved.plan.plan_name}",
+            "path": str(saved.path),
+            "base_plan": str(path),
+            "plan": plan_preview(saved.plan),
+            "plan_sha256": saved.plan.plan_sha256,
+            "kind": "user",
+            "note": "Original built-in plan was not modified.",
+        }
 
     def estimate(
         self,

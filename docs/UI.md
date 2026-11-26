@@ -53,9 +53,13 @@ Snapshots from existing reports (`CASE_PRESETS` or job output). Counters and cla
 | Method | Path | Purpose |
 |---|---|---|
 | GET | `/api/snapshot` | Current Explorer snapshot |
-| GET | `/api/meta` | Plans, policies, bind warning |
-| GET | `/api/plans` | Bundled `plans/*.yaml` only |
+| GET | `/api/meta` | Plans, policies, bind warning, pipeline coverage |
+| GET | `/api/plans` | Built-in + user plans |
 | GET | `/api/plans/{id}/criteria` | Grouped SearchPlan criteria |
+| POST | `/api/plans/suggest` | Deterministic plan suggestion from investigation goal |
+| POST | `/api/plans/preview` / `validate` | Validate form/raw against SearchPlan schema |
+| POST | `/api/plans/save` | Save user plan → `work/user-plans/` |
+| POST | `/api/plans/clone` | Clone built-in/user plan (original unchanged) |
 | POST | `/api/upload` | APK upload → `work/ui-uploads/` |
 | POST | `/api/validate` | Server-side path fingerprint |
 | POST | `/api/estimate` | Existing Resource Estimator + Guard decision |
@@ -63,6 +67,8 @@ Snapshots from existing reports (`CASE_PRESETS` or job output). Counters and cla
 | GET | `/api/jobs/{id}/status` | Progress / logs / results |
 | POST | `/api/jobs/{id}/cancel` | Cooperative cancel |
 | GET | `/api/result?path=` | Read file **only** under uploads/jobs workspace |
+
+See also: [SEARCHPLAN_BUILDER.md](SEARCHPLAN_BUILDER.md).
 
 Jobs persist `output/ui-jobs/<stamp>-<id>/workbench_job.json` (`apk_forensics.workbench_job.v1`).
 

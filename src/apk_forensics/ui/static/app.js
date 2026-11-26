@@ -22,6 +22,10 @@ let WB = {
   jobId: null,
   pollTimer: null,
   pendingWarningStart: false,
+  planMode: "existing",
+  draftRaw: null,
+  draftProvenance: null,
+  draftPreview: null,
 };
 
 function badge(status) {
@@ -301,14 +305,24 @@ function renderInputMeta() {
 function renderPlans() {
   const list = document.getElementById("plan-list");
   const plans = (META && META.plans) || [];
+  const cov = (META && META.pipeline_coverage) || {};
+  document.getElementById("pipeline-coverage").innerHTML = `
+    <div><strong>Pipeline coverage</strong></div>
+    <div>Base static analysis: ${escapeHtml(cov.base_static_analysis || "AVAILABLE")}</div>
+    <div>Extended forensic post-processing: ${escapeHtml(cov.extended_forensic_post_processing || "NOT AUTOMATIC")}</div>
+    <div>Runtime instrumentation: ${escapeHtml(cov.runtime_instrumentation || "SEPARATE WORKFLOW")}</div>
+    <div>Runtime/Wire correlation: ${escapeHtml(cov.runtime_wire_correlation || "INPUT-DEPENDENT")}</div>`;
   list.innerHTML = plans.filter((p) => p.valid).map((p) => `
     <label class="plan-option ${WB.planId === p.id ? "selected" : ""}">
       <input type="radio" name="plan" value="${escapeHtml(p.id)}" ${WB.planId === p.id ? "checked" : ""} />
-      <span><strong>${escapeHtml(p.name || p.id)}</strong><br/><span class="empty">${escapeHtml(p.description || "").slice(0, 160)}</span></span>
-    </label>`).join("") || `<p class="empty">No plans found under plans/*.yaml</p>`;
+      <span><strong>${escapeHtml(p.name || p.id)}</strong>
+        <span class="empty"> [${escapeHtml(p.kind || "builtin")}]</span><br/>
+        <span class="empty">${escapeHtml(p.description || "").slice(0, 160)}</span></span>
+    </label>`).join("") || `<p class="empty">No plans found</p>`;
   list.querySelectorAll("input[name=plan]").forEach((inp) => {
     inp.addEventListener("change", async () => {
       WB.planId = inp.value;
+      WB.draftRaw = null;
       renderPlans();
       await loadPlanCriteria(WB.planId);
       updateStartEnabled();
@@ -320,6 +334,71 @@ function renderPlans() {
   document.querySelectorAll("input[name=policy]").forEach((inp) => {
     inp.addEventListener("change", () => { WB.policy = inp.value; updateStartEnabled(); });
   });
+  const apis = ["bluetooth", "rfcomm", "usb", "network", "socket", "gatt", "android"];
+  document.getElementById("builder-api").innerHTML = apis.map((a) =>
+    `<label><input type="checkbox" data-api="${a}" /> ${a}</label>`).join("");
+}
+
+function linesOf(id) {
+  return (document.getElementById(id).value || "").split("\n").map((s) => s.trim()).filter(Boolean);
+}
+
+function collectBuilderForm() {
+  const areas = {};
+  document.querySelectorAll("[data-area]").forEach((el) => { areas[el.getAttribute("data-area")] = el.checked; });
+  const traversal = {};
+  document.querySelectorAll("[data-trav]").forEach((el) => { traversal[el.getAttribute("data-trav")] = Number(el.value); });
+  const api_patterns = [];
+  document.querySelectorAll("[data-api]").forEach((el) => { if (el.checked) api_patterns.push(el.getAttribute("data-api")); });
+  return {
+    name: document.getElementById("builder-name").value.trim() || "custom_plan",
+    investigation_goal: document.getElementById("investigation-goal").value.trim(),
+    terms: linesOf("builder-terms"),
+    regex: linesOf("builder-regex"),
+    uuids: linesOf("builder-uuids"),
+    api_patterns,
+    areas,
+    traversal,
+  };
+}
+
+function applySuggestionToForm(sug) {
+  const plan = sug.plan || {};
+  const raw = sug.raw || {};
+  document.getElementById("builder-name").value = plan.name || (raw.plan && raw.plan.name) || "";
+  document.getElementById("builder-terms").value = ((plan.search_targets || {}).terms || (raw.search || {}).terms || []).join("\n");
+  document.getElementById("builder-regex").value = ((plan.search_targets || {}).regex || []).join("\n");
+  document.getElementById("builder-uuids").value = ((plan.search_targets || {}).uuids || []).join("\n");
+  const apis = new Set((plan.search_targets || {}).api_patterns || (raw.search || {}).api_patterns || []);
+  document.querySelectorAll("[data-api]").forEach((el) => { el.checked = apis.has(el.getAttribute("data-api")); });
+  const areas = plan.areas || {};
+  document.querySelectorAll("[data-area]").forEach((el) => {
+    const k = el.getAttribute("data-area");
+    if (k in areas) el.checked = !!areas[k];
+  });
+  const trav = plan.traversal || {};
+  document.querySelectorAll("[data-trav]").forEach((el) => {
+    const k = el.getAttribute("data-trav");
+    if (trav[k] != null) el.value = trav[k];
+  });
+  WB.draftRaw = raw;
+  WB.draftProvenance = sug.provenance || null;
+  WB.draftPreview = plan;
+  renderBuilderPreview(plan, sug.note);
+}
+
+function renderBuilderPreview(plan, note) {
+  if (!plan) { document.getElementById("builder-preview").innerHTML = ""; return; }
+  document.getElementById("builder-preview").innerHTML = `
+    <div><strong>Search Plan Preview</strong> ${badge("GUIDANCE")}</div>
+    <div>Name: ${escapeHtml(plan.name)}</div>
+    <div>Plan SHA256: ${escapeHtml(plan.plan_sha256)}</div>
+    <div>Untersuchungsziel: ${escapeHtml(plan.investigation_goal || "—")}</div>
+    <div>Areas: ${Object.entries(plan.areas || {}).filter(([,v])=>v).map(([k])=>k).join(", ")}</div>
+    <div><strong>Was dieser Plan untersucht</strong><ul>${(plan.what_this_plan_investigates||[]).map(x=>`<li>${escapeHtml(x)}</li>`).join("")}</ul></div>
+    <div><strong>Was dieser Plan NICHT untersuchen kann</strong><ul>${(plan.what_this_plan_cannot||[]).map(x=>`<li>${escapeHtml(x)}</li>`).join("")}</ul></div>
+    <p class="empty">${escapeHtml(note || plan.disclaimer || "")}</p>
+    <pre class="mono" style="white-space:pre-wrap">${escapeHtml((plan.rationale||[]).map(r=>"• "+r).join("\n"))}</pre>`;
 }
 
 async function loadPlanCriteria(planId) {
@@ -391,17 +470,19 @@ async function loadPlanCriteria(planId) {
 }
 
 function updateStartEnabled() {
-  const ready = !!(WB.input && WB.planId && WB.estimate && WB.estimate.risk !== "REJECT");
+  const hasPlan = !!(WB.planId || (WB.planMode === "builder" && WB.draftRaw));
+  const ready = !!(WB.input && hasPlan && WB.estimate && WB.estimate.risk !== "REJECT" && WB.planId);
   document.getElementById("btn-start").disabled = !ready;
   const sum = document.getElementById("start-summary");
-  if (!WB.input || !WB.planId) { sum.innerHTML = ""; return; }
+  if (!WB.input || !hasPlan) { sum.innerHTML = ""; return; }
   sum.innerHTML = `
     <div><strong>Input:</strong> ${escapeHtml(WB.input.filename)}</div>
-    <div><strong>SearchPlan:</strong> ${escapeHtml(WB.planId)}</div>
+    <div><strong>SearchPlan:</strong> ${escapeHtml(WB.planId || "(save user plan before run)")}</div>
     <div><strong>Resource Policy:</strong> ${escapeHtml(WB.policy)}</div>
     <div><strong>Estimated runtime:</strong> ${escapeHtml(WB.estimate?.estimated_runtime_display || "—")} <span class="empty">(heuristic)</span></div>
     <div><strong>Estimated memory:</strong> ${escapeHtml(WB.estimate?.estimated_memory_mb ?? "—")} MiB</div>
-    <div><strong>Risk:</strong> ${WB.estimate ? badge(WB.estimate.risk) : "—"}</div>`;
+    <div><strong>Risk:</strong> ${WB.estimate ? badge(WB.estimate.risk) : "—"}</div>
+    <p class="empty">Save a user plan before Estimate/Run when using the builder.</p>`;
 }
 
 function renderPreflight(est) {
@@ -551,6 +632,96 @@ function wireWorkbench() {
     warn.textContent = META.bind_warning;
     warn.classList.remove("hidden");
   }
+  document.querySelectorAll("[data-plan-mode]").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      document.querySelectorAll("[data-plan-mode]").forEach((b) => b.classList.toggle("active", b === btn));
+      WB.planMode = btn.getAttribute("data-plan-mode");
+      document.getElementById("mode-existing").classList.toggle("hidden", WB.planMode !== "existing");
+      document.getElementById("mode-builder").classList.toggle("hidden", WB.planMode !== "builder");
+      updateStartEnabled();
+    });
+  });
+  document.getElementById("btn-suggest-plan").addEventListener("click", async () => {
+    try {
+      const goal = document.getElementById("investigation-goal").value.trim();
+      const data = await api("/api/plans/suggest", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ goal, plan_name: document.getElementById("builder-name").value.trim() || null, depth: "standard" }),
+      });
+      applySuggestionToForm(data);
+    } catch (err) { alert(err.message); }
+  });
+  document.getElementById("btn-preview-plan").addEventListener("click", async () => {
+    try {
+      const data = await api("/api/plans/preview", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ form: collectBuilderForm() }),
+      });
+      if (!data.ok) {
+        document.getElementById("builder-preview").innerHTML =
+          `<div class="warn"><strong>INVALID_SEARCH_PLAN</strong><pre>${escapeHtml((data.errors||[]).join("\n"))}</pre></div>`;
+        WB.draftRaw = null;
+        return;
+      }
+      WB.draftRaw = data.raw;
+      WB.draftPreview = data.plan;
+      renderBuilderPreview(data.plan);
+      updateStartEnabled();
+    } catch (err) { alert(err.message); }
+  });
+  document.getElementById("btn-show-yaml").addEventListener("click", () => {
+    const dump = document.getElementById("builder-dump");
+    dump.classList.remove("hidden");
+    dump.textContent = (WB.draftPreview && WB.draftPreview.yaml) || "Preview/Validate first.";
+  });
+  document.getElementById("btn-show-json").addEventListener("click", () => {
+    const dump = document.getElementById("builder-dump");
+    dump.classList.remove("hidden");
+    dump.textContent = (WB.draftPreview && WB.draftPreview.normalized_json) || "Preview/Validate first.";
+  });
+  document.getElementById("btn-save-plan").addEventListener("click", async () => {
+    try {
+      if (!WB.draftRaw) {
+        const prev = await api("/api/plans/preview", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ form: collectBuilderForm() }),
+        });
+        if (!prev.ok) throw new Error((prev.errors || ["invalid plan"]).join("; "));
+        WB.draftRaw = prev.raw;
+        WB.draftPreview = prev.plan;
+      }
+      const saved = await api("/api/plans/save", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ raw: WB.draftRaw, provenance: WB.draftProvenance }),
+      });
+      WB.planId = saved.plan_id;
+      META = await api("/api/meta");
+      renderPlans();
+      alert(`Saved user plan ${saved.plan_id}\nSHA256 ${saved.plan_sha256.slice(0, 16)}…`);
+      updateStartEnabled();
+    } catch (err) { alert(err.message); }
+  });
+  document.getElementById("btn-clone-plan").addEventListener("click", async () => {
+    try {
+      if (!WB.planId) throw new Error("Select a plan first");
+      const newName = prompt("New plan name", `${String(WB.planId).replace(/^user:/,"")}_clone`);
+      if (!newName) return;
+      const data = await api("/api/plans/clone", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ plan_id: WB.planId, new_name: newName }),
+      });
+      META = await api("/api/meta");
+      WB.planId = data.plan_id;
+      renderPlans();
+      await loadPlanCriteria(WB.planId);
+      alert(data.note || "Cloned");
+    } catch (err) { alert(err.message); }
+  });
   document.querySelectorAll("[data-input-tab]").forEach((btn) => {
     btn.addEventListener("click", () => {
       document.querySelectorAll("[data-input-tab]").forEach((b) => b.classList.toggle("active", b === btn));

@@ -216,6 +216,59 @@ class ForensicUIHandler(SimpleHTTPRequestHandler):
                 )
                 self._send_json_tuple(_json_bytes({"ok": True, **result}))
                 return
+            if path == "/api/plans/suggest":
+                result = ctrl.suggest_plan(
+                    str(body.get("goal") or body.get("investigation_goal") or ""),
+                    plan_name=body.get("plan_name"),
+                    depth=str(body.get("depth") or "standard"),
+                )
+                self._send_json_tuple(_json_bytes(result))
+                return
+            if path == "/api/plans/validate":
+                raw = body.get("raw") or body.get("plan")
+                if raw is None and body.get("form"):
+                    result = ctrl.preview_plan_form(body["form"])
+                elif isinstance(raw, dict):
+                    result = ctrl.validate_plan_raw(raw)
+                    result["raw"] = raw
+                else:
+                    raise InputError("raw plan object or form required")
+                self._send_json_tuple(_json_bytes(result))
+                return
+            if path == "/api/plans/preview":
+                if body.get("form"):
+                    result = ctrl.preview_plan_form(body["form"])
+                elif isinstance(body.get("raw"), dict):
+                    result = ctrl.validate_plan_raw(body["raw"])
+                    result["raw"] = body["raw"]
+                else:
+                    raise InputError("form or raw required")
+                self._send_json_tuple(_json_bytes(result))
+                return
+            if path == "/api/plans/save":
+                raw = body.get("raw")
+                if not isinstance(raw, dict):
+                    if body.get("form"):
+                        from apk_forensics.ui.plan_builder import build_raw_from_builder_form
+
+                        raw = build_raw_from_builder_form(body["form"])
+                    else:
+                        raise InputError("raw plan object required")
+                result = ctrl.save_plan(
+                    raw,
+                    provenance=body.get("provenance"),
+                    overwrite=bool(body.get("overwrite")),
+                )
+                self._send_json_tuple(_json_bytes(result))
+                return
+            if path == "/api/plans/clone":
+                result = ctrl.clone_builtin_plan(
+                    str(body.get("plan_id") or ""),
+                    new_name=str(body.get("new_name") or ""),
+                    goal_note=body.get("goal_note"),
+                )
+                self._send_json_tuple(_json_bytes(result))
+                return
             if path == "/api/jobs/start":
                 wb = ctrl.start_job(
                     apk_paths=[str(p) for p in (body.get("apk_paths") or [])],

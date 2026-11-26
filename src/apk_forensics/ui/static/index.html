@@ -75,11 +75,71 @@
       </div>
 
       <div class="card">
-        <h3>2. Profile / SearchPlan</h3>
-        <p class="empty">Only plans shipped under <code>plans/*.yaml</code>. SearchPlan limits ≠ Resource Policy.</p>
-        <div id="plan-list" class="plan-list"></div>
-        <div id="plan-detail" class="meta-box"></div>
-        <details class="criteria" id="criteria-box"><summary>SearchPlan criteria</summary><div id="criteria-form"></div></details>
+        <h3>2. SearchPlan</h3>
+        <div class="tabs">
+          <button type="button" class="tab active" data-plan-mode="existing">Vorhandenen SearchPlan verwenden</button>
+          <button type="button" class="tab" data-plan-mode="builder">Neuen SearchPlan erstellen</button>
+        </div>
+        <div id="pipeline-coverage" class="meta-box"></div>
+
+        <div id="mode-existing">
+          <p class="empty">Built-in <code>plans/*.yaml</code> + User Plans unter <code>work/user-plans/</code>. SearchPlan ≠ Resource Policy.</p>
+          <div id="plan-list" class="plan-list"></div>
+          <div id="plan-detail" class="meta-box"></div>
+          <button type="button" class="btn" id="btn-clone-plan">Plan klonen</button>
+          <details class="criteria" id="criteria-box"><summary>SearchPlan criteria (overrides)</summary><div id="criteria-form"></div></details>
+        </div>
+
+        <div id="mode-builder" class="hidden">
+          <label class="field-label">Was möchtest du untersuchen? (Intention — keine Evidence)</label>
+          <textarea id="investigation-goal" class="input" rows="4" placeholder="z. B. Untersuche iAP2-Kommunikation und verfolge statische Datenpfade."></textarea>
+          <div class="btn-row">
+            <button type="button" class="btn primary" id="btn-suggest-plan">Plan aus Untersuchungsfrage ableiten</button>
+          </div>
+          <p class="empty">Ableitung ist deterministisch/lokal. Erzeugt keinen FACT und kein „FOUND“.</p>
+
+          <label class="field-label">Plan name</label>
+          <input type="text" id="builder-name" class="input" placeholder="iap2_investigation" />
+
+          <label class="field-label">Search terms (eine pro Zeile)</label>
+          <textarea id="builder-terms" class="input" rows="4"></textarea>
+          <label class="field-label">Regex (eine pro Zeile)</label>
+          <textarea id="builder-regex" class="input" rows="2"></textarea>
+          <label class="field-label">UUIDs (eine pro Zeile)</label>
+          <textarea id="builder-uuids" class="input" rows="2"></textarea>
+          <label class="field-label">API patterns</label>
+          <div id="builder-api" class="crit-grid"></div>
+
+          <h4>Analysebereiche</h4>
+          <div class="crit-grid" id="builder-areas">
+            <label><input type="checkbox" data-area="dex_context" checked /> DEX Context / XREF</label>
+            <label><input type="checkbox" data-area="bluetooth" /> Bluetooth</label>
+            <label><input type="checkbox" data-area="evidence_graph" /> Evidence Graph</label>
+            <label><input type="checkbox" data-area="communication" /> Communication Dataflow</label>
+            <label><input type="checkbox" data-area="correlation" /> Runtime/Wire Correlation (offline flag only)</label>
+          </div>
+
+          <h4>Traversal / Tiefe</h4>
+          <div class="crit-grid" id="builder-traversal">
+            <label>instruction_window <input type="number" data-trav="instruction_window" value="8" /></label>
+            <label>xref_depth <input type="number" data-trav="xref_depth" value="2" /></label>
+            <label>max_method_hops (BT) <input type="number" data-trav="bluetooth_max_method_hops" value="3" /></label>
+            <label>max_field_hops (BT) <input type="number" data-trav="bluetooth_max_field_hops" value="2" /></label>
+            <label>dataflow_depth <input type="number" data-trav="bluetooth_dataflow_depth" value="2" /></label>
+            <label>max_method_hops (Comm) <input type="number" data-trav="communication_max_method_hops" value="3" /></label>
+            <label>max_buffer_hops <input type="number" data-trav="communication_max_buffer_hops" value="5" /></label>
+            <label>max_evidence_paths <input type="number" data-trav="evidence_graph_max_paths" value="50" /></label>
+          </div>
+
+          <div class="btn-row">
+            <button type="button" class="btn" id="btn-preview-plan">Preview / Validate</button>
+            <button type="button" class="btn" id="btn-show-yaml">YAML anzeigen</button>
+            <button type="button" class="btn" id="btn-show-json">Normalisiertes JSON</button>
+            <button type="button" class="btn primary" id="btn-save-plan">Save User Plan</button>
+          </div>
+          <div id="builder-preview" class="meta-box"></div>
+          <pre class="log hidden" id="builder-dump"></pre>
+        </div>
       </div>
 
       <div class="card">

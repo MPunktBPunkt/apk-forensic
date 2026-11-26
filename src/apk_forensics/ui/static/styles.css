@@ -282,6 +282,25 @@ main {
   background: #fff;
   margin: 0.35rem 0 0.5rem;
 }
+textarea.input {
+  min-height: 5rem;
+  resize: vertical;
+  line-height: 1.4;
+}
+.btn-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  margin: 0.5rem 0 0.75rem;
+}
+.btn-row .btn { width: auto; }
+h4 {
+  margin: 1rem 0 0.45rem;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--muted);
+}
 .field-label {
   display: block;
   font-size: 0.75rem;
